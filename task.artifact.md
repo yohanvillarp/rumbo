@@ -1,0 +1,33 @@
+# Task Management
+
+- [x] Explore project structure and current Gradle config
+- [x] Create initial implementation plan
+- [x] Get plan approval
+- [x] Implement modular architecture structure
+- [x] Verification and build check
+- [x] Follow-up Tasks: Git, Agent Context, and Contribution Docs
+- [x] Collaboration Setup & GitHub Templates
+- [x] Dependabot & CodeQL Security Analysis Setup
+- [x] Re-organize Git Branches and Push New Feature Branch
+- [x] Add Strict Git Rules to Agent Context Files
+- [x] Implement Initial Domain Model in `:core:model`
+- [x] Fix CodeQL Workflow in `.github/workflows/codeql.yml`
+- [x] Implement Local Persistence Layer in `:core:database` and `:core:data`
+- [x] Implement Initial Design System in `:core:designsystem`
+- [x] Implement Single Screen Onboarding Experience in `:feature:onboarding`
+- [x] Implement Main Responsive Navigation Compose in `:core:navigation`, `:app`, and `:feature:*`
+- [x] Implement Home Feature in `:feature:home`
+- [x] Implement Processes Feature in `:feature:processes`
+- [x] Implement Tasks Feature in `:feature:tasks`
+- [x] Implement Work Sessions and Progress Feature in `:feature:progress`
+- [x] Implement Weekly Goals for Processes in `:core:model`, `:core:data`, `:feature:processes`, and `:feature:home`
+- [/] Implement Analytics and Progress System in `:feature:progress`
+  - [ ] Implement `TimeframeFilter` (7 days, 30 days, 90 days)
+  - [ ] Implement `TaskAnalytics` model and `ProcessAnalytics` model with clear separation
+  - [ ] Implement Contribution Calendar component for active days per process
+  - [ ] Implement Time vs Declared Progress comparison visualizer
+  - [ ] Implement `ProgressViewModel` and `ProgressScreen`
+  - [ ] Add `@Preview` annotations for Light and Dark modes
+  - [ ] Add unit tests for `ProgressViewModel`
+  - [ ] Verify build (`:app:assembleDebug`) and tests (`testDebugUnitTest`) pass cleanly
+  - [ ] Commit and push on `feature/analytics-and-progress` branch

@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Rumbo</string>
+    <string name="nav_home">Inicio</string>
+    <string name="nav_processes">Procesos</string>
+    <string name="nav_tasks">Tareas</string>
+    <string name="nav_progress">Progreso</string>
+    <string name="nav_settings">Configuración</string>
+    <string name="action_continue">Continuar</string>
+    <string name="action_accept">Aceptar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_edit">Editar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_pause">Pausar</string>
+    <string name="action_resume">Reactivar</string>
+    <string name="action_finish">Finalizar</string>
+    <string name="action_archive">Archivar</string>
+    <string name="action_back">Regresar</string>
+</resources>
