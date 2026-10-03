@@ -1,0 +1,23 @@
+# <tipo>(<módulo/ámbito>): <resumen corto en imperativo, minúsculas>
+# ----------------------------------------------------------------------
+# Tipos válidos:
+#   feat     : Nueva funcionalidad para el usuario
+#   fix      : Corrección de un error/bug
+#   refactor : Refactorización de código sin alterar comportamiento
+#   style    : Cambios de formato o estilo (espacios, comas, etc.)
+#   docs     : Cambios únicamente en documentación
+#   test     : Añadir o modificar pruebas unitarias/UI
+#   build    : Cambios en Gradle, dependencias o configuración de build
+#   ci       : Cambios en GitHub Actions o integración continua
+#   chore    : Tareas de mantenimiento o configuración general
+#
+# Ejemplos de ámbito: core:model, core:data, feature:home, app
+# ----------------------------------------------------------------------
+# Por qué se realizó este cambio:
+#
+#
+# Qué solución aporta:
+#
+#
+# Referencias / Issues asociados:
+# Fixes #
