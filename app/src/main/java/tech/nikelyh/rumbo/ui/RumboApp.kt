@@ -24,6 +24,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
+import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.navigation.HomeDestination
 import tech.nikelyh.rumbo.core.navigation.OnboardingDestination
@@ -57,66 +58,72 @@ enum class TopLevelDestination(
 
 @Composable
 fun RumboApp(
+    hasCompletedOnboarding: Boolean?,
     navController: NavHostController = rememberNavController()
 ) {
     RumboTheme {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentDestination = navBackStackEntry?.destination
+        if (hasCompletedOnboarding == null) {
+            RumboLoadingState(isLoading = true)
+        } else {
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentDestination = navBackStackEntry?.destination
 
-        val shouldShowBottomBar = currentDestination?.route != OnboardingDestination.route
+            val shouldShowBottomBar = currentDestination?.route != OnboardingDestination.route
+            val startDestination = if (hasCompletedOnboarding) HomeDestination.route else OnboardingDestination.route
 
-        Scaffold(
-            bottomBar = {
-                if (shouldShowBottomBar) {
-                    RumboBottomBar(
-                        destinations = TopLevelDestination.entries,
-                        onNavigateToDestination = { destination ->
-                            val topLevelNavOptions = navOptions {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+            Scaffold(
+                bottomBar = {
+                    if (shouldShowBottomBar) {
+                        RumboBottomBar(
+                            destinations = TopLevelDestination.entries,
+                            onNavigateToDestination = { destination ->
+                                val topLevelNavOptions = navOptions {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                            when (destination) {
-                                TopLevelDestination.HOME -> navController.navigateToHome(topLevelNavOptions)
-                                TopLevelDestination.PROCESSES -> navController.navigateToProcesses(topLevelNavOptions)
-                                TopLevelDestination.TASKS -> navController.navigateToTasks(topLevelNavOptions)
-                                TopLevelDestination.PROGRESS -> navController.navigateToProgress(topLevelNavOptions)
-                                TopLevelDestination.SETTINGS -> navController.navigateToSettings(topLevelNavOptions)
-                            }
-                        },
-                        currentDestination = currentDestination
-                    )
-                }
-            }
-        ) { paddingValues ->
-            NavHost(
-                navController = navController,
-                startDestination = HomeDestination.route,
-                modifier = Modifier.padding(paddingValues)
-            ) {
-                onboardingScreen(
-                    onOnboardingFinished = {
-                        navController.navigateToHome(
-                            navOptions {
-                                popUpTo(OnboardingDestination.route) { inclusive = true }
-                            }
+                                when (destination) {
+                                    TopLevelDestination.HOME -> navController.navigateToHome(topLevelNavOptions)
+                                    TopLevelDestination.PROCESSES -> navController.navigateToProcesses(topLevelNavOptions)
+                                    TopLevelDestination.TASKS -> navController.navigateToTasks(topLevelNavOptions)
+                                    TopLevelDestination.PROGRESS -> navController.navigateToProgress(topLevelNavOptions)
+                                    TopLevelDestination.SETTINGS -> navController.navigateToSettings(topLevelNavOptions)
+                                }
+                            },
+                            currentDestination = currentDestination
                         )
                     }
-                )
-                homeScreen(
-                    onNavigateToProcess = { navController.navigateToProcesses() },
-                    onNavigateToTask = { navController.navigateToTasks() }
-                )
-                processesScreen(
-                    onProcessClick = { /* Navigate to detail when implemented */ }
-                )
-                tasksScreen(
-                    onTaskClick = { /* Navigate to detail when implemented */ }
-                )
-                progressScreen()
-                settingsScreen()
+                }
+            ) { paddingValues ->
+                NavHost(
+                    navController = navController,
+                    startDestination = startDestination,
+                    modifier = Modifier.padding(paddingValues)
+                ) {
+                    onboardingScreen(
+                        onOnboardingFinished = {
+                            navController.navigateToHome(
+                                navOptions {
+                                    popUpTo(OnboardingDestination.route) { inclusive = true }
+                                }
+                            )
+                        }
+                    )
+                    homeScreen(
+                        onNavigateToProcess = { navController.navigateToProcesses() },
+                        onNavigateToTask = { navController.navigateToTasks() }
+                    )
+                    processesScreen(
+                        onProcessClick = { /* Navigate to detail when implemented */ }
+                    )
+                    tasksScreen(
+                        onTaskClick = { /* Navigate to detail when implemented */ }
+                    )
+                    progressScreen()
+                    settingsScreen()
+                }
             }
         }
     }

@@ -1,7 +1,8 @@
 package tech.nikelyh.rumbo.feature.onboarding
 
 data class OnboardingUiState(
-    val currentPage: Int = 0,
-    val totalPages: Int = 3,
+    val name: String = "",
+    val nameError: String? = null,
+    val isSubmitting: Boolean = false,
     val isCompleted: Boolean = false
 )
