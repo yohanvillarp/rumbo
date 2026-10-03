@@ -32,7 +32,8 @@ class TaskRepositoryImpl @Inject constructor(
         taskDao.insertOrUpdate(task.asEntity())
     }
 
-    override suspend fun deleteTask(id: String) {
-        taskDao.deleteById(id)
+    override suspend fun deleteTask(id: String): Boolean {
+        val rows = taskDao.deleteById(id)
+        return rows > 0
     }
 }

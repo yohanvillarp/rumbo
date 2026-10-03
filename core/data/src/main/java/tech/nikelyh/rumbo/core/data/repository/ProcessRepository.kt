@@ -7,5 +7,7 @@ interface ProcessRepository {
     fun getProcesses(): Flow<List<Process>>
     fun getProcessById(id: String): Flow<Process?>
     suspend fun saveProcess(process: Process)
-    suspend fun deleteProcess(id: String)
+    suspend fun deleteProcess(id: String): Boolean
+    suspend fun archiveProcess(id: String): Boolean
+    suspend fun ensureGeneralProcessExists()
 }

@@ -14,5 +14,6 @@ data class ProcessEntity(
     val finishedAtEpochMillis: Long?,
     val colorOrVisualId: String,
     val accumulatedDirectCost: Double,
-    val nextAction: String?
+    val nextAction: String?,
+    val isSystemProcess: Boolean = false
 )

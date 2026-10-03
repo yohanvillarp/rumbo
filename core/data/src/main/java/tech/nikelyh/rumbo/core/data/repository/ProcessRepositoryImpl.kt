@@ -26,7 +26,30 @@ class ProcessRepositoryImpl @Inject constructor(
         processDao.insertOrUpdate(process.asEntity())
     }
 
-    override suspend fun deleteProcess(id: String) {
-        processDao.deleteById(id)
+    override suspend fun deleteProcess(id: String): Boolean {
+        if (id == Process.GENERAL_PROCESS_ID) {
+            return false // General process cannot be deleted
+        }
+        val rows = processDao.deleteById(id)
+        return rows > 0
+    }
+
+    override suspend fun archiveProcess(id: String): Boolean {
+        if (id == Process.GENERAL_PROCESS_ID) {
+            return false // General process cannot be archived
+        }
+        val currentEntity = processDao.getProcessByIdSync(id) ?: return false
+        val domain = currentEntity.asExternalModel()
+        val archived = domain.archive()
+        processDao.insertOrUpdate(archived.asEntity())
+        return true
+    }
+
+    override suspend fun ensureGeneralProcessExists() {
+        val existing = processDao.getProcessByIdSync(Process.GENERAL_PROCESS_ID)
+        if (existing == null) {
+            val general = Process.createGeneralProcess(System.currentTimeMillis())
+            processDao.insertOrUpdate(general.asEntity())
+        }
     }
 }
