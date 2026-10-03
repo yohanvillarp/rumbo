@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import tech.nikelyh.rumbo.core.model.WorkSession
 
 interface WorkSessionRepository {
+    fun getAllWorkSessions(): Flow<List<WorkSession>>
     fun getWorkSessionsByProcessId(processId: String): Flow<List<WorkSession>>
     fun getWorkSessionsByTaskId(taskId: String): Flow<List<WorkSession>>
     fun getWorkSessionById(id: String): Flow<WorkSession?>

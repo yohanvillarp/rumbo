@@ -9,6 +9,10 @@ import tech.nikelyh.rumbo.core.model.ProgressEntry
 class FakeProgressRepository : ProgressRepository {
     private val flow = MutableStateFlow<Map<String, ProgressEntry>>(emptyMap())
 
+    override fun getAllProgressEntries(): Flow<List<ProgressEntry>> {
+        return flow.map { it.values.toList() }
+    }
+
     override fun getProgressEntriesByProcessId(processId: String): Flow<List<ProgressEntry>> {
         return flow.map { map -> map.values.filter { it.processId == processId } }
     }

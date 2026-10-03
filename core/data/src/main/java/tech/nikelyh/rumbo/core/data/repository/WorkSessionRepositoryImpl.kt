@@ -12,6 +12,12 @@ class WorkSessionRepositoryImpl @Inject constructor(
     private val workSessionDao: WorkSessionDao
 ) : WorkSessionRepository {
 
+    override fun getAllWorkSessions(): Flow<List<WorkSession>> {
+        return workSessionDao.getAllWorkSessions().map { entities ->
+            entities.map { it.asExternalModel() }
+        }
+    }
+
     override fun getWorkSessionsByProcessId(processId: String): Flow<List<WorkSession>> {
         return workSessionDao.getWorkSessionsByProcessId(processId).map { entities ->
             entities.map { it.asExternalModel() }
