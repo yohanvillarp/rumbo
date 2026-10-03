@@ -21,26 +21,39 @@ class OnboardingViewModel @Inject constructor(
 
     fun onEvent(event: OnboardingUiEvent) {
         when (event) {
-            OnboardingUiEvent.NextPage -> {
+            is OnboardingUiEvent.NameChanged -> {
                 _uiState.update { current ->
-                    if (current.currentPage < current.totalPages - 1) {
-                        current.copy(currentPage = current.currentPage + 1)
-                    } else current
+                    current.copy(
+                        name = event.name,
+                        nameError = if (current.nameError != null) validateName(event.name) else null
+                    )
                 }
             }
-            OnboardingUiEvent.PreviousPage -> {
-                _uiState.update { current ->
-                    if (current.currentPage > 0) {
-                        current.copy(currentPage = current.currentPage - 1)
-                    } else current
+            OnboardingUiEvent.SubmitName -> {
+                val currentName = _uiState.value.name
+                val error = validateName(currentName)
+                if (error != null) {
+                    _uiState.update { it.copy(nameError = error) }
+                    return
                 }
-            }
-            OnboardingUiEvent.CompleteOnboarding -> {
+
+                val trimmedName = currentName.trim()
                 viewModelScope.launch {
+                    _uiState.update { it.copy(isSubmitting = true) }
+                    settingsRepository.setUserName(trimmedName)
                     settingsRepository.setOnboardingCompleted(true)
-                    _uiState.update { it.copy(isCompleted = true) }
+                    _uiState.update { it.copy(isSubmitting = false, isCompleted = true) }
                 }
             }
+        }
+    }
+
+    private fun validateName(input: String): String? {
+        val trimmed = input.trim()
+        return when {
+            trimmed.isBlank() -> "El nombre es obligatorio"
+            trimmed.length > 50 -> "El nombre no puede superar los 50 caracteres"
+            else -> null
         }
     }
 }
