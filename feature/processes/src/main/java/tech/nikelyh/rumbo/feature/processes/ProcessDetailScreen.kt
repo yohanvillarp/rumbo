@@ -12,20 +12,29 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Redo
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddTask
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,6 +54,7 @@ import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.model.ProcessStatus
 import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
+import tech.nikelyh.rumbo.core.model.WeeklyGoal
 
 @Composable
 fun ProcessDetailRoute(
@@ -110,6 +120,8 @@ private fun ProcessDetailContent(
     modifier: Modifier = Modifier
 ) {
     val process = uiState.process
+    var showWeeklyGoalDialog by remember { mutableStateOf(false) }
+    var weeklyGoalInput by remember { mutableStateOf("") }
 
     LazyColumn(
         modifier = modifier
@@ -157,7 +169,6 @@ private fun ProcessDetailContent(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Key Metrics
                 val timeHours = uiState.totalTimeInvestedMillis / (1000 * 60 * 60)
                 val timeMinutes = (uiState.totalTimeInvestedMillis / (1000 * 60)) % 60
                 Text(
@@ -165,6 +176,86 @@ private fun ProcessDetailContent(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        }
+
+        // Section: Weekly Goal
+        item {
+            RumboSectionHeader(title = "Objetivo Semanal")
+            val goal = uiState.weeklyGoal
+
+            if (goal != null) {
+                RumboCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = goal.description,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "Semana: ${goal.weekIdentifier}  •  Estado: ${goal.status.name}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            RumboButton(
+                                onClick = { onEvent(ProcessDetailUiEvent.CompleteWeeklyGoal(goal.id)) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(Icons.Default.CheckCircle, contentDescription = null)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Completar")
+                            }
+                            RumboOutlinedButton(
+                                onClick = { onEvent(ProcessDetailUiEvent.CarryOverWeeklyGoal(goal.id)) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = null)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Mover")
+                            }
+                        }
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            TextButton(
+                                onClick = {
+                                    weeklyGoalInput = goal.description
+                                    showWeeklyGoalDialog = true
+                                }
+                            ) {
+                                Icon(Icons.Default.Edit, contentDescription = null)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Editar")
+                            }
+                            TextButton(
+                                onClick = { onEvent(ProcessDetailUiEvent.DiscardWeeklyGoal(goal.id)) }
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Descartar", color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                    }
+                }
+            } else {
+                RumboOutlinedButton(
+                    onClick = {
+                        weeklyGoalInput = ""
+                        showWeeklyGoalDialog = true
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Definir Objetivo Semanal")
+                }
             }
         }
 
@@ -215,7 +306,6 @@ private fun ProcessDetailContent(
                     }
                 }
 
-                // Status Management Actions (Pause / Resume / Finish / Archive)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -315,6 +405,40 @@ private fun ProcessDetailContent(
             }
         }
     }
+
+    if (showWeeklyGoalDialog) {
+        AlertDialog(
+            onDismissRequest = { showWeeklyGoalDialog = false },
+            title = { Text("Objetivo Semanal") },
+            text = {
+                OutlinedTextField(
+                    value = weeklyGoalInput,
+                    onValueChange = { weeklyGoalInput = it },
+                    label = { Text("Descripción del objetivo") },
+                    placeholder = { Text("Ej. Terminar el dashboard OLAP") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (weeklyGoalInput.isNotBlank()) {
+                            onEvent(ProcessDetailUiEvent.SaveWeeklyGoal(weeklyGoalInput.trim()))
+                            showWeeklyGoalDialog = false
+                        }
+                    }
+                ) {
+                    Text("Guardar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showWeeklyGoalDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 }
 
 @Preview(name = "Process Detail Light", showBackground = true)
@@ -347,7 +471,12 @@ private fun ProcessDetailScreenPreviewLight() {
                 workSessions = emptyList(),
                 totalTimeInvestedMillis = 3600000L * 3,
                 progressEntries = emptyList(),
-                weeklyGoal = null
+                weeklyGoal = WeeklyGoal(
+                    id = "g1",
+                    processId = "p1",
+                    weekIdentifier = "2026-W40",
+                    description = "Terminar el dashboard OLAP"
+                )
             ),
             onEvent = {},
             onNavigateToEditProcess = {},
