@@ -112,8 +112,10 @@ internal fun HomeScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = { onEvent(HomeUiEvent.OnProcessClick(process.id)) }
                             ) {
-                                Text(text = process.title, style = MaterialTheme.typography.titleLarge)
-                                Text(text = process.description, style = MaterialTheme.typography.bodyLarge)
+                                Text(text = process.name, style = MaterialTheme.typography.titleLarge)
+                                process.description?.let {
+                                    Text(text = it, style = MaterialTheme.typography.bodyLarge)
+                                }
                             }
                         }
                     }
@@ -141,7 +143,9 @@ internal fun HomeScreen(
                                 onClick = { onEvent(HomeUiEvent.OnTaskClick(task.id)) }
                             ) {
                                 Text(text = task.title, style = MaterialTheme.typography.titleLarge)
-                                Text(text = task.description, style = MaterialTheme.typography.bodyLarge)
+                                task.description?.let {
+                                    Text(text = it, style = MaterialTheme.typography.bodyLarge)
+                                }
                             }
                         }
                     }

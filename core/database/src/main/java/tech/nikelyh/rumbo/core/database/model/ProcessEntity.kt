@@ -7,8 +7,12 @@ import androidx.room.PrimaryKey
 data class ProcessEntity(
     @PrimaryKey
     val id: String,
-    val title: String,
-    val description: String,
-    val category: String,
-    val createdAtEpochMillis: Long
+    val name: String,
+    val description: String?,
+    val statusName: String,
+    val createdAtEpochMillis: Long,
+    val finishedAtEpochMillis: Long?,
+    val colorOrVisualId: String,
+    val accumulatedDirectCost: Double,
+    val nextAction: String?
 )

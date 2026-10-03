@@ -2,19 +2,28 @@ package tech.nikelyh.rumbo.core.data.model
 
 import tech.nikelyh.rumbo.core.database.model.ProcessEntity
 import tech.nikelyh.rumbo.core.model.Process
+import tech.nikelyh.rumbo.core.model.ProcessStatus
 
 fun ProcessEntity.asExternalModel(): Process = Process(
     id = id,
-    title = title,
+    name = name,
     description = description,
-    category = category,
-    createdAtEpochMillis = createdAtEpochMillis
+    status = runCatching { ProcessStatus.valueOf(statusName) }.getOrDefault(ProcessStatus.ACTIVE),
+    createdAtEpochMillis = createdAtEpochMillis,
+    finishedAtEpochMillis = finishedAtEpochMillis,
+    colorOrVisualId = colorOrVisualId,
+    accumulatedDirectCost = accumulatedDirectCost,
+    nextAction = nextAction
 )
 
 fun Process.asEntity(): ProcessEntity = ProcessEntity(
     id = id,
-    title = title,
+    name = name,
     description = description,
-    category = category,
-    createdAtEpochMillis = createdAtEpochMillis
+    statusName = status.name,
+    createdAtEpochMillis = createdAtEpochMillis,
+    finishedAtEpochMillis = finishedAtEpochMillis,
+    colorOrVisualId = colorOrVisualId,
+    accumulatedDirectCost = accumulatedDirectCost,
+    nextAction = nextAction
 )

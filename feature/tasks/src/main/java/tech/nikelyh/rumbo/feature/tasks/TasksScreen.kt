@@ -93,7 +93,9 @@ internal fun TasksScreen(
                                     )
                                     Column(modifier = Modifier.padding(start = 8.dp)) {
                                         Text(text = task.title, style = MaterialTheme.typography.titleLarge)
-                                        Text(text = task.description, style = MaterialTheme.typography.bodyLarge)
+                                        task.description?.let {
+                                            Text(text = it, style = MaterialTheme.typography.bodyLarge)
+                                        }
                                     }
                                 }
                             }

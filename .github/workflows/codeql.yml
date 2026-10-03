@@ -24,17 +24,17 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
 
@@ -45,6 +45,14 @@ jobs:
         run: ./gradlew :app:assembleDebug --stacktrace
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{matrix.language}}"
+          upload: false
+          output: 'sarif-results'
+
+      - name: Upload CodeQL SARIF Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif-report
+          path: sarif-results
