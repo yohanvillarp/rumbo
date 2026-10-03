@@ -38,22 +38,32 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTopBar
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboAnimationTokens
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
+import tech.nikelyh.rumbo.core.navigation.CreateProcessDestination
+import tech.nikelyh.rumbo.core.navigation.CreateTaskDestination
 import tech.nikelyh.rumbo.core.navigation.HomeDestination
+import tech.nikelyh.rumbo.core.navigation.LogProgressDestination
 import tech.nikelyh.rumbo.core.navigation.OnboardingDestination
+import tech.nikelyh.rumbo.core.navigation.ProcessDetailDestination
 import tech.nikelyh.rumbo.core.navigation.ProcessesDestination
 import tech.nikelyh.rumbo.core.navigation.ProgressDestination
 import tech.nikelyh.rumbo.core.navigation.SettingsDestination
+import tech.nikelyh.rumbo.core.navigation.StartSessionDestination
+import tech.nikelyh.rumbo.core.navigation.TaskDetailDestination
 import tech.nikelyh.rumbo.core.navigation.TasksDestination
 import tech.nikelyh.rumbo.feature.home.navigation.homeScreen
 import tech.nikelyh.rumbo.feature.home.navigation.navigateToHome
 import tech.nikelyh.rumbo.feature.onboarding.navigation.onboardingScreen
+import tech.nikelyh.rumbo.feature.processes.navigation.navigateToCreateProcess
 import tech.nikelyh.rumbo.feature.processes.navigation.navigateToProcessDetail
 import tech.nikelyh.rumbo.feature.processes.navigation.navigateToProcesses
 import tech.nikelyh.rumbo.feature.processes.navigation.processesScreen
+import tech.nikelyh.rumbo.feature.progress.navigation.navigateToLogProgress
 import tech.nikelyh.rumbo.feature.progress.navigation.navigateToProgress
+import tech.nikelyh.rumbo.feature.progress.navigation.navigateToStartSession
 import tech.nikelyh.rumbo.feature.progress.navigation.progressScreen
 import tech.nikelyh.rumbo.feature.settings.navigation.navigateToSettings
 import tech.nikelyh.rumbo.feature.settings.navigation.settingsScreen
+import tech.nikelyh.rumbo.feature.tasks.navigation.navigateToCreateTask
 import tech.nikelyh.rumbo.feature.tasks.navigation.navigateToTaskDetail
 import tech.nikelyh.rumbo.feature.tasks.navigation.navigateToTasks
 import tech.nikelyh.rumbo.feature.tasks.navigation.tasksScreen
@@ -102,6 +112,12 @@ fun RumboApp(
                                     TasksDestination.route -> "Tareas"
                                     ProgressDestination.route -> "Progreso"
                                     SettingsDestination.route -> "Configuración"
+                                    CreateProcessDestination.route -> "Nuevo Proceso"
+                                    CreateTaskDestination.route -> "Nueva Tarea"
+                                    ProcessDetailDestination.route -> "Detalle de Proceso"
+                                    TaskDetailDestination.route -> "Detalle de Tarea"
+                                    StartSessionDestination.route -> "Sesión de Trabajo"
+                                    LogProgressDestination.route -> "Registrar Progreso"
                                     else -> "Rumbo"
                                 },
                                 navigationIcon = if (!isTopLevel) Icons.AutoMirrored.Filled.ArrowBack else null,
@@ -164,19 +180,63 @@ fun RumboApp(
                                 },
                                 onNavigateToTask = { taskId ->
                                     navController.navigateToTaskDetail(taskId)
+                                },
+                                onNavigateToCreateProcess = {
+                                    navController.navigateToCreateProcess()
+                                },
+                                onNavigateToCreateTask = {
+                                    navController.navigateToCreateTask()
+                                },
+                                onNavigateToLogProgress = {
+                                    navController.navigateToLogProgress()
+                                },
+                                onNavigateToStartSession = {
+                                    navController.navigateToStartSession()
                                 }
                             )
                             processesScreen(
                                 onProcessClick = { processId ->
                                     navController.navigateToProcessDetail(processId)
+                                },
+                                onNavigateToCreateProcess = {
+                                    navController.navigateToCreateProcess()
+                                },
+                                onNavigateToCreateTask = { processId ->
+                                    navController.navigateToCreateTask(processId)
+                                },
+                                onNavigateToLogProgress = { processId ->
+                                    navController.navigateToLogProgress(processId)
+                                },
+                                onNavigateToStartSession = { processId ->
+                                    navController.navigateToStartSession(processId)
+                                },
+                                onNavigateToEditProcess = { /* edit modal / flow */ },
+                                onProcessCreated = {
+                                    navController.popBackStack()
                                 }
                             )
                             tasksScreen(
                                 onTaskClick = { taskId ->
                                     navController.navigateToTaskDetail(taskId)
+                                },
+                                onNavigateToCreateTask = {
+                                    navController.navigateToCreateTask()
+                                },
+                                onTaskCreated = {
+                                    navController.popBackStack()
+                                },
+                                onTaskDeleted = {
+                                    navController.popBackStack()
                                 }
                             )
-                            progressScreen()
+                            progressScreen(
+                                onSessionFinished = {
+                                    navController.popBackStack()
+                                },
+                                onProgressLogged = {
+                                    navController.popBackStack()
+                                }
+                            )
                             settingsScreen()
                         }
                     }
