@@ -21,6 +21,10 @@ import tech.nikelyh.rumbo.core.model.ProgressEntry
 import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.WeeklyGoal
 import tech.nikelyh.rumbo.core.model.WorkSession
+import java.time.LocalDate
+import java.time.temporal.WeekFields
+import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,9 +33,9 @@ class ProcessDetailViewModel @Inject constructor(
     private val processRepository: ProcessRepository,
     private val taskRepository: TaskRepository,
     private val milestoneRepository: MilestoneRepository,
+    private val weeklyGoalRepository: WeeklyGoalRepository,
     workSessionRepository: WorkSessionRepository,
-    progressRepository: ProgressRepository,
-    weeklyGoalRepository: WeeklyGoalRepository
+    progressRepository: ProgressRepository
 ) : ViewModel() {
 
     val processId: String = savedStateHandle.get<String>("processId") ?: ""
@@ -123,6 +127,63 @@ class ProcessDetailViewModel @Inject constructor(
                     milestoneRepository.saveMilestone(updatedMilestone)
                 }
             }
+            is ProcessDetailUiEvent.SaveWeeklyGoal -> {
+                viewModelScope.launch {
+                    val currentGoal = currentState.weeklyGoal
+                    val currentWeekId = getCurrentWeekIdentifier()
+                    val newGoal = currentGoal?.edit(event.description) ?: WeeklyGoal(
+                        id = UUID.randomUUID().toString(),
+                        processId = processId,
+                        weekIdentifier = currentWeekId,
+                        description = event.description.trim()
+                    )
+                    weeklyGoalRepository.saveWeeklyGoal(newGoal)
+                }
+            }
+            is ProcessDetailUiEvent.CompleteWeeklyGoal -> {
+                viewModelScope.launch {
+                    val currentGoal = currentState.weeklyGoal ?: return@launch
+                    weeklyGoalRepository.saveWeeklyGoal(currentGoal.markAchieved())
+                }
+            }
+            is ProcessDetailUiEvent.CarryOverWeeklyGoal -> {
+                viewModelScope.launch {
+                    val currentGoal = currentState.weeklyGoal ?: return@launch
+                    val nextWeekId = getNextWeekIdentifier()
+                    val carriedGoal = currentGoal.carryOverToWeek(
+                        newGoalId = UUID.randomUUID().toString(),
+                        nextWeekIdentifier = nextWeekId
+                    )
+                    weeklyGoalRepository.saveWeeklyGoal(carriedGoal)
+                }
+            }
+            is ProcessDetailUiEvent.DiscardWeeklyGoal -> {
+                viewModelScope.launch {
+                    weeklyGoalRepository.deleteWeeklyGoal(event.goalId)
+                }
+            }
+        }
+    }
+
+    private fun getCurrentWeekIdentifier(): String {
+        return try {
+            val now = LocalDate.now()
+            val weekFields = WeekFields.of(Locale.getDefault())
+            val weekNumber = now.get(weekFields.weekOfWeekBasedYear())
+            "${now.year}-W$weekNumber"
+        } catch (_: Throwable) {
+            "2026-W40"
+        }
+    }
+
+    private fun getNextWeekIdentifier(): String {
+        return try {
+            val nextWeek = LocalDate.now().plusWeeks(1)
+            val weekFields = WeekFields.of(Locale.getDefault())
+            val weekNumber = nextWeek.get(weekFields.weekOfWeekBasedYear())
+            "${nextWeek.year}-W$weekNumber"
+        } catch (_: Throwable) {
+            "2026-W41"
         }
     }
 }

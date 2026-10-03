@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -64,9 +65,9 @@ class ProcessDetailViewModelTest {
             processRepository,
             taskRepository,
             milestoneRepository,
+            weeklyGoalRepository,
             workSessionRepository,
-            progressRepository,
-            weeklyGoalRepository
+            progressRepository
         )
     }
 
@@ -85,6 +86,37 @@ class ProcessDetailViewModelTest {
         val content = state as ProcessDetailUiState.Content
         assertEquals("p100", content.process.id)
         assertEquals("Proceso Test", content.process.name)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `saving weekly goal creates or updates goal for current week`() = runBlocking {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is ProcessDetailUiState.Content }
+
+        viewModel.onEvent(ProcessDetailUiEvent.SaveWeeklyGoal("Terminar dashboard OLAP"))
+
+        val savedGoals = weeklyGoalRepository.getWeeklyGoalsByProcessId("p100").first()
+        assertEquals(1, savedGoals.size)
+        val goal = savedGoals.first()
+        assertEquals("Terminar dashboard OLAP", goal.description)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `carrying over weekly goal creates goal for next week`() = runBlocking {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is ProcessDetailUiState.Content }
+
+        viewModel.onEvent(ProcessDetailUiEvent.SaveWeeklyGoal("Terminar dashboard OLAP"))
+        val firstGoal = weeklyGoalRepository.getWeeklyGoalsByProcessId("p100").first().first()
+
+        viewModel.onEvent(ProcessDetailUiEvent.CarryOverWeeklyGoal(firstGoal.id))
+
+        val allGoals = weeklyGoalRepository.getWeeklyGoalsByProcessId("p100").first()
+        assertEquals(2, allGoals.size)
 
         collectJob.cancel()
     }
