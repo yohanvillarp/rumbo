@@ -7,35 +7,52 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import tech.nikelyh.rumbo.core.data.repository.ProcessRepository
+import tech.nikelyh.rumbo.core.data.repository.SettingsRepository
 import tech.nikelyh.rumbo.core.data.repository.TaskRepository
-import tech.nikelyh.rumbo.core.model.TaskStatus
-import tech.nikelyh.rumbo.core.model.UserProgress
+import java.time.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     processRepository: ProcessRepository,
-    taskRepository: TaskRepository
+    private val taskRepository: TaskRepository,
+    settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<HomeUiState> = combine(
         processRepository.getProcesses(),
-        taskRepository.getAllTasks()
-    ) { processes, tasks ->
-        val pendingTasks = tasks.filter { it.status == TaskStatus.PENDING || it.status == TaskStatus.IN_PROGRESS }
-        val completedTasks = tasks.filter { it.status == TaskStatus.COMPLETED }
-        val progress = UserProgress(
-            completedProcessesCount = 0,
-            totalProcessesCount = processes.size,
-            completedTasksCount = completedTasks.size,
-            totalTasksCount = tasks.size
-        )
-        HomeUiState.Success(
-            recentProcesses = processes.take(5),
-            pendingTasks = pendingTasks.take(5),
-            progress = progress
-        )
+        taskRepository.getAllTasks(),
+        settingsRepository.userProfile
+    ) { processes, tasks, userProfile ->
+        val name = userProfile?.name ?: "Explorador"
+        val hour = try {
+            LocalTime.now().hour
+        } catch (_: Throwable) {
+            12
+        }
+
+        val greetingPrefix = getGreetingForHour(hour)
+        val fullGreeting = "$greetingPrefix, $name"
+
+        val activeProcesses = processes.filter { it.isActive }
+        val featuredProcess = activeProcesses.firstOrNull { !it.nextAction.isNullOrBlank() }
+            ?: activeProcesses.firstOrNull()
+
+        val pendingTasks = tasks.filter { !it.isCompleted }
+
+        if (processes.isEmpty() && tasks.isEmpty()) {
+            HomeUiState.Empty
+        } else {
+            HomeUiState.Content(
+                greeting = fullGreeting,
+                userName = name,
+                continueProcess = featuredProcess,
+                activeProcesses = activeProcesses.take(3),
+                todayTasks = pendingTasks.take(5)
+            )
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -44,9 +61,23 @@ class HomeViewModel @Inject constructor(
 
     fun onEvent(event: HomeUiEvent) {
         when (event) {
-            HomeUiEvent.Refresh -> { /* Refresh trigger if necessary */ }
-            is HomeUiEvent.OnProcessClick -> { /* Handle process selection */ }
-            is HomeUiEvent.OnTaskClick -> { /* Handle task selection */ }
+            is HomeUiEvent.OnToggleTaskStatus -> {
+                viewModelScope.launch {
+                    val updatedTask = event.task.updateStatus(
+                        if (event.task.isCompleted) tech.nikelyh.rumbo.core.model.TaskStatus.PENDING else tech.nikelyh.rumbo.core.model.TaskStatus.COMPLETED
+                    )
+                    taskRepository.saveTask(updatedTask)
+                }
+            }
+            else -> { /* Navigation events handled at UI Route level */ }
+        }
+    }
+
+    internal fun getGreetingForHour(hour: Int): String {
+        return when (hour) {
+            in 5..11 -> "Buenos días"
+            in 12..18 -> "Buenas tardes"
+            else -> "Buenas noches"
         }
     }
 }
