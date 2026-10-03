@@ -1,7 +1,14 @@
 package tech.nikelyh.rumbo.ui
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
@@ -10,12 +17,15 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -25,6 +35,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
+import tech.nikelyh.rumbo.core.designsystem.component.RumboTopBar
+import tech.nikelyh.rumbo.core.designsystem.theme.RumboAnimationTokens
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.navigation.HomeDestination
 import tech.nikelyh.rumbo.core.navigation.OnboardingDestination
@@ -35,15 +47,18 @@ import tech.nikelyh.rumbo.core.navigation.TasksDestination
 import tech.nikelyh.rumbo.feature.home.navigation.homeScreen
 import tech.nikelyh.rumbo.feature.home.navigation.navigateToHome
 import tech.nikelyh.rumbo.feature.onboarding.navigation.onboardingScreen
+import tech.nikelyh.rumbo.feature.processes.navigation.navigateToProcessDetail
 import tech.nikelyh.rumbo.feature.processes.navigation.navigateToProcesses
 import tech.nikelyh.rumbo.feature.processes.navigation.processesScreen
 import tech.nikelyh.rumbo.feature.progress.navigation.navigateToProgress
 import tech.nikelyh.rumbo.feature.progress.navigation.progressScreen
 import tech.nikelyh.rumbo.feature.settings.navigation.navigateToSettings
 import tech.nikelyh.rumbo.feature.settings.navigation.settingsScreen
+import tech.nikelyh.rumbo.feature.tasks.navigation.navigateToTaskDetail
 import tech.nikelyh.rumbo.feature.tasks.navigation.navigateToTasks
 import tech.nikelyh.rumbo.feature.tasks.navigation.tasksScreen
 
+// 4 Primary Top-Level Destinations
 enum class TopLevelDestination(
     val route: String,
     val icon: ImageVector,
@@ -52,8 +67,7 @@ enum class TopLevelDestination(
     HOME(HomeDestination.route, Icons.Default.Home, "Inicio"),
     PROCESSES(ProcessesDestination.route, Icons.Default.ListAlt, "Procesos"),
     TASKS(TasksDestination.route, Icons.Default.Assignment, "Tareas"),
-    PROGRESS(ProgressDestination.route, Icons.Default.BarChart, "Progreso"),
-    SETTINGS(SettingsDestination.route, Icons.Default.Settings, "Ajustes")
+    PROGRESS(ProgressDestination.route, Icons.Default.BarChart, "Progreso")
 }
 
 @Composable
@@ -65,67 +79,129 @@ fun RumboApp(
         if (hasCompletedOnboarding == null) {
             RumboLoadingState(isLoading = true)
         } else {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentDestination = navBackStackEntry?.destination
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                val isCompact = this.maxWidth < 600.dp
 
-            val shouldShowBottomBar = currentDestination?.route != OnboardingDestination.route
-            val startDestination = if (hasCompletedOnboarding) HomeDestination.route else OnboardingDestination.route
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentDestination = navBackStackEntry?.destination
+                val currentRoute = currentDestination?.route
 
-            Scaffold(
-                bottomBar = {
-                    if (shouldShowBottomBar) {
-                        RumboBottomBar(
-                            destinations = TopLevelDestination.entries,
-                            onNavigateToDestination = { destination ->
-                                val topLevelNavOptions = navOptions {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                                when (destination) {
-                                    TopLevelDestination.HOME -> navController.navigateToHome(topLevelNavOptions)
-                                    TopLevelDestination.PROCESSES -> navController.navigateToProcesses(topLevelNavOptions)
-                                    TopLevelDestination.TASKS -> navController.navigateToTasks(topLevelNavOptions)
-                                    TopLevelDestination.PROGRESS -> navController.navigateToProgress(topLevelNavOptions)
-                                    TopLevelDestination.SETTINGS -> navController.navigateToSettings(topLevelNavOptions)
-                                }
-                            },
-                            currentDestination = currentDestination
-                        )
-                    }
-                }
-            ) { paddingValues ->
-                NavHost(
-                    navController = navController,
-                    startDestination = startDestination,
-                    modifier = Modifier.padding(paddingValues)
-                ) {
-                    onboardingScreen(
-                        onOnboardingFinished = {
-                            navController.navigateToHome(
-                                navOptions {
-                                    popUpTo(OnboardingDestination.route) { inclusive = true }
-                                }
+                val isOnboarding = currentRoute == OnboardingDestination.route
+                val isSettings = currentRoute == SettingsDestination.route
+                val isTopLevel = TopLevelDestination.entries.any { it.route == currentRoute }
+
+                val startDestination = if (hasCompletedOnboarding) HomeDestination.route else OnboardingDestination.route
+
+                Scaffold(
+                    topBar = {
+                        if (!isOnboarding) {
+                            RumboTopBar(
+                                title = when (currentRoute) {
+                                    HomeDestination.route -> "Inicio"
+                                    ProcessesDestination.route -> "Procesos"
+                                    TasksDestination.route -> "Tareas"
+                                    ProgressDestination.route -> "Progreso"
+                                    SettingsDestination.route -> "Configuración"
+                                    else -> "Rumbo"
+                                },
+                                navigationIcon = if (!isTopLevel) Icons.AutoMirrored.Filled.ArrowBack else null,
+                                navigationIconContentDescription = "Regresar",
+                                onNavigationClick = { navController.popBackStack() },
+                                actionIcon = if (!isSettings) Icons.Default.Settings else null,
+                                actionIconContentDescription = "Configuración",
+                                onActionClick = { navController.navigateToSettings() }
                             )
                         }
-                    )
-                    homeScreen(
-                        onNavigateToProcess = { navController.navigateToProcesses() },
-                        onNavigateToTask = { navController.navigateToTasks() }
-                    )
-                    processesScreen(
-                        onProcessClick = { /* Navigate to detail when implemented */ }
-                    )
-                    tasksScreen(
-                        onTaskClick = { /* Navigate to detail when implemented */ }
-                    )
-                    progressScreen()
-                    settingsScreen()
+                    },
+                    bottomBar = {
+                        if (!isOnboarding && isCompact) {
+                            RumboBottomBar(
+                                destinations = TopLevelDestination.entries,
+                                onNavigateToDestination = { destination ->
+                                    navigateToTopLevelDestination(navController, destination)
+                                },
+                                currentDestination = currentDestination
+                            )
+                        }
+                    }
+                ) { paddingValues ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        if (!isOnboarding && !isCompact) {
+                            RumboNavigationRail(
+                                destinations = TopLevelDestination.entries,
+                                onNavigateToDestination = { destination ->
+                                    navigateToTopLevelDestination(navController, destination)
+                                },
+                                currentDestination = currentDestination
+                            )
+                        }
+
+                        NavHost(
+                            navController = navController,
+                            startDestination = startDestination,
+                            modifier = Modifier.weight(1f),
+                            enterTransition = { fadeIn(animationSpec = tween(RumboAnimationTokens.DurationFast)) },
+                            exitTransition = { fadeOut(animationSpec = tween(RumboAnimationTokens.DurationFast)) },
+                            popEnterTransition = { fadeIn(animationSpec = tween(RumboAnimationTokens.DurationFast)) },
+                            popExitTransition = { fadeOut(animationSpec = tween(RumboAnimationTokens.DurationFast)) }
+                        ) {
+                            onboardingScreen(
+                                onOnboardingFinished = {
+                                    navController.navigateToHome(
+                                        navOptions {
+                                            popUpTo(OnboardingDestination.route) { inclusive = true }
+                                        }
+                                    )
+                                }
+                            )
+                            homeScreen(
+                                onNavigateToProcess = { processId ->
+                                    navController.navigateToProcessDetail(processId)
+                                },
+                                onNavigateToTask = { taskId ->
+                                    navController.navigateToTaskDetail(taskId)
+                                }
+                            )
+                            processesScreen(
+                                onProcessClick = { processId ->
+                                    navController.navigateToProcessDetail(processId)
+                                }
+                            )
+                            tasksScreen(
+                                onTaskClick = { taskId ->
+                                    navController.navigateToTaskDetail(taskId)
+                                }
+                            )
+                            progressScreen()
+                            settingsScreen()
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+private fun navigateToTopLevelDestination(
+    navController: NavHostController,
+    destination: TopLevelDestination
+) {
+    val topLevelNavOptions = navOptions {
+        popUpTo(navController.graph.findStartDestination().id) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
+    when (destination) {
+        TopLevelDestination.HOME -> navController.navigateToHome(topLevelNavOptions)
+        TopLevelDestination.PROCESSES -> navController.navigateToProcesses(topLevelNavOptions)
+        TopLevelDestination.TASKS -> navController.navigateToTasks(topLevelNavOptions)
+        TopLevelDestination.PROGRESS -> navController.navigateToProgress(topLevelNavOptions)
     }
 }
 
@@ -139,6 +215,25 @@ private fun RumboBottomBar(
         destinations.forEach { destination ->
             val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
             NavigationBarItem(
+                selected = selected,
+                onClick = { onNavigateToDestination(destination) },
+                icon = { Icon(imageVector = destination.icon, contentDescription = destination.label) },
+                label = { Text(text = destination.label) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun RumboNavigationRail(
+    destinations: List<TopLevelDestination>,
+    onNavigateToDestination: (TopLevelDestination) -> Unit,
+    currentDestination: NavDestination?
+) {
+    NavigationRail {
+        destinations.forEach { destination ->
+            val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
+            NavigationRailItem(
                 selected = selected,
                 onClick = { onNavigateToDestination(destination) },
                 icon = { Icon(imageVector = destination.icon, contentDescription = destination.label) },
