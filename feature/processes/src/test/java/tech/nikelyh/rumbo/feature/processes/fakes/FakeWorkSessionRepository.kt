@@ -9,6 +9,10 @@ import tech.nikelyh.rumbo.core.model.WorkSession
 class FakeWorkSessionRepository : WorkSessionRepository {
     private val flow = MutableStateFlow<Map<String, WorkSession>>(emptyMap())
 
+    override fun getAllWorkSessions(): Flow<List<WorkSession>> {
+        return flow.map { it.values.toList() }
+    }
+
     override fun getWorkSessionsByProcessId(processId: String): Flow<List<WorkSession>> {
         return flow.map { map -> map.values.filter { it.processId == processId } }
     }
