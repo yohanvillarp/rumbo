@@ -1,11 +1,11 @@
 package tech.nikelyh.rumbo.feature.tasks
 
 import tech.nikelyh.rumbo.core.model.Task
-import tech.nikelyh.rumbo.core.model.TaskStatus
 
 sealed interface TasksUiEvent {
-    data class FilterByStatus(val status: TaskStatus?) : TasksUiEvent
+    data class FilterChanged(val filter: TaskFilter) : TasksUiEvent
+    data class ProcessFilterChanged(val processId: String?) : TasksUiEvent
+    data class SearchQueryChanged(val query: String) : TasksUiEvent
     data class ToggleTaskStatus(val task: Task) : TasksUiEvent
-    data class DeleteTask(val taskId: String) : TasksUiEvent
-    data class TaskSelected(val taskId: String) : TasksUiEvent
+    data class OnTaskSelected(val taskId: String) : TasksUiEvent
 }
