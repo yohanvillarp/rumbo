@@ -9,8 +9,12 @@ data class TaskEntity(
     val id: String,
     val processId: String,
     val title: String,
-    val description: String,
+    val description: String?,
     val statusName: String,
     val priorityName: String,
-    val dueDateEpochMillis: Long?
+    val createdAtEpochMillis: Long,
+    val dueDateEpochMillis: Long?,
+    val estimatedDurationMinutes: Int?,
+    val cost: Double,
+    val finishedAtEpochMillis: Long?
 )

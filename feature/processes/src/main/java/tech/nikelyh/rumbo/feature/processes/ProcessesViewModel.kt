@@ -26,7 +26,10 @@ class ProcessesViewModel @Inject constructor(
         val filtered = if (query.isBlank()) {
             processes
         } else {
-            processes.filter { it.title.contains(query, ignoreCase = true) || it.description.contains(query, ignoreCase = true) }
+            processes.filter {
+                it.name.contains(query, ignoreCase = true) ||
+                    (it.description?.contains(query, ignoreCase = true) == true)
+            }
         }
         ProcessesUiState.Success(
             processes = filtered,

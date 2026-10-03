@@ -12,7 +12,11 @@ fun TaskEntity.asExternalModel(): Task = Task(
     description = description,
     status = runCatching { TaskStatus.valueOf(statusName) }.getOrDefault(TaskStatus.PENDING),
     priority = runCatching { Priority.valueOf(priorityName) }.getOrDefault(Priority.MEDIUM),
-    dueDateEpochMillis = dueDateEpochMillis
+    createdAtEpochMillis = createdAtEpochMillis,
+    dueDateEpochMillis = dueDateEpochMillis,
+    estimatedDurationMinutes = estimatedDurationMinutes,
+    cost = cost,
+    finishedAtEpochMillis = finishedAtEpochMillis
 )
 
 fun Task.asEntity(): TaskEntity = TaskEntity(
@@ -22,5 +26,9 @@ fun Task.asEntity(): TaskEntity = TaskEntity(
     description = description,
     statusName = status.name,
     priorityName = priority.name,
-    dueDateEpochMillis = dueDateEpochMillis
+    createdAtEpochMillis = createdAtEpochMillis,
+    dueDateEpochMillis = dueDateEpochMillis,
+    estimatedDurationMinutes = estimatedDurationMinutes,
+    cost = cost,
+    finishedAtEpochMillis = finishedAtEpochMillis
 )
