@@ -1,10 +1,9 @@
 package tech.nikelyh.rumbo.feature.processes
 
-import tech.nikelyh.rumbo.core.model.Process
+import tech.nikelyh.rumbo.core.model.ProcessStatus
 
 sealed interface ProcessesUiEvent {
     data class SearchQueryChanged(val query: String) : ProcessesUiEvent
-    data class CreateProcess(val process: Process) : ProcessesUiEvent
-    data class DeleteProcess(val processId: String) : ProcessesUiEvent
-    data class ProcessSelected(val processId: String) : ProcessesUiEvent
+    data class FilterChanged(val status: ProcessStatus) : ProcessesUiEvent
+    data class OnProcessSelected(val processId: String) : ProcessesUiEvent
 }

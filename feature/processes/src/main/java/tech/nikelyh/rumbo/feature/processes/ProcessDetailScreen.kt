@@ -1,0 +1,359 @@
+package tech.nikelyh.rumbo.feature.processes
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddTask
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
+import tech.nikelyh.rumbo.core.designsystem.component.RumboCard
+import tech.nikelyh.rumbo.core.designsystem.component.RumboEmptyState
+import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
+import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
+import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
+import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
+import tech.nikelyh.rumbo.core.model.Priority
+import tech.nikelyh.rumbo.core.model.Process
+import tech.nikelyh.rumbo.core.model.ProcessStatus
+import tech.nikelyh.rumbo.core.model.Task
+import tech.nikelyh.rumbo.core.model.TaskStatus
+
+@Composable
+fun ProcessDetailRoute(
+    onNavigateToEditProcess: (String) -> Unit,
+    onNavigateToCreateTask: (String) -> Unit,
+    onNavigateToLogProgress: (String) -> Unit,
+    onNavigateToStartSession: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ProcessDetailViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    ProcessDetailScreen(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onNavigateToEditProcess = { onNavigateToEditProcess(viewModel.processId) },
+        onNavigateToCreateTask = { onNavigateToCreateTask(viewModel.processId) },
+        onNavigateToLogProgress = { onNavigateToLogProgress(viewModel.processId) },
+        onNavigateToStartSession = { onNavigateToStartSession(viewModel.processId) },
+        modifier = modifier
+    )
+}
+
+@Composable
+internal fun ProcessDetailScreen(
+    uiState: ProcessDetailUiState,
+    onEvent: (ProcessDetailUiEvent) -> Unit,
+    onNavigateToEditProcess: () -> Unit,
+    onNavigateToCreateTask: () -> Unit,
+    onNavigateToLogProgress: () -> Unit,
+    onNavigateToStartSession: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    when (uiState) {
+        ProcessDetailUiState.Loading -> {
+            RumboLoadingState(isLoading = true, modifier = modifier)
+        }
+        is ProcessDetailUiState.Error -> {
+            RumboEmptyState(message = uiState.message, modifier = modifier)
+        }
+        is ProcessDetailUiState.Content -> {
+            ProcessDetailContent(
+                uiState = uiState,
+                onEvent = onEvent,
+                onNavigateToEditProcess = onNavigateToEditProcess,
+                onNavigateToCreateTask = onNavigateToCreateTask,
+                onNavigateToLogProgress = onNavigateToLogProgress,
+                onNavigateToStartSession = onNavigateToStartSession,
+                modifier = modifier
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProcessDetailContent(
+    uiState: ProcessDetailUiState.Content,
+    onEvent: (ProcessDetailUiEvent) -> Unit,
+    onNavigateToEditProcess: () -> Unit,
+    onNavigateToCreateTask: () -> Unit,
+    onNavigateToLogProgress: () -> Unit,
+    onNavigateToStartSession: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val process = uiState.process
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Header
+        item {
+            RumboCard(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = process.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = process.status.name,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                process.description?.let { desc ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = desc,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    )
+                }
+
+                process.nextAction?.let { action ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Siguiente acción: $action",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Key Metrics
+                val timeHours = uiState.totalTimeInvestedMillis / (1000 * 60 * 60)
+                val timeMinutes = (uiState.totalTimeInvestedMillis / (1000 * 60)) % 60
+                Text(
+                    text = "Invertido: ${timeHours}h ${timeMinutes}m  •  Costo: $${process.accumulatedDirectCost}  •  Sesiones: ${uiState.workSessions.size}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        // Primary Actions
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    RumboButton(
+                        onClick = onNavigateToStartSession,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.PlayArrow, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Iniciar Sesión")
+                    }
+                    RumboButton(
+                        onClick = onNavigateToLogProgress,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.TrendingUp, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Progreso")
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    RumboOutlinedButton(
+                        onClick = onNavigateToCreateTask,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.AddTask, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Nueva Tarea")
+                    }
+                    RumboOutlinedButton(
+                        onClick = onNavigateToEditProcess,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Editar")
+                    }
+                }
+
+                // Status Management Actions (Pause / Resume / Finish / Archive)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (process.isActive) {
+                        OutlinedButton(
+                            onClick = { onEvent(ProcessDetailUiEvent.PauseProcess) },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.Pause, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Pausar")
+                        }
+                    } else if (process.status == ProcessStatus.PAUSED) {
+                        OutlinedButton(
+                            onClick = { onEvent(ProcessDetailUiEvent.ResumeProcess) },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.PlayArrow, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Reactivar")
+                        }
+                    }
+
+                    if (process.isActive || process.status == ProcessStatus.PAUSED) {
+                        OutlinedButton(
+                            onClick = { onEvent(ProcessDetailUiEvent.FinishProcess) },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.CheckCircle, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Finalizar")
+                        }
+                    }
+                }
+            }
+        }
+
+        // Section: Milestones
+        item {
+            RumboSectionHeader(title = "Hitos / Milestones")
+        }
+
+        if (uiState.milestones.isEmpty()) {
+            item {
+                Text(
+                    text = "Sin hitos definidos.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+            }
+        } else {
+            items(uiState.milestones, key = { it.id }) { milestone ->
+                RumboCard(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = milestone.isCompleted,
+                                onCheckedChange = { onEvent(ProcessDetailUiEvent.ToggleMilestoneStatus(milestone)) }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = milestone.title,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Icon(Icons.Default.Flag, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+        }
+
+        // Section: Pending Tasks
+        item {
+            RumboSectionHeader(title = "Tareas del Proceso")
+        }
+
+        if (uiState.pendingTasks.isEmpty()) {
+            item {
+                Text(
+                    text = "Sin tareas pendientes asignadas a este proceso.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+            }
+        } else {
+            items(uiState.pendingTasks, key = { it.id }) { taskItem ->
+                RumboTaskItem(
+                    task = taskItem,
+                    onToggleStatus = { onEvent(ProcessDetailUiEvent.ToggleTaskStatus(it)) },
+                    onClick = {}
+                )
+            }
+        }
+    }
+}
+
+@Preview(name = "Process Detail Light", showBackground = true)
+@Composable
+private fun ProcessDetailScreenPreviewLight() {
+    RumboTheme(darkTheme = false) {
+        ProcessDetailScreen(
+            uiState = ProcessDetailUiState.Content(
+                process = Process(
+                    id = "p1",
+                    name = "Desarrollo de Rumbo",
+                    description = "Implementar la capa de persistencia y features principales.",
+                    status = ProcessStatus.ACTIVE,
+                    createdAtEpochMillis = 1000L,
+                    colorOrVisualId = "teal",
+                    accumulatedDirectCost = 250.0,
+                    nextAction = "Escribir pruebas unitarias"
+                ),
+                pendingTasks = listOf(
+                    Task(
+                        id = "t1",
+                        processId = "p1",
+                        title = "Implementar ProcessDetailScreen",
+                        status = TaskStatus.PENDING,
+                        priority = Priority.HIGH,
+                        createdAtEpochMillis = 1000L
+                    )
+                ),
+                milestones = emptyList(),
+                workSessions = emptyList(),
+                totalTimeInvestedMillis = 3600000L * 3,
+                progressEntries = emptyList(),
+                weeklyGoal = null
+            ),
+            onEvent = {},
+            onNavigateToEditProcess = {},
+            onNavigateToCreateTask = {},
+            onNavigateToLogProgress = {},
+            onNavigateToStartSession = {}
+        )
+    }
+}
