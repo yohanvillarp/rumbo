@@ -1,34 +1,58 @@
 package tech.nikelyh.rumbo.feature.home
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.AddTask
 import androidx.compose.material.icons.filled.Assignment
-import androidx.compose.material.icons.filled.ListAlt
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import tech.nikelyh.rumbo.core.designsystem.component.MascotState
+import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboEmptyState
-import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingWheel
+import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
+import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
+import tech.nikelyh.rumbo.core.designsystem.component.RumboProcessCard
+import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
+import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
+import tech.nikelyh.rumbo.core.model.Priority
+import tech.nikelyh.rumbo.core.model.Process
+import tech.nikelyh.rumbo.core.model.ProcessStatus
+import tech.nikelyh.rumbo.core.model.Task
+import tech.nikelyh.rumbo.core.model.TaskStatus
 
 @Composable
 fun HomeRoute(
     onNavigateToProcess: (String) -> Unit,
     onNavigateToTask: (String) -> Unit,
+    onNavigateToCreateProcess: () -> Unit = {},
+    onNavigateToCreateTask: () -> Unit = {},
+    onNavigateToLogProgress: () -> Unit = {},
+    onNavigateToStartSession: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -40,6 +64,10 @@ fun HomeRoute(
             when (event) {
                 is HomeUiEvent.OnProcessClick -> onNavigateToProcess(event.processId)
                 is HomeUiEvent.OnTaskClick -> onNavigateToTask(event.taskId)
+                HomeUiEvent.OnCreateProcessClick -> onNavigateToCreateProcess()
+                HomeUiEvent.OnCreateTaskClick -> onNavigateToCreateTask()
+                HomeUiEvent.OnLogProgressClick -> onNavigateToLogProgress()
+                HomeUiEvent.OnStartSessionClick -> onNavigateToStartSession()
                 else -> viewModel.onEvent(event)
             }
         },
@@ -53,104 +81,274 @@ internal fun HomeScreen(
     onEvent: (HomeUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    when (uiState) {
+        HomeUiState.Loading -> {
+            RumboLoadingState(isLoading = true, modifier = modifier)
+        }
+        is HomeUiState.Error -> {
+            RumboEmptyState(
+                message = uiState.message,
+                modifier = modifier
+            )
+        }
+        HomeUiState.Empty -> {
+            RumboEmptyState(
+                message = "Bienvenido a Rumbo",
+                subtitle = "¿Qué te gustaría comenzar hoy?",
+                mascotState = MascotState.DEFAULT,
+                actionLabel = "Crear primer proceso",
+                onActionClick = { onEvent(HomeUiEvent.OnCreateProcessClick) },
+                modifier = modifier
+            )
+        }
+        is HomeUiState.Content -> {
+            HomeContent(
+                uiState = uiState,
+                onEvent = onEvent,
+                modifier = modifier
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeContent(
+    uiState: HomeUiState.Content,
+    onEvent: (HomeUiEvent) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "Inicio",
-            style = MaterialTheme.typography.titleLarge
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+        // Greeting Header
+        item {
+            Column {
+                Text(
+                    text = uiState.greeting,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "¿Qué debería continuar ahora?",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f)
+                )
+            }
+        }
 
-        when (uiState) {
-            HomeUiState.Loading -> RumboLoadingWheel()
-            is HomeUiState.Error -> RumboEmptyState(message = uiState.message)
-            is HomeUiState.Success -> {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+        // Section 1: Continue (Featured Active Process)
+        uiState.continueProcess?.let { process ->
+            item {
+                RumboCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onEvent(HomeUiEvent.OnProcessClick(process.id)) }
                 ) {
-                    item {
-                        RumboCard(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = "Progreso General",
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            LinearProgressIndicator(
-                                progress = { uiState.progress.progressFraction },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "${uiState.progress.completedTasksCount} de ${uiState.progress.totalTasksCount} tareas completadas",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
-
-                    item {
+                    Text(
+                        text = "Continuar Proceso",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = process.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    process.nextAction?.let { action ->
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Procesos Recientes",
-                            style = MaterialTheme.typography.titleLarge
+                            text = "Siguiente acción: $action",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
                         )
                     }
-
-                    if (uiState.recentProcesses.isEmpty()) {
-                        item {
-                            RumboEmptyState(
-                                message = "No hay procesos recientes",
-                                icon = Icons.Default.ListAlt,
-                                modifier = Modifier.height(160.dp)
-                            )
-                        }
-                    } else {
-                        items(uiState.recentProcesses, key = { it.id }) { process ->
-                            RumboCard(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = { onEvent(HomeUiEvent.OnProcessClick(process.id)) }
-                            ) {
-                                Text(text = process.name, style = MaterialTheme.typography.titleLarge)
-                                process.description?.let {
-                                    Text(text = it, style = MaterialTheme.typography.bodyLarge)
-                                }
-                            }
-                        }
-                    }
-
-                    item {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Tareas Pendientes",
-                            style = MaterialTheme.typography.titleLarge
+                    Spacer(modifier = Modifier.height(12.dp))
+                    RumboButton(
+                        onClick = { onEvent(HomeUiEvent.OnProcessClick(process.id)) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Continuar")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null
                         )
-                    }
-
-                    if (uiState.pendingTasks.isEmpty()) {
-                        item {
-                            RumboEmptyState(
-                                message = "No hay tareas pendientes",
-                                icon = Icons.Default.Assignment,
-                                modifier = Modifier.height(160.dp)
-                            )
-                        }
-                    } else {
-                        items(uiState.pendingTasks, key = { it.id }) { task ->
-                            RumboCard(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = { onEvent(HomeUiEvent.OnTaskClick(task.id)) }
-                            ) {
-                                Text(text = task.title, style = MaterialTheme.typography.titleLarge)
-                                task.description?.let {
-                                    Text(text = it, style = MaterialTheme.typography.bodyLarge)
-                                }
-                            }
-                        }
                     }
                 }
             }
         }
+
+        // Section 2: Active Processes (Max 3)
+        item {
+            RumboSectionHeader(
+                title = "Procesos Activos",
+                subtitle = "Procesos en seguimiento"
+            )
+        }
+
+        if (uiState.activeProcesses.isEmpty()) {
+            item {
+                RumboEmptyState(
+                    message = "No hay procesos activos",
+                    subtitle = "Crea un proceso para iniciar tus actividades",
+                    mascotState = MascotState.RESTING,
+                    modifier = Modifier.height(160.dp)
+                )
+            }
+        } else {
+            items(uiState.activeProcesses, key = { it.id }) { processItem ->
+                RumboProcessCard(
+                    process = processItem,
+                    onClick = { onEvent(HomeUiEvent.OnProcessClick(processItem.id)) }
+                )
+            }
+        }
+
+        // Section 3: Today Tasks
+        item {
+            RumboSectionHeader(
+                title = "Hoy",
+                subtitle = "Tareas pendientes para hoy"
+            )
+        }
+
+        if (uiState.todayTasks.isEmpty()) {
+            item {
+                RumboEmptyState(
+                    message = "Sin tareas pendientes para hoy",
+                    icon = Icons.Default.Assignment,
+                    modifier = Modifier.height(140.dp)
+                )
+            }
+        } else {
+            items(uiState.todayTasks, key = { it.id }) { taskItem ->
+                RumboTaskItem(
+                    task = taskItem,
+                    onToggleStatus = { onEvent(HomeUiEvent.OnToggleTaskStatus(it)) },
+                    onClick = { onEvent(HomeUiEvent.OnTaskClick(taskItem.id)) }
+                )
+            }
+        }
+
+        // Section 4: Quick Actions
+        item {
+            RumboSectionHeader(title = "Acciones Rápidas")
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.animateContentSize()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    RumboOutlinedButton(
+                        onClick = { onEvent(HomeUiEvent.OnCreateTaskClick) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.AddTask, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Nueva Tarea")
+                    }
+                    RumboOutlinedButton(
+                        onClick = { onEvent(HomeUiEvent.OnCreateProcessClick) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.FolderOpen, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Nuevo Proceso")
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    RumboOutlinedButton(
+                        onClick = { onEvent(HomeUiEvent.OnLogProgressClick) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.TrendingUp, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Evaluar Progreso")
+                    }
+                    RumboOutlinedButton(
+                        onClick = { onEvent(HomeUiEvent.OnStartSessionClick) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.PlayArrow, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Iniciar Sesión")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview(name = "Home Light", showBackground = true)
+@Composable
+private fun HomeScreenPreviewLight() {
+    RumboTheme(darkTheme = false) {
+        HomeScreen(
+            uiState = HomeUiState.Content(
+                greeting = "Buenos días, Yohan",
+                userName = "Yohan",
+                continueProcess = Process(
+                    id = "p1",
+                    name = "Aprender Arquitectura Modular",
+                    description = "Diseñar e implementar capas claras y desacopladas.",
+                    status = ProcessStatus.ACTIVE,
+                    createdAtEpochMillis = 1000L,
+                    colorOrVisualId = "teal",
+                    accumulatedDirectCost = 150.0,
+                    nextAction = "Implementar vista Home"
+                ),
+                activeProcesses = listOf(
+                    Process(
+                        id = "p1",
+                        name = "Aprender Arquitectura Modular",
+                        description = "Diseñar e implementar capas claras y desacopladas.",
+                        status = ProcessStatus.ACTIVE,
+                        createdAtEpochMillis = 1000L,
+                        colorOrVisualId = "teal",
+                        accumulatedDirectCost = 150.0,
+                        nextAction = "Implementar vista Home"
+                    )
+                ),
+                todayTasks = listOf(
+                    Task(
+                        id = "t1",
+                        processId = "p1",
+                        title = "Diseñar tarjetas del Design System",
+                        description = "Crear RumboProcessCard y RumboTaskItem",
+                        status = TaskStatus.PENDING,
+                        priority = Priority.HIGH,
+                        createdAtEpochMillis = 1000L,
+                        cost = 0.0
+                    )
+                )
+            ),
+            onEvent = {}
+        )
+    }
+}
+
+@Preview(name = "Home Dark", showBackground = true)
+@Composable
+private fun HomeScreenPreviewDark() {
+    RumboTheme(darkTheme = true) {
+        HomeScreen(
+            uiState = HomeUiState.Content(
+                greeting = "Buenas noches, Yohan",
+                userName = "Yohan",
+                continueProcess = null,
+                activeProcesses = emptyList(),
+                todayTasks = emptyList()
+            ),
+            onEvent = {}
+        )
     }
 }
