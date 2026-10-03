@@ -16,9 +16,12 @@ interface ProcessDao {
     @Query("SELECT * FROM processes WHERE id = :id")
     fun getProcessById(id: String): Flow<ProcessEntity?>
 
+    @Query("SELECT * FROM processes WHERE id = :id")
+    suspend fun getProcessByIdSync(id: String): ProcessEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdate(process: ProcessEntity)
 
-    @Query("DELETE FROM processes WHERE id = :id")
-    suspend fun deleteById(id: String)
+    @Query("DELETE FROM processes WHERE id = :id AND isSystemProcess = 0")
+    suspend fun deleteById(id: String): Int
 }

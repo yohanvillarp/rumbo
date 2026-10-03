@@ -8,5 +8,5 @@ interface TaskRepository {
     fun getTasksByProcessId(processId: String): Flow<List<Task>>
     fun getTaskById(id: String): Flow<Task?>
     suspend fun saveTask(task: Task)
-    suspend fun deleteTask(id: String)
+    suspend fun deleteTask(id: String): Boolean
 }
