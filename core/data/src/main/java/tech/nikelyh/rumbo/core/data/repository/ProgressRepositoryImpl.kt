@@ -12,6 +12,12 @@ class ProgressRepositoryImpl @Inject constructor(
     private val progressEntryDao: ProgressEntryDao
 ) : ProgressRepository {
 
+    override fun getAllProgressEntries(): Flow<List<ProgressEntry>> {
+        return progressEntryDao.getAllProgressEntries().map { entities ->
+            entities.map { it.asExternalModel() }
+        }
+    }
+
     override fun getProgressEntriesByProcessId(processId: String): Flow<List<ProgressEntry>> {
         return progressEntryDao.getProgressEntriesByProcessId(processId).map { entities ->
             entities.map { it.asExternalModel() }

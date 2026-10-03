@@ -10,6 +10,9 @@ import tech.nikelyh.rumbo.core.database.model.WorkSessionEntity
 @Dao
 interface WorkSessionDao {
 
+    @Query("SELECT * FROM work_sessions")
+    fun getAllWorkSessions(): Flow<List<WorkSessionEntity>>
+
     @Query("SELECT * FROM work_sessions WHERE processId = :processId")
     fun getWorkSessionsByProcessId(processId: String): Flow<List<WorkSessionEntity>>
 

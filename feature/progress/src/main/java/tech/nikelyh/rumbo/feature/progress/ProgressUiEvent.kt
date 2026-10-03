@@ -1,5 +1,6 @@
 package tech.nikelyh.rumbo.feature.progress
 
 sealed interface ProgressUiEvent {
-    data object Refresh : ProgressUiEvent
+    data class TabSelected(val tab: AnalyticsTab) : ProgressUiEvent
+    data class TimeframeSelected(val timeframe: TimeframeFilter) : ProgressUiEvent
 }

@@ -10,6 +10,9 @@ import tech.nikelyh.rumbo.core.database.model.ProgressEntryEntity
 @Dao
 interface ProgressEntryDao {
 
+    @Query("SELECT * FROM progress_entries ORDER BY dateEpochMillis DESC")
+    fun getAllProgressEntries(): Flow<List<ProgressEntryEntity>>
+
     @Query("SELECT * FROM progress_entries WHERE processId = :processId ORDER BY dateEpochMillis DESC")
     fun getProgressEntriesByProcessId(processId: String): Flow<List<ProgressEntryEntity>>
 
