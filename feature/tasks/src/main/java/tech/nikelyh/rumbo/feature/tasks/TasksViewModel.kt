@@ -9,26 +9,62 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import tech.nikelyh.rumbo.core.data.repository.ProcessRepository
 import tech.nikelyh.rumbo.core.data.repository.TaskRepository
+import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
 import javax.inject.Inject
 
 @HiltViewModel
 class TasksViewModel @Inject constructor(
-    private val taskRepository: TaskRepository
+    private val taskRepository: TaskRepository,
+    processRepository: ProcessRepository
 ) : ViewModel() {
 
-    private val selectedFilter = MutableStateFlow<TaskStatus?>(null)
+    private val selectedFilter = MutableStateFlow(TaskFilter.PENDING)
+    private val selectedProcessId = MutableStateFlow<String?>(null)
+    private val searchQuery = MutableStateFlow("")
 
     val uiState: StateFlow<TasksUiState> = combine(
         taskRepository.getAllTasks(),
-        selectedFilter
-    ) { tasks, filter ->
-        val filtered = if (filter == null) tasks else tasks.filter { it.status == filter }
-        TasksUiState.Success(
-            tasks = filtered,
-            filterStatus = filter
-        )
+        processRepository.getProcesses(),
+        selectedFilter,
+        selectedProcessId,
+        searchQuery
+    ) { tasks, processes, filter, processId, query ->
+        var filtered = tasks
+
+        // Filter by process
+        if (processId != null) {
+            filtered = filtered.filter { it.processId == processId }
+        }
+
+        // Filter by tab
+        filtered = when (filter) {
+            TaskFilter.PENDING -> filtered.filter { !it.isCompleted }
+            TaskFilter.TODAY -> filtered.filter { !it.isCompleted }
+            TaskFilter.COMPLETED -> filtered.filter { it.isCompleted }
+        }
+
+        // Filter by search query
+        if (query.isNotBlank()) {
+            filtered = filtered.filter {
+                it.title.contains(query, ignoreCase = true) ||
+                    (it.description?.contains(query, ignoreCase = true) == true)
+            }
+        }
+
+        if (tasks.isEmpty()) {
+            TasksUiState.Empty
+        } else {
+            TasksUiState.Content(
+                tasks = filtered,
+                availableProcesses = processes,
+                selectedFilter = filter,
+                selectedProcessId = processId,
+                searchQuery = query
+            )
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -37,23 +73,19 @@ class TasksViewModel @Inject constructor(
 
     fun onEvent(event: TasksUiEvent) {
         when (event) {
-            is TasksUiEvent.FilterByStatus -> selectedFilter.value = event.status
-            is TasksUiEvent.ToggleTaskStatus -> {
-                viewModelScope.launch {
-                    val nextStatus = if (event.task.status == TaskStatus.COMPLETED) {
-                        TaskStatus.PENDING
-                    } else {
-                        TaskStatus.COMPLETED
-                    }
-                    taskRepository.saveTask(event.task.copy(status = nextStatus))
-                }
-            }
-            is TasksUiEvent.DeleteTask -> {
-                viewModelScope.launch {
-                    taskRepository.deleteTask(event.taskId)
-                }
-            }
-            is TasksUiEvent.TaskSelected -> { /* Handle task click */ }
+            is TasksUiEvent.FilterChanged -> selectedFilter.value = event.filter
+            is TasksUiEvent.ProcessFilterChanged -> selectedProcessId.value = event.processId
+            is TasksUiEvent.SearchQueryChanged -> searchQuery.value = event.query
+            is TasksUiEvent.ToggleTaskStatus -> toggleTaskStatus(event.task)
+            else -> { /* Navigation handled at Screen route level */ }
+        }
+    }
+
+    private fun toggleTaskStatus(task: Task) {
+        viewModelScope.launch {
+            val newStatus = if (task.isCompleted) TaskStatus.PENDING else TaskStatus.COMPLETED
+            val updatedTask = task.updateStatus(newStatus)
+            taskRepository.saveTask(updatedTask)
         }
     }
 }
