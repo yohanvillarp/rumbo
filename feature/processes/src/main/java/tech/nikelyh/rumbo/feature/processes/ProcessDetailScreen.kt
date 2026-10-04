@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -58,6 +59,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import tech.nikelyh.rumbo.core.designsystem.component.CelebrationCinematicDialog
 import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboProcessCard
@@ -66,6 +68,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionCelebration
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
@@ -152,13 +155,16 @@ private fun ProcessDetailContent(
 ) {
     val process = uiState.process
     var taskToCompleteWithDuration by remember { mutableStateOf<Task?>(null) }
+    var showProcessCelebration by remember { mutableStateOf(false) }
+    var celebratingTaskTitle by remember { mutableStateOf<String?>(null) }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         // Header
         item {
             RumboCard(modifier = Modifier.fillMaxWidth()) {
@@ -415,7 +421,12 @@ private fun ProcessDetailContent(
 
                         if (process.isActive || process.status == ProcessStatus.PAUSED) {
                             OutlinedButton(
-                                onClick = { onEvent(ProcessDetailUiEvent.FinishProcess) },
+                                onClick = {
+                                    if (uiState.completionBlockedReason == null && !process.isSystem) {
+                                        showProcessCelebration = true
+                                    }
+                                    onEvent(ProcessDetailUiEvent.FinishProcess)
+                                },
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Icon(Icons.Default.CheckCircle, contentDescription = null)
@@ -571,12 +582,38 @@ private fun ProcessDetailContent(
             initialMinutes = if (sessionMinutes > 0L) sessionMinutes else 0L,
             minMinutes = minMinutes,
             onConfirm = { minutes ->
+                celebratingTaskTitle = task.title
                 onEvent(ProcessDetailUiEvent.CompleteTaskWithDuration(task, minutes))
                 taskToCompleteWithDuration = null
             },
             onDismiss = { taskToCompleteWithDuration = null }
         )
     }
+
+    if (showProcessCelebration) {
+        val timeHours = uiState.totalTimeInvestedMillis / (1000 * 60 * 60)
+        val timeMinutes = (uiState.totalTimeInvestedMillis / (1000 * 60)) % 60
+        val timeStr = if (timeHours > 0) "${timeHours}h ${timeMinutes}m" else "${timeMinutes}m"
+        val costStr = "S/ ${"%.2f".format(java.util.Locale.US, process.accumulatedDirectCost)}"
+
+        CelebrationCinematicDialog(
+            title = "¡Proceso Culminado!",
+            subtitle = "Has conquistado este gran hito en tu rumbo.",
+            processName = process.name,
+            totalTimeFormatted = timeStr,
+            totalCostFormatted = costStr,
+            completedTasksCount = uiState.completedTasks.size,
+            onDismiss = { showProcessCelebration = false }
+        )
+    }
+
+    if (celebratingTaskTitle != null) {
+        TaskCompletionCelebration(
+            taskTitle = celebratingTaskTitle!!,
+            onDismiss = { celebratingTaskTitle = null }
+        )
+    }
+}
 }
 
 /**

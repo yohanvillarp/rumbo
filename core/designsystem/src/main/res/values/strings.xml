@@ -24,4 +24,8 @@
     <string name="process_action_unstar">Quitar de destacados</string>
     <string name="processes_star_limit_warning">Solo es posible destacar hasta 3 procesos</string>
     <string name="home_view_all_processes">Ver todos los procesos</string>
+    <string name="celebration_process_completed_title">¡Proceso Culminado!</string>
+    <string name="celebration_process_completed_subtitle">Has conquistado este gran hito en tu rumbo.</string>
+    <string name="celebration_task_completed_title">¡Tarea completada! 🎉</string>
+    <string name="celebration_continue_action">Continuar Rumbo</string>
 </resources>

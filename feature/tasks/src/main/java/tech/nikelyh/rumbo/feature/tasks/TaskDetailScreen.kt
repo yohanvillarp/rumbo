@@ -1,6 +1,7 @@
 package tech.nikelyh.rumbo.feature.tasks
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,6 +39,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboEmptyState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionCelebration
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Task
@@ -99,16 +101,19 @@ internal fun TaskDetailScreen(
             RumboEmptyState(message = uiState.message, modifier = modifier)
         }
         is TaskDetailUiState.Content -> {
-            Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                RumboSectionHeader(title = "Detalle de Tarea")
+            var showCelebration by remember { mutableStateOf(false) }
+            val task = uiState.task
 
-                val task = uiState.task
-                val statusSpanish = when (task.status) {
+            Box(modifier = modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    RumboSectionHeader(title = "Detalle de Tarea")
+
+                    val statusSpanish = when (task.status) {
                     TaskStatus.PENDING -> "Pendiente"
                     TaskStatus.IN_PROGRESS -> "En progreso"
                     TaskStatus.COMPLETED -> "Completada"
@@ -278,6 +283,7 @@ internal fun TaskDetailScreen(
                         initialMinutes = if (sessionMinutes > 0L) sessionMinutes else 0L,
                         minMinutes = minMinutes,
                         onConfirm = { minutes ->
+                            showCelebration = true
                             onEvent(TaskDetailUiEvent.CompleteWithDuration(minutes))
                             showCompletionDialog = false
                         },
@@ -308,8 +314,16 @@ internal fun TaskDetailScreen(
                     )
                 }
             }
+
+            if (showCelebration) {
+                TaskCompletionCelebration(
+                    taskTitle = task.title,
+                    onDismiss = { showCelebration = false }
+                )
+            }
         }
     }
+}
 }
 
 @Preview(name = "Task Detail Light", showBackground = true)

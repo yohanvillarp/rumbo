@@ -55,6 +55,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboProcessCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionCelebration
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
@@ -160,6 +161,7 @@ private fun HomeContent(
     modifier: Modifier = Modifier
 ) {
     var taskToCompleteWithDuration by remember { mutableStateOf<Task?>(null) }
+    var celebratingTaskTitle by remember { mutableStateOf<String?>(null) }
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
@@ -269,10 +271,18 @@ private fun HomeContent(
                 initialMinutes = if (sessionMinutes > 0L) sessionMinutes else 0L,
                 minMinutes = minMinutes,
                 onConfirm = { minutes ->
+                    celebratingTaskTitle = task.title
                     onEvent(HomeUiEvent.CompleteTaskWithDuration(task, minutes))
                     taskToCompleteWithDuration = null
                 },
                 onDismiss = { taskToCompleteWithDuration = null }
+            )
+        }
+
+        if (celebratingTaskTitle != null) {
+            TaskCompletionCelebration(
+                taskTitle = celebratingTaskTitle!!,
+                onDismiss = { celebratingTaskTitle = null }
             )
         }
     }
