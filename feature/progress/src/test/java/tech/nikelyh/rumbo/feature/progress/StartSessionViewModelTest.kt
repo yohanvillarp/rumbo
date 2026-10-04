@@ -41,8 +41,8 @@ class StartSessionViewModelTest {
             savedStateHandle,
             workSessionRepository,
             progressRepository,
-            processRepository,
-            taskRepository
+            taskRepository,
+            processRepository
         )
     }
 

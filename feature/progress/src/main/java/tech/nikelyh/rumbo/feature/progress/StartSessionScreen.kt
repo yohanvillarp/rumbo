@@ -11,25 +11,34 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
@@ -67,17 +76,19 @@ internal fun StartSessionScreen(
     onEvent: (StartSessionUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var manualMinutesText by remember { mutableStateOf("") }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         RumboSectionHeader(
             title = "Sesión de Trabajo",
-            subtitle = "Sigue tu tiempo de concentración de forma serena y sin interrupciones."
+            subtitle = if (uiState.selectedTaskTitle.isNotBlank()) "Tarea: ${uiState.selectedTaskTitle}" else "Sigue tu tiempo de concentración de forma serena."
         )
 
         // Process Selection
@@ -104,25 +115,27 @@ internal fun StartSessionScreen(
             }
         }
 
-        // Timer Display Card
+        // Prominent Full-Screen Timer Display Card
         RumboCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)
+                .padding(vertical = 12.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp)
             ) {
                 Text(
                     text = formatMillis(uiState.elapsedTimeMillis),
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontSize = MaterialTheme.typography.titleLarge.fontSize * 1.8f
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontSize = 54.sp
                     ),
                     color = MaterialTheme.colorScheme.primary
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -145,6 +158,16 @@ internal fun StartSessionScreen(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Finalizar")
                     }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextButton(
+                    onClick = { onEvent(StartSessionUiEvent.ForgotTimerClicked) }
+                ) {
+                    Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Olvidé detenerlo", color = MaterialTheme.colorScheme.secondary)
                 }
             }
         }
@@ -206,6 +229,43 @@ internal fun StartSessionScreen(
                 }
             }
         }
+    }
+
+    // Dialog for "Olvidé detenerlo"
+    if (uiState.showForgotTimerDialog) {
+        AlertDialog(
+            onDismissRequest = { onEvent(StartSessionUiEvent.DismissForgotTimerDialog) },
+            title = { Text("Ajustar Tiempo Invertido") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Introduce la cantidad de minutos reales que trabajaste en esta sesión:")
+                    OutlinedTextField(
+                        value = manualMinutesText,
+                        onValueChange = { input -> if (input.all { it.isDigit() }) manualMinutesText = input },
+                        label = { Text("Minutos estimados") },
+                        placeholder = { Text("Ej. 45") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (manualMinutesText.isNotBlank()) {
+                            onEvent(StartSessionUiEvent.ConfirmManualMinutes(manualMinutesText))
+                        }
+                    }
+                ) {
+                    Text("Confirmar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onEvent(StartSessionUiEvent.DismissForgotTimerDialog) }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 

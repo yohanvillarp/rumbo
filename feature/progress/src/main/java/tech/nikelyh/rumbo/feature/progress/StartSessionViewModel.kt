@@ -26,8 +26,8 @@ class StartSessionViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val workSessionRepository: WorkSessionRepository,
     private val progressRepository: ProgressRepository,
-    processRepository: ProcessRepository,
-    taskRepository: TaskRepository
+    private val taskRepository: TaskRepository,
+    processRepository: ProcessRepository
 ) : ViewModel() {
 
     private val initialProcessId = savedStateHandle.get<String>("processId") ?: Process.GENERAL_PROCESS_ID
@@ -43,6 +43,8 @@ class StartSessionViewModel @Inject constructor(
 
     private var timerJob: Job? = null
     private var sessionStartTimeEpochMillis: Long = System.currentTimeMillis()
+    private var lastResumeEpochMillis: Long = System.currentTimeMillis()
+    private var accumulatedTimeMillis: Long = 0L
 
     init {
         viewModelScope.launch {
@@ -52,7 +54,13 @@ class StartSessionViewModel @Inject constructor(
         }
         viewModelScope.launch {
             taskRepository.getAllTasks().collect { tasks ->
-                _uiState.update { it.copy(availableTasks = tasks) }
+                _uiState.update { current ->
+                    val selectedTask = tasks.firstOrNull { it.id == current.selectedTaskId }
+                    current.copy(
+                        availableTasks = tasks,
+                        selectedTaskTitle = selectedTask?.title ?: ""
+                    )
+                }
             }
         }
         startTimer()
@@ -64,7 +72,14 @@ class StartSessionViewModel @Inject constructor(
                 _uiState.update { it.copy(selectedProcessId = event.processId) }
             }
             is StartSessionUiEvent.TaskSelected -> {
-                _uiState.update { it.copy(selectedTaskId = event.taskId) }
+                _uiState.update { current ->
+                    val task = current.availableTasks.firstOrNull { t -> t.id == event.taskId }
+                    current.copy(
+                        selectedTaskId = event.taskId,
+                        selectedTaskTitle = task?.title ?: "",
+                        selectedProcessId = task?.processId ?: current.selectedProcessId
+                    )
+                }
             }
             StartSessionUiEvent.ToggleTimer -> {
                 if (_uiState.value.isTimerRunning) {
@@ -76,6 +91,26 @@ class StartSessionViewModel @Inject constructor(
             StartSessionUiEvent.FinishTimer -> {
                 pauseTimer()
                 _uiState.update { it.copy(isSessionFinished = true) }
+            }
+            StartSessionUiEvent.ForgotTimerClicked -> {
+                pauseTimer()
+                _uiState.update { it.copy(showForgotTimerDialog = true) }
+            }
+            StartSessionUiEvent.DismissForgotTimerDialog -> {
+                _uiState.update { it.copy(showForgotTimerDialog = false) }
+            }
+            is StartSessionUiEvent.ConfirmManualMinutes -> {
+                val parsedMinutes = event.minutesInput.trim().toLongOrNull() ?: 0L
+                val manualMillis = parsedMinutes * 60 * 1000L
+                accumulatedTimeMillis = manualMillis
+                lastResumeEpochMillis = System.currentTimeMillis()
+                _uiState.update {
+                    it.copy(
+                        elapsedTimeMillis = manualMillis,
+                        showForgotTimerDialog = false,
+                        isSessionFinished = true
+                    )
+                }
             }
             is StartSessionUiEvent.NoteChanged -> {
                 _uiState.update { it.copy(sessionNote = event.note) }
@@ -94,17 +129,23 @@ class StartSessionViewModel @Inject constructor(
 
     private fun startTimer() {
         if (_uiState.value.isTimerRunning) return
+        lastResumeEpochMillis = System.currentTimeMillis()
         _uiState.update { it.copy(isTimerRunning = true) }
+
         timerJob = viewModelScope.launch {
             while (_uiState.value.isTimerRunning) {
+                val currentElapsed = accumulatedTimeMillis + (System.currentTimeMillis() - lastResumeEpochMillis)
+                _uiState.update { it.copy(elapsedTimeMillis = currentElapsed) }
                 delay(1000L)
-                _uiState.update { it.copy(elapsedTimeMillis = it.elapsedTimeMillis + 1000L) }
             }
         }
     }
 
     private fun pauseTimer() {
-        _uiState.update { it.copy(isTimerRunning = false) }
+        if (_uiState.value.isTimerRunning) {
+            accumulatedTimeMillis += (System.currentTimeMillis() - lastResumeEpochMillis)
+        }
+        _uiState.update { it.copy(isTimerRunning = false, elapsedTimeMillis = accumulatedTimeMillis) }
         timerJob?.cancel()
         timerJob = null
     }
@@ -127,6 +168,16 @@ class StartSessionViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true) }
             workSessionRepository.saveWorkSession(session)
+
+            // Accumulate worked time directly to the task
+            current.selectedTaskId?.let { taskId ->
+                val targetTask = taskRepository.getTaskById(taskId)
+                targetTask.collect { task ->
+                    if (task != null) {
+                        taskRepository.saveTask(task.addWorkedTime(durationMillis))
+                    }
+                }
+            }
 
             if (current.saveProgressEntry) {
                 val progressEntry = ProgressEntry(

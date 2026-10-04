@@ -16,5 +16,6 @@ data class TaskEntity(
     val dueDateEpochMillis: Long?,
     val estimatedDurationMinutes: Int?,
     val cost: Double,
-    val finishedAtEpochMillis: Long?
+    val finishedAtEpochMillis: Long?,
+    val timeWorkedMillis: Long = 0L
 )
