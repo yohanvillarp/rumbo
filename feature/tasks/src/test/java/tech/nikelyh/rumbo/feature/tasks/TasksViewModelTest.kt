@@ -16,10 +16,12 @@ import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
 import tech.nikelyh.rumbo.feature.tasks.fakes.FakeProcessRepository
 import tech.nikelyh.rumbo.feature.tasks.fakes.FakeTaskRepository
+import tech.nikelyh.rumbo.feature.tasks.fakes.FakeWorkSessionRepository
 
 class TasksViewModelTest {
 
     private lateinit var taskRepository: FakeTaskRepository
+    private lateinit var workSessionRepository: FakeWorkSessionRepository
     private lateinit var processRepository: FakeProcessRepository
     private lateinit var viewModel: TasksViewModel
     private val testDispatcher: TestDispatcher = UnconfinedTestDispatcher()
@@ -28,8 +30,9 @@ class TasksViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         taskRepository = FakeTaskRepository()
+        workSessionRepository = FakeWorkSessionRepository()
         processRepository = FakeProcessRepository()
-        viewModel = TasksViewModel(taskRepository, processRepository)
+        viewModel = TasksViewModel(taskRepository, workSessionRepository, processRepository)
     }
 
     @After

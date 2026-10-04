@@ -22,6 +22,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +36,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboEmptyState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Task
@@ -43,6 +47,7 @@ fun TasksRoute(
     onTaskClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     onNavigateToCreateTask: () -> Unit = {},
+    onStartSession: (String, String) -> Unit = { _, _ -> },
     viewModel: TasksViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -56,6 +61,7 @@ fun TasksRoute(
             }
         },
         onCreateTaskClick = onNavigateToCreateTask,
+        onStartSession = onStartSession,
         modifier = modifier
     )
 }
@@ -65,6 +71,7 @@ internal fun TasksScreen(
     uiState: TasksUiState,
     onEvent: (TasksUiEvent) -> Unit,
     onCreateTaskClick: () -> Unit,
+    onStartSession: (String, String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     when (uiState) {
@@ -89,6 +96,7 @@ internal fun TasksScreen(
                 uiState = uiState,
                 onEvent = onEvent,
                 onCreateTaskClick = onCreateTaskClick,
+                onStartSession = onStartSession,
                 modifier = modifier
             )
         }
@@ -100,8 +108,10 @@ private fun TasksContent(
     uiState: TasksUiState.Content,
     onEvent: (TasksUiEvent) -> Unit,
     onCreateTaskClick: () -> Unit,
+    onStartSession: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var taskToCompleteWithDuration by remember { mutableStateOf<Task?>(null) }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -167,11 +177,29 @@ private fun TasksContent(
                 items(uiState.tasks, key = { it.id }) { taskItem ->
                     RumboTaskItem(
                         task = taskItem,
-                        onToggleStatus = { onEvent(TasksUiEvent.ToggleTaskStatus(it)) },
-                        onClick = { onEvent(TasksUiEvent.OnTaskSelected(taskItem.id)) }
+                        onToggleStatus = { task ->
+                            if (!task.isCompleted && task.timeWorkedMillis == 0L) {
+                                taskToCompleteWithDuration = task
+                            } else {
+                                onEvent(TasksUiEvent.ToggleTaskStatus(task))
+                            }
+                        },
+                        onClick = { onEvent(TasksUiEvent.OnTaskSelected(taskItem.id)) },
+                        onStartSession = { task -> onStartSession(task.id, task.processId) }
                     )
                 }
             }
+        }
+
+        if (taskToCompleteWithDuration != null) {
+            TaskCompletionDurationDialog(
+                taskTitle = taskToCompleteWithDuration!!.title,
+                onConfirm = { minutes ->
+                    onEvent(TasksUiEvent.CompleteTaskWithDuration(taskToCompleteWithDuration!!, minutes))
+                    taskToCompleteWithDuration = null
+                },
+                onDismiss = { taskToCompleteWithDuration = null }
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))

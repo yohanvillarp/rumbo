@@ -10,6 +10,7 @@ sealed interface ProcessDetailUiEvent {
     data object ArchiveProcess : ProcessDetailUiEvent
     data object DismissUserMessage : ProcessDetailUiEvent
     data class ToggleTaskStatus(val task: Task) : ProcessDetailUiEvent
+    data class CompleteTaskWithDuration(val task: Task, val durationMinutes: Long) : ProcessDetailUiEvent
     data class ToggleMilestoneStatus(val milestone: Milestone) : ProcessDetailUiEvent
     data class SaveWeeklyGoal(val description: String) : ProcessDetailUiEvent
     data class CompleteWeeklyGoal(val goalId: String) : ProcessDetailUiEvent

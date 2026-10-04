@@ -17,7 +17,7 @@ fun NavGraphBuilder.homeScreen(
     onNavigateToCreateProcess: () -> Unit,
     onNavigateToCreateTask: () -> Unit,
     onNavigateToLogProgress: () -> Unit,
-    onNavigateToStartSession: () -> Unit
+    onNavigateToStartSession: (String?, String?) -> Unit
 ) {
     composable(route = HomeDestination.route) {
         HomeRoute(

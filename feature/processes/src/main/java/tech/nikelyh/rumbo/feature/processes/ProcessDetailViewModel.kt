@@ -35,7 +35,7 @@ class ProcessDetailViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
     private val milestoneRepository: MilestoneRepository,
     private val weeklyGoalRepository: WeeklyGoalRepository,
-    workSessionRepository: WorkSessionRepository,
+    private val workSessionRepository: WorkSessionRepository,
     progressRepository: ProgressRepository
 ) : ViewModel() {
 
@@ -130,6 +130,24 @@ class ProcessDetailViewModel @Inject constructor(
                     val updatedTask = event.task.updateStatus(
                         if (event.task.isCompleted) tech.nikelyh.rumbo.core.model.TaskStatus.PENDING else tech.nikelyh.rumbo.core.model.TaskStatus.COMPLETED
                     )
+                    taskRepository.saveTask(updatedTask)
+                }
+            }
+            is ProcessDetailUiEvent.CompleteTaskWithDuration -> {
+                viewModelScope.launch {
+                    val durationMillis = event.durationMinutes * 60 * 1000L
+                    val now = System.currentTimeMillis()
+                    val session = WorkSession(
+                        id = UUID.randomUUID().toString(),
+                        processId = event.task.processId,
+                        taskId = event.task.id,
+                        startTimeEpochMillis = now - durationMillis,
+                        endTimeEpochMillis = now,
+                        durationMillis = durationMillis,
+                        note = "Duración registrada al culminar tarea"
+                    )
+                    workSessionRepository.saveWorkSession(session)
+                    val updatedTask = event.task.addWorkedTime(durationMillis).updateStatus(tech.nikelyh.rumbo.core.model.TaskStatus.COMPLETED, finishedAt = now)
                     taskRepository.saveTask(updatedTask)
                 }
             }

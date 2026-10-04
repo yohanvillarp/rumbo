@@ -34,7 +34,7 @@ fun NavGraphBuilder.processesScreen(
     onNavigateToCreateProcess: () -> Unit,
     onNavigateToCreateTask: (String) -> Unit,
     onNavigateToLogProgress: (String) -> Unit,
-    onNavigateToStartSession: (String) -> Unit,
+    onNavigateToStartSession: (String, String?) -> Unit,
     onNavigateToEditProcess: (String) -> Unit,
     onNavigateToTask: (String) -> Unit,
     onProcessCreated: () -> Unit,

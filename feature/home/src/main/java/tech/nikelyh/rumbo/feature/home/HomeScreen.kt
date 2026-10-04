@@ -2,6 +2,7 @@ package tech.nikelyh.rumbo.feature.home
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +25,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,6 +42,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboProcessCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Process
@@ -52,7 +57,7 @@ fun HomeRoute(
     onNavigateToCreateProcess: () -> Unit = {},
     onNavigateToCreateTask: () -> Unit = {},
     onNavigateToLogProgress: () -> Unit = {},
-    onNavigateToStartSession: () -> Unit = {},
+    onNavigateToStartSession: (String?, String?) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -67,10 +72,11 @@ fun HomeRoute(
                 HomeUiEvent.OnCreateProcessClick -> onNavigateToCreateProcess()
                 HomeUiEvent.OnCreateTaskClick -> onNavigateToCreateTask()
                 HomeUiEvent.OnLogProgressClick -> onNavigateToLogProgress()
-                HomeUiEvent.OnStartSessionClick -> onNavigateToStartSession()
+                HomeUiEvent.OnStartSessionClick -> onNavigateToStartSession(null, null)
                 else -> viewModel.onEvent(event)
             }
         },
+        onNavigateToStartSession = onNavigateToStartSession,
         modifier = modifier
     )
 }
@@ -79,6 +85,7 @@ fun HomeRoute(
 internal fun HomeScreen(
     uiState: HomeUiState,
     onEvent: (HomeUiEvent) -> Unit,
+    onNavigateToStartSession: (String?, String?) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     when (uiState) {
@@ -105,6 +112,7 @@ internal fun HomeScreen(
             HomeContent(
                 uiState = uiState,
                 onEvent = onEvent,
+                onNavigateToStartSession = onNavigateToStartSession,
                 modifier = modifier
             )
         }
@@ -115,14 +123,17 @@ internal fun HomeScreen(
 private fun HomeContent(
     uiState: HomeUiState.Content,
     onEvent: (HomeUiEvent) -> Unit,
+    onNavigateToStartSession: (String?, String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    var taskToCompleteWithDuration by remember { mutableStateOf<Task?>(null) }
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         // Greeting Header
         item {
             Column {
@@ -228,8 +239,15 @@ private fun HomeContent(
             items(uiState.todayTasks, key = { it.id }) { taskItem ->
                 RumboTaskItem(
                     task = taskItem,
-                    onToggleStatus = { onEvent(HomeUiEvent.OnToggleTaskStatus(it)) },
-                    onClick = { onEvent(HomeUiEvent.OnTaskClick(taskItem.id)) }
+                    onToggleStatus = { task ->
+                        if (!task.isCompleted && task.timeWorkedMillis == 0L) {
+                            taskToCompleteWithDuration = task
+                        } else {
+                            onEvent(HomeUiEvent.OnToggleTaskStatus(task))
+                        }
+                    },
+                    onClick = { onEvent(HomeUiEvent.OnTaskClick(taskItem.id)) },
+                    onStartSession = { task -> onNavigateToStartSession(task.processId, task.id) }
                 )
             }
         }
@@ -286,6 +304,18 @@ private fun HomeContent(
             }
         }
     }
+
+    if (taskToCompleteWithDuration != null) {
+        TaskCompletionDurationDialog(
+            taskTitle = taskToCompleteWithDuration!!.title,
+            onConfirm = { minutes ->
+                onEvent(HomeUiEvent.CompleteTaskWithDuration(taskToCompleteWithDuration!!, minutes))
+                taskToCompleteWithDuration = null
+            },
+            onDismiss = { taskToCompleteWithDuration = null }
+        )
+    }
+}
 }
 
 @Preview(name = "Home Light", showBackground = true)

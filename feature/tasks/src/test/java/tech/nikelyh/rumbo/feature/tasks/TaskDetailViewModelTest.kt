@@ -22,11 +22,13 @@ import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
 import tech.nikelyh.rumbo.feature.tasks.fakes.FakeProcessRepository
 import tech.nikelyh.rumbo.feature.tasks.fakes.FakeTaskRepository
+import tech.nikelyh.rumbo.feature.tasks.fakes.FakeWorkSessionRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TaskDetailViewModelTest {
 
     private lateinit var taskRepository: FakeTaskRepository
+    private lateinit var workSessionRepository: FakeWorkSessionRepository
     private lateinit var processRepository: FakeProcessRepository
     private lateinit var viewModel: TaskDetailViewModel
     private val testDispatcher: TestDispatcher = UnconfinedTestDispatcher()
@@ -43,12 +45,13 @@ class TaskDetailViewModelTest {
     fun setUp() = runBlocking {
         Dispatchers.setMain(testDispatcher)
         taskRepository = FakeTaskRepository()
+        workSessionRepository = FakeWorkSessionRepository()
         processRepository = FakeProcessRepository()
 
         taskRepository.saveTask(testTask)
 
         val savedStateHandle = SavedStateHandle(mapOf("taskId" to "t100"))
-        viewModel = TaskDetailViewModel(savedStateHandle, taskRepository, processRepository)
+        viewModel = TaskDetailViewModel(savedStateHandle, taskRepository, workSessionRepository, processRepository)
     }
 
     @After
@@ -93,6 +96,25 @@ class TaskDetailViewModelTest {
 
         val deleted = taskRepository.getTaskById("t100").first()
         assertNull(deleted)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `completing task with duration creates work session and updates task`() = runBlocking {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is TaskDetailUiState.Content }
+
+        viewModel.onEvent(TaskDetailUiEvent.CompleteWithDuration(45))
+
+        val updated = taskRepository.getTaskById("t100").first()
+        assertNotNull(updated)
+        assertEquals(TaskStatus.COMPLETED, updated?.status)
+        assertEquals(45 * 60 * 1000L, updated?.timeWorkedMillis)
+
+        val sessions = workSessionRepository.getWorkSessionsByTaskId("t100").first()
+        assertEquals(1, sessions.size)
+        assertEquals(45 * 60 * 1000L, sessions.first().durationMillis)
 
         collectJob.cancel()
     }

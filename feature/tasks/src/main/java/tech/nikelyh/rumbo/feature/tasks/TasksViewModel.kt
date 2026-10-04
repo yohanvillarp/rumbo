@@ -11,13 +11,17 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import tech.nikelyh.rumbo.core.data.repository.ProcessRepository
 import tech.nikelyh.rumbo.core.data.repository.TaskRepository
+import tech.nikelyh.rumbo.core.data.repository.WorkSessionRepository
 import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
+import tech.nikelyh.rumbo.core.model.WorkSession
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class TasksViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
+    private val workSessionRepository: WorkSessionRepository,
     processRepository: ProcessRepository
 ) : ViewModel() {
 
@@ -77,6 +81,7 @@ class TasksViewModel @Inject constructor(
             is TasksUiEvent.ProcessFilterChanged -> selectedProcessId.value = event.processId
             is TasksUiEvent.SearchQueryChanged -> searchQuery.value = event.query
             is TasksUiEvent.ToggleTaskStatus -> toggleTaskStatus(event.task)
+            is TasksUiEvent.CompleteTaskWithDuration -> completeTaskWithDuration(event.task, event.durationMinutes)
             else -> { /* Navigation handled at Screen route level */ }
         }
     }
@@ -85,6 +90,25 @@ class TasksViewModel @Inject constructor(
         viewModelScope.launch {
             val newStatus = if (task.isCompleted) TaskStatus.PENDING else TaskStatus.COMPLETED
             val updatedTask = task.updateStatus(newStatus)
+            taskRepository.saveTask(updatedTask)
+        }
+    }
+
+    private fun completeTaskWithDuration(task: Task, durationMinutes: Long) {
+        viewModelScope.launch {
+            val durationMillis = durationMinutes * 60 * 1000L
+            val now = System.currentTimeMillis()
+            val session = WorkSession(
+                id = UUID.randomUUID().toString(),
+                processId = task.processId,
+                taskId = task.id,
+                startTimeEpochMillis = now - durationMillis,
+                endTimeEpochMillis = now,
+                durationMillis = durationMillis,
+                note = "Duración registrada al culminar tarea"
+            )
+            workSessionRepository.saveWorkSession(session)
+            val updatedTask = task.addWorkedTime(durationMillis).updateStatus(TaskStatus.COMPLETED, finishedAt = now)
             taskRepository.saveTask(updatedTask)
         }
     }

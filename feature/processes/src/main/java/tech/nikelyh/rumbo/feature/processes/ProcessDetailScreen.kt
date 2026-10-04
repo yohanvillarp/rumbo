@@ -48,6 +48,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Process
@@ -60,9 +61,9 @@ import tech.nikelyh.rumbo.core.model.WeeklyGoal
 fun ProcessDetailRoute(
     onNavigateToEditProcess: (String) -> Unit,
     onNavigateToCreateTask: (String) -> Unit,
-    onNavigateToLogProgress: (String) -> Unit,
-    onNavigateToStartSession: (String) -> Unit,
+    onNavigateToStartSession: (String, String?) -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateToLogProgress: ((String) -> Unit)? = null,
     onNavigateToTask: (String) -> Unit = {},
     viewModel: ProcessDetailViewModel = hiltViewModel()
 ) {
@@ -73,8 +74,7 @@ fun ProcessDetailRoute(
         onEvent = viewModel::onEvent,
         onNavigateToEditProcess = { onNavigateToEditProcess(viewModel.processId) },
         onNavigateToCreateTask = { onNavigateToCreateTask(viewModel.processId) },
-        onNavigateToLogProgress = { onNavigateToLogProgress(viewModel.processId) },
-        onNavigateToStartSession = { onNavigateToStartSession(viewModel.processId) },
+        onNavigateToStartSession = { taskId -> onNavigateToStartSession(viewModel.processId, taskId) },
         onNavigateToTask = onNavigateToTask,
         modifier = modifier
     )
@@ -86,8 +86,7 @@ internal fun ProcessDetailScreen(
     onEvent: (ProcessDetailUiEvent) -> Unit,
     onNavigateToEditProcess: () -> Unit,
     onNavigateToCreateTask: () -> Unit,
-    onNavigateToLogProgress: () -> Unit,
-    onNavigateToStartSession: () -> Unit,
+    onNavigateToStartSession: (String?) -> Unit,
     onNavigateToTask: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -104,7 +103,6 @@ internal fun ProcessDetailScreen(
                 onEvent = onEvent,
                 onNavigateToEditProcess = onNavigateToEditProcess,
                 onNavigateToCreateTask = onNavigateToCreateTask,
-                onNavigateToLogProgress = onNavigateToLogProgress,
                 onNavigateToStartSession = onNavigateToStartSession,
                 onNavigateToTask = onNavigateToTask,
                 modifier = modifier
@@ -119,14 +117,14 @@ private fun ProcessDetailContent(
     onEvent: (ProcessDetailUiEvent) -> Unit,
     onNavigateToEditProcess: () -> Unit,
     onNavigateToCreateTask: () -> Unit,
-    onNavigateToLogProgress: () -> Unit,
-    onNavigateToStartSession: () -> Unit,
+    onNavigateToStartSession: (String?) -> Unit,
     onNavigateToTask: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val process = uiState.process
     var showWeeklyGoalDialog by remember { mutableStateOf(false) }
     var weeklyGoalInput by remember { mutableStateOf("") }
+    var taskToCompleteWithDuration by remember { mutableStateOf<Task?>(null) }
 
     LazyColumn(
         modifier = modifier
@@ -267,26 +265,16 @@ private fun ProcessDetailContent(
         // Primary Actions
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                RumboButton(
+                    onClick = {
+                        val nextTaskId = uiState.pendingTasks.firstOrNull()?.id
+                        onNavigateToStartSession(nextTaskId)
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    RumboButton(
-                        onClick = onNavigateToStartSession,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Iniciar Sesión")
-                    }
-                    RumboButton(
-                        onClick = onNavigateToLogProgress,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.TrendingUp, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Progreso")
-                    }
+                    Icon(Icons.Default.PlayArrow, contentDescription = null)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(if (uiState.pendingTasks.isNotEmpty()) "Iniciar Sesión en Tarea" else "Iniciar Sesión")
                 }
 
                 Row(
@@ -404,8 +392,15 @@ private fun ProcessDetailContent(
             items(uiState.pendingTasks, key = { it.id }) { taskItem ->
                 RumboTaskItem(
                     task = taskItem,
-                    onToggleStatus = { onEvent(ProcessDetailUiEvent.ToggleTaskStatus(it)) },
-                    onClick = { onNavigateToTask(taskItem.id) }
+                    onToggleStatus = { task ->
+                        if (!task.isCompleted && task.timeWorkedMillis == 0L) {
+                            taskToCompleteWithDuration = task
+                        } else {
+                            onEvent(ProcessDetailUiEvent.ToggleTaskStatus(task))
+                        }
+                    },
+                    onClick = { onNavigateToTask(taskItem.id) },
+                    onStartSession = { task -> onNavigateToStartSession(task.id) }
                 )
             }
         }
@@ -472,6 +467,17 @@ private fun ProcessDetailContent(
             }
         )
     }
+
+    if (taskToCompleteWithDuration != null) {
+        TaskCompletionDurationDialog(
+            taskTitle = taskToCompleteWithDuration!!.title,
+            onConfirm = { minutes ->
+                onEvent(ProcessDetailUiEvent.CompleteTaskWithDuration(taskToCompleteWithDuration!!, minutes))
+                taskToCompleteWithDuration = null
+            },
+            onDismiss = { taskToCompleteWithDuration = null }
+        )
+    }
 }
 
 @Preview(name = "Process Detail Light", showBackground = true)
@@ -515,7 +521,6 @@ private fun ProcessDetailScreenPreviewLight() {
             onEvent = {},
             onNavigateToEditProcess = {},
             onNavigateToCreateTask = {},
-            onNavigateToLogProgress = {},
             onNavigateToStartSession = {}
         )
     }

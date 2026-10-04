@@ -27,18 +27,21 @@ fun NavGraphBuilder.tasksScreen(
     onTaskClick: (String) -> Unit,
     onNavigateToCreateTask: () -> Unit,
     onTaskCreated: () -> Unit,
-    onTaskDeleted: () -> Unit
+    onTaskDeleted: () -> Unit,
+    onStartSession: (String, String) -> Unit = { _, _ -> }
 ) {
     composable(route = TasksDestination.route) {
         TasksRoute(
             onTaskClick = onTaskClick,
-            onNavigateToCreateTask = onNavigateToCreateTask
+            onNavigateToCreateTask = onNavigateToCreateTask,
+            onStartSession = onStartSession
         )
     }
 
     composable(route = TaskDetailDestination.route) {
         TaskDetailRoute(
-            onTaskDeleted = onTaskDeleted
+            onTaskDeleted = onTaskDeleted,
+            onStartSession = onStartSession
         )
     }
 

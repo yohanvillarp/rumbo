@@ -198,8 +198,8 @@ fun RumboApp(
                                 onNavigateToLogProgress = {
                                     navController.navigateToLogProgress()
                                 },
-                                onNavigateToStartSession = {
-                                    navController.navigateToStartSession()
+                                onNavigateToStartSession = { processId, taskId ->
+                                    navController.navigateToStartSession(processId = processId, taskId = taskId)
                                 }
                             )
                             processesScreen(
@@ -215,8 +215,8 @@ fun RumboApp(
                                 onNavigateToLogProgress = { processId ->
                                     navController.navigateToLogProgress(processId)
                                 },
-                                onNavigateToStartSession = { processId ->
-                                    navController.navigateToStartSession(processId)
+                                onNavigateToStartSession = { processId, taskId ->
+                                    navController.navigateToStartSession(processId = processId, taskId = taskId)
                                 },
                                 onNavigateToEditProcess = { processId ->
                                     navController.navigateToEditProcess(processId)
@@ -243,6 +243,9 @@ fun RumboApp(
                                 },
                                 onTaskDeleted = {
                                     navController.popBackStack()
+                                },
+                                onStartSession = { taskId, processId ->
+                                    navController.navigateToStartSession(processId = processId, taskId = taskId)
                                 }
                             )
                             progressScreen(
