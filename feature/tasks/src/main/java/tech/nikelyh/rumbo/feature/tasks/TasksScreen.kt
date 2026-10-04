@@ -175,8 +175,11 @@ private fun TasksContent(
                     .animateContentSize()
             ) {
                 items(uiState.tasks, key = { it.id }) { taskItem ->
+                    val taskProcess = uiState.availableProcesses.find { it.id == taskItem.processId }
                     RumboTaskItem(
                         task = taskItem,
+                        processColorOrVisualId = taskProcess?.colorOrVisualId,
+                        processName = taskProcess?.name,
                         onToggleStatus = { task ->
                             if (!task.isCompleted && task.timeWorkedMillis == 0L) {
                                 taskToCompleteWithDuration = task

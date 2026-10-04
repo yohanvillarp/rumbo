@@ -10,7 +10,8 @@ sealed interface HomeUiState {
         val userName: String,
         val continueProcess: Process?,
         val activeProcesses: List<Process>,
-        val todayTasks: List<Task>
+        val todayTasks: List<Task>,
+        val allProcesses: List<Process> = emptyList()
     ) : HomeUiState
     data object Empty : HomeUiState
     data class Error(val message: String) : HomeUiState

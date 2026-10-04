@@ -237,8 +237,11 @@ private fun HomeContent(
             }
         } else {
             items(uiState.todayTasks, key = { it.id }) { taskItem ->
+                val taskProcess = uiState.allProcesses.find { it.id == taskItem.processId }
                 RumboTaskItem(
                     task = taskItem,
+                    processColorOrVisualId = taskProcess?.colorOrVisualId,
+                    processName = taskProcess?.name,
                     onToggleStatus = { task ->
                         if (!task.isCompleted && task.timeWorkedMillis == 0L) {
                             taskToCompleteWithDuration = task
@@ -249,58 +252,6 @@ private fun HomeContent(
                     onClick = { onEvent(HomeUiEvent.OnTaskClick(taskItem.id)) },
                     onStartSession = { task -> onNavigateToStartSession(task.processId, task.id) }
                 )
-            }
-        }
-
-        // Section 4: Quick Actions
-        item {
-            RumboSectionHeader(title = "Acciones Rápidas")
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.animateContentSize()
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    RumboOutlinedButton(
-                        onClick = { onEvent(HomeUiEvent.OnCreateTaskClick) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.AddTask, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Nueva Tarea")
-                    }
-                    RumboOutlinedButton(
-                        onClick = { onEvent(HomeUiEvent.OnCreateProcessClick) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.FolderOpen, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Nuevo Proceso")
-                    }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    RumboOutlinedButton(
-                        onClick = { onEvent(HomeUiEvent.OnLogProgressClick) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.TrendingUp, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Evaluar Progreso")
-                    }
-                    RumboOutlinedButton(
-                        onClick = { onEvent(HomeUiEvent.OnStartSessionClick) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Iniciar Sesión")
-                    }
-                }
             }
         }
     }

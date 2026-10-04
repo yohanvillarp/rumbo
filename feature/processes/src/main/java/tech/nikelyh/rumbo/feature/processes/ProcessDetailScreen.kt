@@ -266,29 +266,18 @@ private fun ProcessDetailContent(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 RumboButton(
-                    onClick = {
-                        val nextTaskId = uiState.pendingTasks.firstOrNull()?.id
-                        onNavigateToStartSession(nextTaskId)
-                    },
+                    onClick = onNavigateToCreateTask,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(if (uiState.pendingTasks.isNotEmpty()) "Iniciar Sesión en Tarea" else "Iniciar Sesión")
+                    Icon(Icons.Default.AddTask, contentDescription = null)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Nueva Tarea")
                 }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    RumboOutlinedButton(
-                        onClick = onNavigateToCreateTask,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.AddTask, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Nueva Tarea")
-                    }
                     RumboOutlinedButton(
                         onClick = onNavigateToEditProcess,
                         modifier = Modifier.weight(1f)
@@ -296,31 +285,6 @@ private fun ProcessDetailContent(
                         Icon(Icons.Default.Edit, contentDescription = null)
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Editar")
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (process.isActive) {
-                        OutlinedButton(
-                            onClick = { onEvent(ProcessDetailUiEvent.PauseProcess) },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.Pause, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Pausar")
-                        }
-                    } else if (process.status == ProcessStatus.PAUSED) {
-                        OutlinedButton(
-                            onClick = { onEvent(ProcessDetailUiEvent.ResumeProcess) },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Reactivar")
-                        }
                     }
 
                     if (process.isActive || process.status == ProcessStatus.PAUSED) {
@@ -392,6 +356,8 @@ private fun ProcessDetailContent(
             items(uiState.pendingTasks, key = { it.id }) { taskItem ->
                 RumboTaskItem(
                     task = taskItem,
+                    processColorOrVisualId = process.colorOrVisualId,
+                    processName = process.name,
                     onToggleStatus = { task ->
                         if (!task.isCompleted && task.timeWorkedMillis == 0L) {
                             taskToCompleteWithDuration = task
@@ -414,6 +380,8 @@ private fun ProcessDetailContent(
             items(uiState.completedTasks, key = { it.id }) { taskItem ->
                 RumboTaskItem(
                     task = taskItem,
+                    processColorOrVisualId = process.colorOrVisualId,
+                    processName = process.name,
                     onToggleStatus = { onEvent(ProcessDetailUiEvent.ToggleTaskStatus(it)) },
                     onClick = { onNavigateToTask(taskItem.id) }
                 )

@@ -55,7 +55,8 @@ class HomeViewModel @Inject constructor(
                 userName = name,
                 continueProcess = featuredProcess,
                 activeProcesses = activeProcesses.take(3),
-                todayTasks = pendingTasks.take(5)
+                todayTasks = pendingTasks.take(5),
+                allProcesses = processes
             )
         }
     }.stateIn(
