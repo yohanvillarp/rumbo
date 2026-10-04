@@ -180,39 +180,30 @@ private fun HomeContent(
                 }
             }
 
-            // Section 1: Active Processes (Max 3)
-            item {
-                RumboSectionHeader(
-                    title = "Procesos Activos",
-                    subtitle = "Procesos en seguimiento"
-                )
-            }
-
-            if (uiState.activeProcesses.isEmpty()) {
+            // Section 1: Starred Processes (Max 3) - Only shown if there are starred processes
+            if (uiState.starredProcesses.isNotEmpty()) {
                 item {
-                    RumboEmptyState(
-                        message = "No hay procesos activos",
-                        subtitle = "Crea un proceso para iniciar tus actividades",
-                        mascotState = MascotState.RESTING,
-                        modifier = Modifier.height(160.dp)
+                    RumboSectionHeader(
+                        title = "Procesos Destacados",
+                        subtitle = "Tus procesos favoritos en seguimiento"
                     )
                 }
-            } else {
-                items(uiState.activeProcesses, key = { it.id }) { processItem ->
+
+                items(uiState.starredProcesses, key = { it.id }) { processItem ->
                     RumboProcessCard(
                         process = processItem,
                         onClick = { onEvent(HomeUiEvent.OnProcessClick(processItem.id)) },
                         onToggleStar = { onEvent(HomeUiEvent.ToggleStar(processItem.id)) }
                     )
                 }
-            }
 
-            item {
-                RumboOutlinedButton(
-                    onClick = onNavigateToProcesses,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = stringResource(R.string.home_view_all_processes))
+                item {
+                    RumboOutlinedButton(
+                        onClick = onNavigateToProcesses,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = stringResource(R.string.home_view_all_processes))
+                    }
                 }
             }
 

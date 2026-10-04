@@ -73,14 +73,16 @@ class HomeViewModelTest {
             name = "Proceso 1",
             status = ProcessStatus.ACTIVE,
             createdAtEpochMillis = 1000L,
-            colorOrVisualId = "blue"
+            colorOrVisualId = "blue",
+            isStarred = true
         )
         val p2 = Process(
             id = "p2",
             name = "Proceso 2",
             status = ProcessStatus.ACTIVE,
             createdAtEpochMillis = 2000L,
-            colorOrVisualId = "green"
+            colorOrVisualId = "green",
+            isStarred = false
         )
 
         processRepository.saveProcess(p1)
@@ -100,12 +102,13 @@ class HomeViewModelTest {
 
         val content = state as HomeUiState.Content
         assertEquals("Yohan", content.userName)
-        assertEquals(2, content.activeProcesses.size)
+        assertEquals(1, content.starredProcesses.size)
+        assertEquals("p1", content.starredProcesses[0].id)
         assertEquals(1, content.todayTasks.size)
     }
 
     @Test
-    fun `active processes prioritize starred processes and cap at 3`() = runBlocking {
+    fun `starred processes only includes starred processes and caps at 3`() = runBlocking {
         for (i in 1..5) {
             processRepository.saveProcess(
                 Process(
@@ -114,7 +117,7 @@ class HomeViewModelTest {
                     status = ProcessStatus.ACTIVE,
                     createdAtEpochMillis = i * 1000L,
                     colorOrVisualId = "blue",
-                    isStarred = (i == 2)
+                    isStarred = (i <= 4)
                 )
             )
         }
@@ -122,9 +125,29 @@ class HomeViewModelTest {
         val state = viewModel.uiState.first()
         assertTrue(state is HomeUiState.Content)
         val content = state as HomeUiState.Content
-        assertEquals(3, content.activeProcesses.size)
-        assertEquals("p2", content.activeProcesses[0].id)
-        assertTrue(content.activeProcesses[0].isStarred)
+        assertEquals(3, content.starredProcesses.size)
+        assertTrue(content.starredProcesses.all { it.isStarred })
+    }
+
+    @Test
+    fun `starred processes is empty when no processes are starred`() = runBlocking {
+        for (i in 1..3) {
+            processRepository.saveProcess(
+                Process(
+                    id = "p$i",
+                    name = "Proceso $i",
+                    status = ProcessStatus.ACTIVE,
+                    createdAtEpochMillis = i * 1000L,
+                    colorOrVisualId = "blue",
+                    isStarred = false
+                )
+            )
+        }
+
+        val state = viewModel.uiState.first()
+        assertTrue(state is HomeUiState.Content)
+        val content = state as HomeUiState.Content
+        assertTrue(content.starredProcesses.isEmpty())
     }
 
     @Test
