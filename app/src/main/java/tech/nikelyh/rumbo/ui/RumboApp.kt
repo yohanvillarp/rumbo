@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
@@ -59,9 +60,12 @@ import tech.nikelyh.rumbo.core.navigation.SettingsDestination
 import tech.nikelyh.rumbo.core.navigation.StartSessionDestination
 import tech.nikelyh.rumbo.core.navigation.TaskDetailDestination
 import tech.nikelyh.rumbo.core.navigation.TasksDestination
+import tech.nikelyh.rumbo.core.navigation.TutorialDestination
 import tech.nikelyh.rumbo.feature.home.navigation.homeScreen
 import tech.nikelyh.rumbo.feature.home.navigation.navigateToHome
+import tech.nikelyh.rumbo.feature.onboarding.navigation.navigateToTutorial
 import tech.nikelyh.rumbo.feature.onboarding.navigation.onboardingScreen
+import tech.nikelyh.rumbo.feature.onboarding.navigation.tutorialScreen
 import tech.nikelyh.rumbo.feature.processes.navigation.navigateToCreateProcess
 import tech.nikelyh.rumbo.feature.processes.navigation.navigateToEditProcess
 import tech.nikelyh.rumbo.feature.processes.navigation.navigateToProcessDetail
@@ -155,6 +159,7 @@ fun RumboApp(
                 val currentRoute = currentDestination?.route
 
                 val isOnboarding = currentRoute == OnboardingDestination.route
+                val isTutorial = currentRoute == TutorialDestination.route
                 val isSettings = currentRoute == SettingsDestination.route
                 val isTopLevel = TopLevelDestination.entries.any { it.route == currentRoute }
 
@@ -168,6 +173,7 @@ fun RumboApp(
                                     TasksDestination.route -> "Tareas"
                                     ProgressDestination.route -> "Progreso"
                                     SettingsDestination.route -> "Configuración"
+                                    TutorialDestination.route -> "Cómo funciona Rumbo"
                                     CreateProcessDestination.route -> "Nuevo Proceso"
                                     EditProcessDestination.route -> "Editar Proceso"
                                     CreateTaskDestination.route -> "Nueva Tarea"
@@ -180,6 +186,9 @@ fun RumboApp(
                                 navigationIcon = if (!isTopLevel) Icons.AutoMirrored.Filled.ArrowBack else null,
                                 navigationIconContentDescription = "Regresar",
                                 onNavigationClick = { navController.popBackStack() },
+                                secondaryActionIcon = if (!isOnboarding && !isTutorial) Icons.AutoMirrored.Filled.HelpOutline else null,
+                                secondaryActionContentDescription = "Cómo funciona Rumbo",
+                                onSecondaryActionClick = { navController.navigateToTutorial() },
                                 actionIcon = if (!isSettings) Icons.Default.Settings else null,
                                 actionIconContentDescription = "Configuración",
                                 onActionClick = { navController.navigateToSettings() }
@@ -318,6 +327,9 @@ fun RumboApp(
                                         launchSingleTop = true
                                     }
                                 }
+                            )
+                            tutorialScreen(
+                                onClose = { navController.popBackStack() }
                             )
                         }
                     }

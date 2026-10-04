@@ -164,19 +164,23 @@ class ProcessDetailViewModel @Inject constructor(
             }
             is ProcessDetailUiEvent.CompleteTaskWithDuration -> {
                 viewModelScope.launch {
-                    val durationMillis = event.durationMinutes * 60 * 1000L
+                    val targetTotalMillis = event.durationMinutes * 60 * 1000L
+                    val additionalMillis = maxOf(0L, targetTotalMillis - event.task.timeWorkedMillis)
                     val now = System.currentTimeMillis()
-                    val session = WorkSession(
-                        id = UUID.randomUUID().toString(),
-                        processId = event.task.processId,
-                        taskId = event.task.id,
-                        startTimeEpochMillis = now - durationMillis,
-                        endTimeEpochMillis = now,
-                        durationMillis = durationMillis,
-                        note = "Duración registrada al culminar tarea"
-                    )
-                    workSessionRepository.saveWorkSession(session)
-                    val updatedTask = event.task.addWorkedTime(durationMillis).updateStatus(tech.nikelyh.rumbo.core.model.TaskStatus.COMPLETED, finishedAt = now)
+                    if (additionalMillis > 0L) {
+                        val session = WorkSession(
+                            id = UUID.randomUUID().toString(),
+                            processId = event.task.processId,
+                            taskId = event.task.id,
+                            startTimeEpochMillis = now - additionalMillis,
+                            endTimeEpochMillis = now,
+                            durationMillis = additionalMillis,
+                            note = "Duración registrada al culminar tarea"
+                        )
+                        workSessionRepository.saveWorkSession(session)
+                    }
+                    val updatedTask = event.task.copy(timeWorkedMillis = maxOf(event.task.timeWorkedMillis, targetTotalMillis))
+                        .updateStatus(tech.nikelyh.rumbo.core.model.TaskStatus.COMPLETED, finishedAt = now)
                     taskRepository.saveTask(updatedTask)
                 }
             }

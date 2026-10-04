@@ -221,7 +221,7 @@ internal fun TaskDetailScreen(
 
                 RumboOutlinedButton(
                     onClick = {
-                        if (!task.isCompleted && task.timeWorkedMillis == 0L) {
+                        if (!task.isCompleted) {
                             showCompletionDialog = true
                         } else {
                             onEvent(TaskDetailUiEvent.ToggleStatus)
@@ -247,8 +247,14 @@ internal fun TaskDetailScreen(
                 }
 
                 if (showCompletionDialog) {
+                    val sessionMinutes = if (task.timeWorkedMillis > 0L) {
+                        (task.timeWorkedMillis + 59_999L) / 60_000L
+                    } else 0L
+                    val minMinutes = if (sessionMinutes > 0L) sessionMinutes else 1L
                     TaskCompletionDurationDialog(
                         taskTitle = task.title,
+                        initialMinutes = if (sessionMinutes > 0L) sessionMinutes else 0L,
+                        minMinutes = minMinutes,
                         onConfirm = { minutes ->
                             onEvent(TaskDetailUiEvent.CompleteWithDuration(minutes))
                             showCompletionDialog = false
@@ -293,15 +299,15 @@ private fun TaskDetailScreenPreviewLight() {
                 task = Task(
                     id = "t1",
                     processId = "p1",
-                    title = "Diseñar UI de TasksScreen",
-                    description = "Garantizar que pertenezca a un proceso y valide costos.",
+                    title = "Comprar insumos de cocina",
+                    description = "Verificar lista de despensa y mercado local.",
                     status = TaskStatus.PENDING,
                     priority = Priority.HIGH,
                     createdAtEpochMillis = 1000L,
-                    cost = 0.0,
+                    cost = 25.0,
                     estimatedDurationMinutes = 45
                 ),
-                processName = "Desarrollo de Rumbo"
+                processName = "Organización del Hogar"
             ),
             onEvent = {}
         )

@@ -181,7 +181,7 @@ private fun TasksContent(
                         processColorOrVisualId = taskProcess?.colorOrVisualId,
                         processName = taskProcess?.name,
                         onToggleStatus = { task ->
-                            if (!task.isCompleted && task.timeWorkedMillis == 0L) {
+                            if (!task.isCompleted) {
                                 taskToCompleteWithDuration = task
                             } else {
                                 onEvent(TasksUiEvent.ToggleTaskStatus(task))
@@ -195,10 +195,17 @@ private fun TasksContent(
         }
 
         if (taskToCompleteWithDuration != null) {
+            val task = taskToCompleteWithDuration!!
+            val sessionMinutes = if (task.timeWorkedMillis > 0L) {
+                (task.timeWorkedMillis + 59_999L) / 60_000L
+            } else 0L
+            val minMinutes = if (sessionMinutes > 0L) sessionMinutes else 1L
             TaskCompletionDurationDialog(
-                taskTitle = taskToCompleteWithDuration!!.title,
+                taskTitle = task.title,
+                initialMinutes = if (sessionMinutes > 0L) sessionMinutes else 0L,
+                minMinutes = minMinutes,
                 onConfirm = { minutes ->
-                    onEvent(TasksUiEvent.CompleteTaskWithDuration(taskToCompleteWithDuration!!, minutes))
+                    onEvent(TasksUiEvent.CompleteTaskWithDuration(task, minutes))
                     taskToCompleteWithDuration = null
                 },
                 onDismiss = { taskToCompleteWithDuration = null }

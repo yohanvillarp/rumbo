@@ -96,19 +96,23 @@ class TasksViewModel @Inject constructor(
 
     private fun completeTaskWithDuration(task: Task, durationMinutes: Long) {
         viewModelScope.launch {
-            val durationMillis = durationMinutes * 60 * 1000L
+            val targetTotalMillis = durationMinutes * 60 * 1000L
+            val additionalMillis = maxOf(0L, targetTotalMillis - task.timeWorkedMillis)
             val now = System.currentTimeMillis()
-            val session = WorkSession(
-                id = UUID.randomUUID().toString(),
-                processId = task.processId,
-                taskId = task.id,
-                startTimeEpochMillis = now - durationMillis,
-                endTimeEpochMillis = now,
-                durationMillis = durationMillis,
-                note = "Duración registrada al culminar tarea"
-            )
-            workSessionRepository.saveWorkSession(session)
-            val updatedTask = task.addWorkedTime(durationMillis).updateStatus(TaskStatus.COMPLETED, finishedAt = now)
+            if (additionalMillis > 0L) {
+                val session = WorkSession(
+                    id = UUID.randomUUID().toString(),
+                    processId = task.processId,
+                    taskId = task.id,
+                    startTimeEpochMillis = now - additionalMillis,
+                    endTimeEpochMillis = now,
+                    durationMillis = additionalMillis,
+                    note = "Duración registrada al culminar tarea"
+                )
+                workSessionRepository.saveWorkSession(session)
+            }
+            val updatedTask = task.copy(timeWorkedMillis = maxOf(task.timeWorkedMillis, targetTotalMillis))
+                .updateStatus(TaskStatus.COMPLETED, finishedAt = now)
             taskRepository.saveTask(updatedTask)
         }
     }

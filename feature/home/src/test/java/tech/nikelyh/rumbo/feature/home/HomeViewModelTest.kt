@@ -147,4 +147,30 @@ class HomeViewModelTest {
         assertEquals(1, sessions.size)
         assertEquals(30 * 60 * 1000L, sessions.first().durationMillis)
     }
+
+    @Test
+    fun `completing task with prior worked time only logs delta session when duration is increased`() = runBlocking {
+        val t1 = Task(
+            id = "t_delta",
+            processId = "p1",
+            title = "Tarea con Sesión Previa",
+            status = TaskStatus.PENDING,
+            createdAtEpochMillis = 1000L,
+            timeWorkedMillis = 15 * 60 * 1000L // 15 min already worked
+        )
+        taskRepository.saveTask(t1)
+
+        // User enters 25 minutes total
+        viewModel.onEvent(HomeUiEvent.CompleteTaskWithDuration(t1, 25))
+
+        val updatedTask = taskRepository.getTaskById("t_delta").first()
+        assertNotNull(updatedTask)
+        assertEquals(TaskStatus.COMPLETED, updatedTask?.status)
+        assertEquals(25 * 60 * 1000L, updatedTask?.timeWorkedMillis)
+
+        val sessions = workSessionRepository.getWorkSessionsByTaskId("t_delta").first()
+        assertEquals(1, sessions.size)
+        // Delta should be 10 minutes (25 - 15)
+        assertEquals(10 * 60 * 1000L, sessions.first().durationMillis)
+    }
 }

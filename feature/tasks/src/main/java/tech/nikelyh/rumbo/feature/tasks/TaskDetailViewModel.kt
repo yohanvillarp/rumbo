@@ -65,19 +65,23 @@ class TaskDetailViewModel @Inject constructor(
             }
             is TaskDetailUiEvent.CompleteWithDuration -> {
                 viewModelScope.launch {
-                    val durationMillis = event.durationMinutes * 60 * 1000L
+                    val targetTotalMillis = event.durationMinutes * 60 * 1000L
+                    val additionalMillis = maxOf(0L, targetTotalMillis - currentTask.timeWorkedMillis)
                     val now = System.currentTimeMillis()
-                    val session = WorkSession(
-                        id = UUID.randomUUID().toString(),
-                        processId = currentTask.processId,
-                        taskId = currentTask.id,
-                        startTimeEpochMillis = now - durationMillis,
-                        endTimeEpochMillis = now,
-                        durationMillis = durationMillis,
-                        note = "Duración registrada al culminar tarea"
-                    )
-                    workSessionRepository.saveWorkSession(session)
-                    val updatedTask = currentTask.addWorkedTime(durationMillis).updateStatus(TaskStatus.COMPLETED, finishedAt = now)
+                    if (additionalMillis > 0L) {
+                        val session = WorkSession(
+                            id = UUID.randomUUID().toString(),
+                            processId = currentTask.processId,
+                            taskId = currentTask.id,
+                            startTimeEpochMillis = now - additionalMillis,
+                            endTimeEpochMillis = now,
+                            durationMillis = additionalMillis,
+                            note = "Duración registrada al culminar tarea"
+                        )
+                        workSessionRepository.saveWorkSession(session)
+                    }
+                    val updatedTask = currentTask.copy(timeWorkedMillis = maxOf(currentTask.timeWorkedMillis, targetTotalMillis))
+                        .updateStatus(TaskStatus.COMPLETED, finishedAt = now)
                     taskRepository.saveTask(updatedTask)
                 }
             }

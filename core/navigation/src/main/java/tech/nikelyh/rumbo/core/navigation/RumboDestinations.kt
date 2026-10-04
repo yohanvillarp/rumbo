@@ -32,6 +32,11 @@ object SettingsDestination : RumboNavigationDestination {
     override val destination = "settings_destination"
 }
 
+object TutorialDestination : RumboNavigationDestination {
+    override val route = "tutorial_route"
+    override val destination = "tutorial_destination"
+}
+
 // Action & Detail Destinations
 object ProcessDetailDestination : RumboNavigationDestination {
     override val route = "process_detail/{processId}"
