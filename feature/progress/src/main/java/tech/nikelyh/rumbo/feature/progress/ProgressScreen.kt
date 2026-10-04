@@ -166,9 +166,7 @@ private fun ProcessAnalyticsView(
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier
-            .fillMaxSize()
-            .animateContentSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         // High Level Process Summary
         item {
@@ -303,9 +301,7 @@ private fun TaskAnalyticsView(
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier
-            .fillMaxSize()
-            .animateContentSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         item {
             RumboSectionHeader(
