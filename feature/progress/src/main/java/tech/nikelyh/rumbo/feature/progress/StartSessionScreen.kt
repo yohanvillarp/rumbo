@@ -2,6 +2,7 @@ package tech.nikelyh.rumbo.feature.progress
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,7 +36,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,155 +81,216 @@ internal fun StartSessionScreen(
 ) {
     var manualMinutesText by remember { mutableStateOf("") }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        RumboSectionHeader(
-            title = "Sesión de Trabajo",
-            subtitle = if (uiState.selectedTaskTitle.isNotBlank()) "Tarea: ${uiState.selectedTaskTitle}" else "Sigue tu tiempo de concentración de forma serena."
-        )
-
-        // Process Selection
-        Text(
-            text = "Proceso",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            FilterChip(
-                selected = uiState.selectedProcessId == "general",
-                onClick = { onEvent(StartSessionUiEvent.ProcessSelected("general")) },
-                label = { Text("General") }
-            )
-            uiState.availableProcesses.filter { it.id != "general" }.take(3).forEach { process ->
-                FilterChip(
-                    selected = uiState.selectedProcessId == process.id,
-                    onClick = { onEvent(StartSessionUiEvent.ProcessSelected(process.id)) },
-                    label = { Text(process.name) }
-                )
-            }
-        }
-
-        // Prominent Full-Screen Timer Display Card
-        RumboCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
+    if (!uiState.isSessionFinished) {
+        // Immersive Fullscreen Timer Mode
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
         ) {
             Column(
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 24.dp)
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = formatMillis(uiState.elapsedTimeMillis),
-                    style = MaterialTheme.typography.displayLarge.copy(
-                        fontSize = 54.sp
-                    ),
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                // Header: Task and Process details (calm and focused)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(top = 24.dp)
                 ) {
+                    val process = uiState.availableProcesses.firstOrNull { it.id == uiState.selectedProcessId }
+                    val processName = process?.name ?: "General"
+
+                    if (uiState.selectedTaskTitle.isNotBlank()) {
+                        Text(
+                            text = uiState.selectedTaskTitle,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = processName,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    } else {
+                        Text(
+                            text = processName,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Sesión de Trabajo",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+
+                // Center: Big, Serene Fullscreen Timer Counter
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = formatMillis(uiState.elapsedTimeMillis),
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            fontSize = 68.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = (-1.5).sp
+                        ),
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Text(
+                        text = if (uiState.isTimerRunning) "Sesión en curso" else "Sesión en pausa",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (uiState.isTimerRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                    )
+                }
+
+                // Bottom: Action Controls
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                ) {
+                    RumboButton(
+                        onClick = { onEvent(StartSessionUiEvent.FinishTimer) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Icon(Icons.Default.CheckCircle, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Finalizar Sesión", style = MaterialTheme.typography.titleMedium)
+                    }
+
                     RumboOutlinedButton(
-                        onClick = { onEvent(StartSessionUiEvent.ToggleTimer) }
+                        onClick = { onEvent(StartSessionUiEvent.ToggleTimer) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
                     ) {
                         Icon(
                             imageVector = if (uiState.isTimerRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
                             contentDescription = null
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(if (uiState.isTimerRunning) "Pausar" else "Continuar")
                     }
 
-                    RumboButton(
-                        onClick = { onEvent(StartSessionUiEvent.FinishTimer) }
+                    TextButton(
+                        onClick = { onEvent(StartSessionUiEvent.ForgotTimerClicked) }
                     ) {
-                        Icon(Icons.Default.CheckCircle, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Finalizar")
+                        Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Olvidé detenerlo", color = MaterialTheme.colorScheme.secondary)
                     }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                TextButton(
-                    onClick = { onEvent(StartSessionUiEvent.ForgotTimerClicked) }
-                ) {
-                    Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Olvidé detenerlo", color = MaterialTheme.colorScheme.secondary)
                 }
             }
         }
+    } else {
+        // Session Culmination Screen
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            RumboSectionHeader(
+                title = "Sesión Finalizada",
+                subtitle = "Revisa el tiempo invertido y guarda tu sesión."
+            )
 
-        // Session Summary Section (visible when finished or pausing)
-        AnimatedVisibility(visible = uiState.isSessionFinished) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedTextField(
-                    value = uiState.sessionNote,
-                    onValueChange = { onEvent(StartSessionUiEvent.NoteChanged(it)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Nota de la sesión (opcional)") },
-                    placeholder = { Text("¿Qué lograste durante esta sesión?") },
-                    leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
-                    maxLines = 3
-                )
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+            RumboCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Checkbox(
-                        checked = uiState.saveProgressEntry,
-                        onCheckedChange = { onEvent(StartSessionUiEvent.ToggleSaveProgress(it)) }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Registrar nivel de progreso cualitativo",
-                        style = MaterialTheme.typography.bodyMedium
+                        text = "Tiempo total registrado",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary
                     )
-                }
-
-                if (uiState.saveProgressEntry) {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Nivel de Progreso",
-                        style = MaterialTheme.typography.labelSmall
+                        text = formatMillis(uiState.elapsedTimeMillis),
+                        style = MaterialTheme.typography.displayMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
                     )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        ProgressLevel.entries.forEach { level ->
-                            FilterChip(
-                                selected = uiState.progressLevel == level,
-                                onClick = { onEvent(StartSessionUiEvent.ProgressLevelSelected(level)) },
-                                label = { Text(level.label) }
-                            )
-                        }
+                    if (uiState.selectedTaskTitle.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Tarea: ${uiState.selectedTaskTitle}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
+            }
 
-                RumboButton(
-                    onClick = { onEvent(StartSessionUiEvent.SubmitSession) },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !uiState.isSubmitting
+            OutlinedTextField(
+                value = uiState.sessionNote,
+                onValueChange = { onEvent(StartSessionUiEvent.NoteChanged(it)) },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Nota de la sesión (opcional)") },
+                placeholder = { Text("¿Qué lograste durante esta sesión?") },
+                leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
+                maxLines = 3
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = uiState.saveProgressEntry,
+                    onCheckedChange = { onEvent(StartSessionUiEvent.ToggleSaveProgress(it)) }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Registrar nivel de progreso cualitativo",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            if (uiState.saveProgressEntry) {
+                Text(
+                    text = "Nivel de Progreso",
+                    style = MaterialTheme.typography.labelSmall
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Guardar Sesión")
+                    ProgressLevel.entries.forEach { level ->
+                        FilterChip(
+                            selected = uiState.progressLevel == level,
+                            onClick = { onEvent(StartSessionUiEvent.ProgressLevelSelected(level)) },
+                            label = { Text(level.label) }
+                        )
+                    }
                 }
+            }
+
+            RumboButton(
+                onClick = { onEvent(StartSessionUiEvent.SubmitSession) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isSubmitting
+            ) {
+                Text("Guardar Sesión")
             }
         }
     }
