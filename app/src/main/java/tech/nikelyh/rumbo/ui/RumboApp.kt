@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -23,6 +23,7 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -39,6 +40,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTopBar
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboAnimationTokens
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
+import tech.nikelyh.rumbo.core.model.ActiveSessionState
 import tech.nikelyh.rumbo.core.navigation.CreateProcessDestination
 import tech.nikelyh.rumbo.core.navigation.CreateTaskDestination
 import tech.nikelyh.rumbo.core.navigation.EditProcessDestination
@@ -78,8 +80,8 @@ enum class TopLevelDestination(
     val label: String
 ) {
     HOME(HomeDestination.route, Icons.Default.Home, "Inicio"),
-    PROCESSES(ProcessesDestination.route, Icons.Default.ListAlt, "Procesos"),
-    TASKS(TasksDestination.route, Icons.Default.Assignment, "Tareas"),
+    PROCESSES(ProcessesDestination.route, Icons.AutoMirrored.Filled.ListAlt, "Procesos"),
+    TASKS(TasksDestination.route, Icons.AutoMirrored.Filled.Assignment, "Tareas"),
     PROGRESS(ProgressDestination.route, Icons.Default.BarChart, "Progreso")
 }
 
@@ -87,10 +89,31 @@ enum class TopLevelDestination(
 fun RumboApp(
     hasCompletedOnboarding: Boolean?,
     isDarkMode: Boolean? = null,
+    activeSession: ActiveSessionState? = null,
     navController: NavHostController = rememberNavController()
 ) {
     val isSystemDark = isSystemInDarkTheme()
     val darkTheme = isDarkMode ?: isSystemDark
+
+    val isSessionRunning = hasCompletedOnboarding == true && activeSession != null && activeSession.isRunning
+
+    val startDestination = when {
+        hasCompletedOnboarding == false -> OnboardingDestination.route
+        isSessionRunning -> StartSessionDestination.createRoute(activeSession?.processId, activeSession?.taskId)
+        else -> HomeDestination.route
+    }
+
+    LaunchedEffect(activeSession?.isRunning) {
+        if (hasCompletedOnboarding == true && activeSession != null && activeSession.isRunning) {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route
+            if (currentRoute?.startsWith("start_session") != true) {
+                navController.navigateToStartSession(
+                    processId = activeSession.processId,
+                    taskId = activeSession.taskId
+                )
+            }
+        }
+    }
 
     RumboTheme(darkTheme = darkTheme) {
         if (hasCompletedOnboarding == null) {
@@ -106,8 +129,6 @@ fun RumboApp(
                 val isOnboarding = currentRoute == OnboardingDestination.route
                 val isSettings = currentRoute == SettingsDestination.route
                 val isTopLevel = TopLevelDestination.entries.any { it.route == currentRoute }
-
-                val startDestination = if (hasCompletedOnboarding) HomeDestination.route else OnboardingDestination.route
 
                 Scaffold(
                     topBar = {
@@ -250,7 +271,13 @@ fun RumboApp(
                             )
                             progressScreen(
                                 onSessionFinished = {
-                                    navController.popBackStack()
+                                    if (!navController.popBackStack()) {
+                                        navController.navigateToHome(
+                                            navOptions {
+                                                popUpTo(0) { inclusive = true }
+                                            }
+                                        )
+                                    }
                                 },
                                 onProgressLogged = {
                                     navController.popBackStack()
