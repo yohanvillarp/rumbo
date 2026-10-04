@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
@@ -33,6 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -99,7 +103,11 @@ internal fun CreateProcessScreen(
                     )
                 }
             },
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Words,
+                imeAction = ImeAction.Next
+            )
         )
 
         // Description
@@ -110,7 +118,11 @@ internal fun CreateProcessScreen(
             label = { Text("Descripción (opcional)") },
             placeholder = { Text("Objetivos y contexto general del proceso") },
             leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
-            maxLines = 3
+            maxLines = 3,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            )
         )
 
         // Circular Color Picker (No English text labels!)
@@ -151,7 +163,7 @@ internal fun CreateProcessScreen(
             }
         }
 
-        // Initial Cost
+        // Initial Cost (KeyboardType.Decimal)
         OutlinedTextField(
             value = uiState.costInput,
             onValueChange = { onEvent(CreateProcessUiEvent.CostChanged(it)) },
@@ -169,7 +181,11 @@ internal fun CreateProcessScreen(
                     )
                 }
             },
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Decimal,
+                imeAction = ImeAction.Next
+            )
         )
 
         // Next Action
@@ -180,7 +196,11 @@ internal fun CreateProcessScreen(
             label = { Text("Siguiente Acción (opcional)") },
             placeholder = { Text("Ej. Comprar libro de referencia") },
             leadingIcon = { Icon(Icons.Default.PlayArrow, contentDescription = null) },
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Done
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))

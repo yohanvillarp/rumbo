@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
@@ -24,6 +25,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -90,7 +94,11 @@ internal fun CreateTaskScreen(
                     )
                 }
             },
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            )
         )
 
         // Description
@@ -101,7 +109,11 @@ internal fun CreateTaskScreen(
             label = { Text("Descripción (opcional)") },
             placeholder = { Text("Detalles específicos de la tarea") },
             leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
-            maxLines = 3
+            maxLines = 3,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            )
         )
 
         // Process Selection (Defaulting to General)
@@ -152,18 +164,26 @@ internal fun CreateTaskScreen(
             }
         }
 
-        // Estimated Duration
+        // Estimated Duration (STRICT Digits Only + KeyboardType.Number)
         OutlinedTextField(
             value = uiState.estimatedDurationMinutesInput,
-            onValueChange = { onEvent(CreateTaskUiEvent.DurationChanged(it)) },
+            onValueChange = { input ->
+                if (input.all { it.isDigit() }) {
+                    onEvent(CreateTaskUiEvent.DurationChanged(input))
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Duración Estimada (minutos, opcional)") },
             placeholder = { Text("30") },
             leadingIcon = { Icon(Icons.Default.Timer, contentDescription = null) },
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next
+            )
         )
 
-        // Cost
+        // Cost (KeyboardType.Decimal)
         OutlinedTextField(
             value = uiState.costInput,
             onValueChange = { onEvent(CreateTaskUiEvent.CostChanged(it)) },
@@ -181,7 +201,11 @@ internal fun CreateTaskScreen(
                     )
                 }
             },
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Decimal,
+                imeAction = ImeAction.Done
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
