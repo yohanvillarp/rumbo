@@ -4,10 +4,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import tech.nikelyh.rumbo.core.data.repository.WorkSessionRepository
+import tech.nikelyh.rumbo.core.model.ActiveSessionState
 import tech.nikelyh.rumbo.core.model.WorkSession
 
 class FakeWorkSessionRepository : WorkSessionRepository {
     private val flow = MutableStateFlow<Map<String, WorkSession>>(emptyMap())
+    private val activeSessionFlow = MutableStateFlow(ActiveSessionState())
+    override val activeSessionState: Flow<ActiveSessionState> = activeSessionFlow
 
     override fun getAllWorkSessions(): Flow<List<WorkSession>> {
         return flow.map { it.values.toList() }
@@ -36,5 +39,13 @@ class FakeWorkSessionRepository : WorkSessionRepository {
             return true
         }
         return false
+    }
+
+    override suspend fun saveActiveSessionState(state: ActiveSessionState) {
+        activeSessionFlow.value = state
+    }
+
+    override suspend fun clearActiveSessionState() {
+        activeSessionFlow.value = ActiveSessionState()
     }
 }

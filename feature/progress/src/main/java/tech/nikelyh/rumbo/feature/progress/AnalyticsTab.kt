@@ -1,6 +1,6 @@
 package tech.nikelyh.rumbo.feature.progress
 
 enum class AnalyticsTab(val label: String) {
-    PROCESS_ANALYTICS("Process Analytics"),
-    TASK_ANALYTICS("Task Analytics")
+    PROCESS_ANALYTICS("Analítica de Procesos"),
+    TASK_ANALYTICS("Analítica de Tareas")
 }

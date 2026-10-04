@@ -1,20 +1,28 @@
 package tech.nikelyh.rumbo.core.designsystem.component
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import tech.nikelyh.rumbo.core.designsystem.theme.ProcessColors
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.model.ProcessStatus
@@ -58,36 +66,88 @@ fun RumboProcessCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    RumboCard(
-        modifier = modifier.fillMaxWidth(),
-        onClick = onClick
+    val processColor = ProcessColors.getColor(process.colorOrVisualId)
+    val statusSpanish = when (process.status) {
+        ProcessStatus.ACTIVE -> "Activo"
+        ProcessStatus.PAUSED -> "Pausado"
+        ProcessStatus.COMPLETED -> "Completado"
+        ProcessStatus.ARCHIVED -> "Archivado"
+    }
+
+    Card(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .animateContentSize(),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Text(
-            text = process.name,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        process.description?.let { desc ->
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = desc,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Process Color Accent Line
+            Box(
+                modifier = Modifier
+                    .width(6.dp)
+                    .height(80.dp)
+                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                    .background(processColor)
             )
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Estado: ${process.status.name}  •  Costo: $${process.accumulatedDirectCost}",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.primary
-        )
-        process.nextAction?.let { action ->
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Siguiente: $action",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.secondary
-            )
+
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .weight(1f)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = process.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = statusSpanish,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = processColor
+                    )
+                }
+
+                process.description?.let { desc ->
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = desc,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    )
+                }
+
+                if (process.accumulatedDirectCost > 0.0) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Costo acumulado: $${process.accumulatedDirectCost}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                process.nextAction?.let { action ->
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Siguiente: $action",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
         }
     }
 }

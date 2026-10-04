@@ -20,11 +20,13 @@ import tech.nikelyh.rumbo.core.model.TaskStatus
 import tech.nikelyh.rumbo.feature.home.fakes.FakeProcessRepository
 import tech.nikelyh.rumbo.feature.home.fakes.FakeSettingsRepository
 import tech.nikelyh.rumbo.feature.home.fakes.FakeTaskRepository
+import tech.nikelyh.rumbo.feature.home.fakes.FakeWorkSessionRepository
 
 class HomeViewModelTest {
 
     private lateinit var processRepository: FakeProcessRepository
     private lateinit var taskRepository: FakeTaskRepository
+    private lateinit var workSessionRepository: FakeWorkSessionRepository
     private lateinit var settingsRepository: FakeSettingsRepository
     private lateinit var viewModel: HomeViewModel
     private val testDispatcher: TestDispatcher = UnconfinedTestDispatcher()
@@ -34,8 +36,9 @@ class HomeViewModelTest {
         Dispatchers.setMain(testDispatcher)
         processRepository = FakeProcessRepository()
         taskRepository = FakeTaskRepository()
+        workSessionRepository = FakeWorkSessionRepository()
         settingsRepository = FakeSettingsRepository()
-        viewModel = HomeViewModel(processRepository, taskRepository, settingsRepository)
+        viewModel = HomeViewModel(processRepository, taskRepository, workSessionRepository, settingsRepository)
     }
 
     @After
@@ -113,5 +116,28 @@ class HomeViewModelTest {
         val updatedTask = taskRepository.getTaskById("t1").first()
         assertNotNull(updatedTask)
         assertEquals(TaskStatus.COMPLETED, updatedTask?.status)
+    }
+
+    @Test
+    fun `completing task with duration creates work session and marks task completed`() = runBlocking {
+        val t1 = Task(
+            id = "t1",
+            processId = "p1",
+            title = "Tarea Pendiente",
+            status = TaskStatus.PENDING,
+            createdAtEpochMillis = 1000L
+        )
+        taskRepository.saveTask(t1)
+
+        viewModel.onEvent(HomeUiEvent.CompleteTaskWithDuration(t1, 30))
+
+        val updatedTask = taskRepository.getTaskById("t1").first()
+        assertNotNull(updatedTask)
+        assertEquals(TaskStatus.COMPLETED, updatedTask?.status)
+        assertEquals(30 * 60 * 1000L, updatedTask?.timeWorkedMillis)
+
+        val sessions = workSessionRepository.getWorkSessionsByTaskId("t1").first()
+        assertEquals(1, sessions.size)
+        assertEquals(30 * 60 * 1000L, sessions.first().durationMillis)
     }
 }

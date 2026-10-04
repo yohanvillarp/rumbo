@@ -48,7 +48,9 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
+import tech.nikelyh.rumbo.core.model.GoalStatus
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.model.ProcessStatus
@@ -60,9 +62,10 @@ import tech.nikelyh.rumbo.core.model.WeeklyGoal
 fun ProcessDetailRoute(
     onNavigateToEditProcess: (String) -> Unit,
     onNavigateToCreateTask: (String) -> Unit,
-    onNavigateToLogProgress: (String) -> Unit,
-    onNavigateToStartSession: (String) -> Unit,
+    onNavigateToStartSession: (String, String?) -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateToLogProgress: ((String) -> Unit)? = null,
+    onNavigateToTask: (String) -> Unit = {},
     viewModel: ProcessDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -72,8 +75,8 @@ fun ProcessDetailRoute(
         onEvent = viewModel::onEvent,
         onNavigateToEditProcess = { onNavigateToEditProcess(viewModel.processId) },
         onNavigateToCreateTask = { onNavigateToCreateTask(viewModel.processId) },
-        onNavigateToLogProgress = { onNavigateToLogProgress(viewModel.processId) },
-        onNavigateToStartSession = { onNavigateToStartSession(viewModel.processId) },
+        onNavigateToStartSession = { taskId -> onNavigateToStartSession(viewModel.processId, taskId) },
+        onNavigateToTask = onNavigateToTask,
         modifier = modifier
     )
 }
@@ -84,8 +87,8 @@ internal fun ProcessDetailScreen(
     onEvent: (ProcessDetailUiEvent) -> Unit,
     onNavigateToEditProcess: () -> Unit,
     onNavigateToCreateTask: () -> Unit,
-    onNavigateToLogProgress: () -> Unit,
-    onNavigateToStartSession: () -> Unit,
+    onNavigateToStartSession: (String?) -> Unit,
+    onNavigateToTask: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     when (uiState) {
@@ -101,8 +104,8 @@ internal fun ProcessDetailScreen(
                 onEvent = onEvent,
                 onNavigateToEditProcess = onNavigateToEditProcess,
                 onNavigateToCreateTask = onNavigateToCreateTask,
-                onNavigateToLogProgress = onNavigateToLogProgress,
                 onNavigateToStartSession = onNavigateToStartSession,
+                onNavigateToTask = onNavigateToTask,
                 modifier = modifier
             )
         }
@@ -115,13 +118,14 @@ private fun ProcessDetailContent(
     onEvent: (ProcessDetailUiEvent) -> Unit,
     onNavigateToEditProcess: () -> Unit,
     onNavigateToCreateTask: () -> Unit,
-    onNavigateToLogProgress: () -> Unit,
-    onNavigateToStartSession: () -> Unit,
+    onNavigateToStartSession: (String?) -> Unit,
+    onNavigateToTask: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val process = uiState.process
     var showWeeklyGoalDialog by remember { mutableStateOf(false) }
     var weeklyGoalInput by remember { mutableStateOf("") }
+    var taskToCompleteWithDuration by remember { mutableStateOf<Task?>(null) }
 
     LazyColumn(
         modifier = modifier
@@ -132,6 +136,13 @@ private fun ProcessDetailContent(
         // Header
         item {
             RumboCard(modifier = Modifier.fillMaxWidth()) {
+                val processStatusSpanish = when (process.status) {
+                    ProcessStatus.ACTIVE -> "Activo"
+                    ProcessStatus.PAUSED -> "Pausado"
+                    ProcessStatus.COMPLETED -> "Completado"
+                    ProcessStatus.ARCHIVED -> "Archivado"
+                }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -143,7 +154,7 @@ private fun ProcessDetailContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = process.status.name,
+                        text = processStatusSpanish,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -185,6 +196,13 @@ private fun ProcessDetailContent(
             val goal = uiState.weeklyGoal
 
             if (goal != null) {
+                val goalStatusSpanish = when (goal.status) {
+                    GoalStatus.PENDING -> "Pendiente"
+                    GoalStatus.IN_PROGRESS -> "En progreso"
+                    GoalStatus.ACHIEVED -> "Alcanzado"
+                    GoalStatus.CANCELLED -> "Cancelado"
+                }
+
                 RumboCard(modifier = Modifier.fillMaxWidth()) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
@@ -193,7 +211,7 @@ private fun ProcessDetailContent(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Semana: ${goal.weekIdentifier}  •  Estado: ${goal.status.name}",
+                            text = "Semana: ${goal.weekIdentifier}  •  Estado: $goalStatusSpanish",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -262,40 +280,19 @@ private fun ProcessDetailContent(
         // Primary Actions
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                RumboButton(
+                    onClick = onNavigateToCreateTask,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    RumboButton(
-                        onClick = onNavigateToStartSession,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Iniciar Sesión")
-                    }
-                    RumboButton(
-                        onClick = onNavigateToLogProgress,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.TrendingUp, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Progreso")
-                    }
+                    Icon(Icons.Default.AddTask, contentDescription = null)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Nueva Tarea")
                 }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    RumboOutlinedButton(
-                        onClick = onNavigateToCreateTask,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.AddTask, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Nueva Tarea")
-                    }
                     RumboOutlinedButton(
                         onClick = onNavigateToEditProcess,
                         modifier = Modifier.weight(1f)
@@ -303,31 +300,6 @@ private fun ProcessDetailContent(
                         Icon(Icons.Default.Edit, contentDescription = null)
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Editar")
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (process.isActive) {
-                        OutlinedButton(
-                            onClick = { onEvent(ProcessDetailUiEvent.PauseProcess) },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.Pause, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Pausar")
-                        }
-                    } else if (process.status == ProcessStatus.PAUSED) {
-                        OutlinedButton(
-                            onClick = { onEvent(ProcessDetailUiEvent.ResumeProcess) },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Reactivar")
-                        }
                     }
 
                     if (process.isActive || process.status == ProcessStatus.PAUSED) {
@@ -384,7 +356,7 @@ private fun ProcessDetailContent(
 
         // Section: Pending Tasks
         item {
-            RumboSectionHeader(title = "Tareas del Proceso")
+            RumboSectionHeader(title = "Tareas Pendientes")
         }
 
         if (uiState.pendingTasks.isEmpty()) {
@@ -399,11 +371,50 @@ private fun ProcessDetailContent(
             items(uiState.pendingTasks, key = { it.id }) { taskItem ->
                 RumboTaskItem(
                     task = taskItem,
-                    onToggleStatus = { onEvent(ProcessDetailUiEvent.ToggleTaskStatus(it)) },
-                    onClick = {}
+                    processColorOrVisualId = process.colorOrVisualId,
+                    processName = process.name,
+                    onToggleStatus = { task ->
+                        if (!task.isCompleted && task.timeWorkedMillis == 0L) {
+                            taskToCompleteWithDuration = task
+                        } else {
+                            onEvent(ProcessDetailUiEvent.ToggleTaskStatus(task))
+                        }
+                    },
+                    onClick = { onNavigateToTask(taskItem.id) },
+                    onStartSession = { task -> onNavigateToStartSession(task.id) }
                 )
             }
         }
+
+        // Section: Completed Tasks (Preserved & Visible)
+        if (uiState.completedTasks.isNotEmpty()) {
+            item {
+                RumboSectionHeader(title = "Tareas Completadas")
+            }
+
+            items(uiState.completedTasks, key = { it.id }) { taskItem ->
+                RumboTaskItem(
+                    task = taskItem,
+                    processColorOrVisualId = process.colorOrVisualId,
+                    processName = process.name,
+                    onToggleStatus = { onEvent(ProcessDetailUiEvent.ToggleTaskStatus(it)) },
+                    onClick = { onNavigateToTask(taskItem.id) }
+                )
+            }
+        }
+    }
+
+    if (uiState.userMessage != null) {
+        AlertDialog(
+            onDismissRequest = { onEvent(ProcessDetailUiEvent.DismissUserMessage) },
+            title = { Text("Tareas Pendientes Existentes") },
+            text = { Text(uiState.userMessage) },
+            confirmButton = {
+                TextButton(onClick = { onEvent(ProcessDetailUiEvent.DismissUserMessage) }) {
+                    Text("Entendido")
+                }
+            }
+        )
     }
 
     if (showWeeklyGoalDialog) {
@@ -439,6 +450,17 @@ private fun ProcessDetailContent(
             }
         )
     }
+
+    if (taskToCompleteWithDuration != null) {
+        TaskCompletionDurationDialog(
+            taskTitle = taskToCompleteWithDuration!!.title,
+            onConfirm = { minutes ->
+                onEvent(ProcessDetailUiEvent.CompleteTaskWithDuration(taskToCompleteWithDuration!!, minutes))
+                taskToCompleteWithDuration = null
+            },
+            onDismiss = { taskToCompleteWithDuration = null }
+        )
+    }
 }
 
 @Preview(name = "Process Detail Light", showBackground = true)
@@ -467,6 +489,7 @@ private fun ProcessDetailScreenPreviewLight() {
                         createdAtEpochMillis = 1000L
                     )
                 ),
+                completedTasks = emptyList(),
                 milestones = emptyList(),
                 workSessions = emptyList(),
                 totalTimeInvestedMillis = 3600000L * 3,
@@ -481,7 +504,6 @@ private fun ProcessDetailScreenPreviewLight() {
             onEvent = {},
             onNavigateToEditProcess = {},
             onNavigateToCreateTask = {},
-            onNavigateToLogProgress = {},
             onNavigateToStartSession = {}
         )
     }

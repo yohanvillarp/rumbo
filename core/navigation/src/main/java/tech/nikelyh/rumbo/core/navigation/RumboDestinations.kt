@@ -50,6 +50,12 @@ object CreateProcessDestination : RumboNavigationDestination {
     override val destination = "create_process_destination"
 }
 
+object EditProcessDestination : RumboNavigationDestination {
+    override val route = "edit_process/{processId}"
+    override val destination = "edit_process_destination"
+    fun createRoute(processId: String) = "edit_process/$processId"
+}
+
 object CreateTaskDestination : RumboNavigationDestination {
     override val route = "create_task?processId={processId}"
     override val destination = "create_task_destination"

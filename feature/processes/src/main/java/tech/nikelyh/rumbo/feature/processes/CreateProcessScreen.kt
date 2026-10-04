@@ -1,6 +1,10 @@
 package tech.nikelyh.rumbo.feature.processes
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,14 +12,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -23,13 +30,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
+import tech.nikelyh.rumbo.core.designsystem.theme.ProcessColors
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 
 @Composable
@@ -89,7 +103,11 @@ internal fun CreateProcessScreen(
                     )
                 }
             },
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Words,
+                imeAction = ImeAction.Next
+            )
         )
 
         // Description
@@ -100,10 +118,14 @@ internal fun CreateProcessScreen(
             label = { Text("Descripción (opcional)") },
             placeholder = { Text("Objetivos y contexto general del proceso") },
             leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
-            maxLines = 3
+            maxLines = 3,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            )
         )
 
-        // Color Identifier
+        // Circular Color Picker (No English text labels!)
         Text(
             text = "Identificador Visual / Color",
             style = MaterialTheme.typography.labelSmall,
@@ -111,19 +133,37 @@ internal fun CreateProcessScreen(
         )
 
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            val colorOptions = listOf("teal", "blue", "purple", "amber", "emerald")
-            colorOptions.forEach { color ->
-                FilterChip(
-                    selected = uiState.colorOrVisualId == color,
-                    onClick = { onEvent(CreateProcessUiEvent.ColorChanged(color)) },
-                    label = { Text(color.replaceFirstChar { it.uppercase() }) }
-                )
+            ProcessColors.options.forEach { (colorKey, colorValue) ->
+                val isSelected = uiState.colorOrVisualId == colorKey
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(colorValue)
+                        .border(
+                            width = if (isSelected) 3.dp else 0.dp,
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                            shape = CircleShape
+                        )
+                        .clickable { onEvent(CreateProcessUiEvent.ColorChanged(colorKey)) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isSelected) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Color seleccionado",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             }
         }
 
-        // Initial Cost
+        // Initial Cost (KeyboardType.Decimal)
         OutlinedTextField(
             value = uiState.costInput,
             onValueChange = { onEvent(CreateProcessUiEvent.CostChanged(it)) },
@@ -141,7 +181,11 @@ internal fun CreateProcessScreen(
                     )
                 }
             },
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Decimal,
+                imeAction = ImeAction.Next
+            )
         )
 
         // Next Action
@@ -152,7 +196,11 @@ internal fun CreateProcessScreen(
             label = { Text("Siguiente Acción (opcional)") },
             placeholder = { Text("Ej. Comprar libro de referencia") },
             leadingIcon = { Icon(Icons.Default.PlayArrow, contentDescription = null) },
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Done
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))

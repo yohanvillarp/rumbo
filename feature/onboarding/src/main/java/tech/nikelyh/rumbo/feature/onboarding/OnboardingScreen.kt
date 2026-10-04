@@ -16,7 +16,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,7 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import tech.nikelyh.rumbo.core.designsystem.component.MascotState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
-import tech.nikelyh.rumbo.core.designsystem.component.RumboMascot
+import tech.nikelyh.rumbo.core.designsystem.component.RumboLogo
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 
 @Composable
@@ -95,17 +95,12 @@ internal fun OnboardingScreen(
                 enter = fadeIn() + slideInVertically(initialOffsetY = { -40 })
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    RumboMascot(
+                    RumboLogo(
+                        size = 112.dp,
                         state = MascotState.FOCUSED,
-                        size = 112.dp
+                        showSubtitle = false
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(
-                        text = "Rumbo",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "Te damos la bienvenida. Una herramienta serena para orientar tus procesos y actividades.",
                         style = MaterialTheme.typography.bodyLarge,
@@ -169,12 +164,12 @@ internal fun OnboardingScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !uiState.isSubmitting
                 ) {
-                    Text("Comenzar")
-                    Spacer(modifier = Modifier.padding(start = 8.dp))
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "Continuar"
+                        imageVector = Icons.Default.Explore,
+                        contentDescription = null
                     )
+                    Spacer(modifier = Modifier.padding(start = 8.dp))
+                    Text("Comenzar mi Rumbo")
                 }
             }
         }

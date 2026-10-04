@@ -11,13 +11,18 @@ import kotlinx.coroutines.launch
 import tech.nikelyh.rumbo.core.data.repository.ProcessRepository
 import tech.nikelyh.rumbo.core.data.repository.SettingsRepository
 import tech.nikelyh.rumbo.core.data.repository.TaskRepository
+import tech.nikelyh.rumbo.core.data.repository.WorkSessionRepository
+import tech.nikelyh.rumbo.core.model.TaskStatus
+import tech.nikelyh.rumbo.core.model.WorkSession
 import java.time.LocalTime
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     processRepository: ProcessRepository,
     private val taskRepository: TaskRepository,
+    private val workSessionRepository: WorkSessionRepository,
     settingsRepository: SettingsRepository
 ) : ViewModel() {
 
@@ -50,7 +55,8 @@ class HomeViewModel @Inject constructor(
                 userName = name,
                 continueProcess = featuredProcess,
                 activeProcesses = activeProcesses.take(3),
-                todayTasks = pendingTasks.take(5)
+                todayTasks = pendingTasks.take(5),
+                allProcesses = processes
             )
         }
     }.stateIn(
@@ -63,9 +69,27 @@ class HomeViewModel @Inject constructor(
         when (event) {
             is HomeUiEvent.OnToggleTaskStatus -> {
                 viewModelScope.launch {
-                    val updatedTask = event.task.updateStatus(
-                        if (event.task.isCompleted) tech.nikelyh.rumbo.core.model.TaskStatus.PENDING else tech.nikelyh.rumbo.core.model.TaskStatus.COMPLETED
+                    val newStatus = if (event.task.isCompleted) TaskStatus.PENDING else TaskStatus.COMPLETED
+                    val finishedAt = if (newStatus == TaskStatus.COMPLETED) System.currentTimeMillis() else null
+                    val updatedTask = event.task.updateStatus(newStatus, finishedAt = finishedAt)
+                    taskRepository.saveTask(updatedTask)
+                }
+            }
+            is HomeUiEvent.CompleteTaskWithDuration -> {
+                viewModelScope.launch {
+                    val durationMillis = event.durationMinutes * 60 * 1000L
+                    val now = System.currentTimeMillis()
+                    val session = WorkSession(
+                        id = UUID.randomUUID().toString(),
+                        processId = event.task.processId,
+                        taskId = event.task.id,
+                        startTimeEpochMillis = now - durationMillis,
+                        endTimeEpochMillis = now,
+                        durationMillis = durationMillis,
+                        note = "Duración registrada al culminar tarea"
                     )
+                    workSessionRepository.saveWorkSession(session)
+                    val updatedTask = event.task.addWorkedTime(durationMillis).updateStatus(TaskStatus.COMPLETED, finishedAt = now)
                     taskRepository.saveTask(updatedTask)
                 }
             }

@@ -4,5 +4,8 @@ import tech.nikelyh.rumbo.core.model.UserSettings
 
 sealed interface SettingsUiState {
     data object Loading : SettingsUiState
-    data class Success(val userSettings: UserSettings) : SettingsUiState
+    data class Success(
+        val userSettings: UserSettings,
+        val isResetting: Boolean = false
+    ) : SettingsUiState
 }

@@ -16,7 +16,8 @@ fun TaskEntity.asExternalModel(): Task = Task(
     dueDateEpochMillis = dueDateEpochMillis,
     estimatedDurationMinutes = estimatedDurationMinutes,
     cost = cost,
-    finishedAtEpochMillis = finishedAtEpochMillis
+    finishedAtEpochMillis = finishedAtEpochMillis,
+    timeWorkedMillis = timeWorkedMillis
 )
 
 fun Task.asEntity(): TaskEntity = TaskEntity(
@@ -30,5 +31,6 @@ fun Task.asEntity(): TaskEntity = TaskEntity(
     dueDateEpochMillis = dueDateEpochMillis,
     estimatedDurationMinutes = estimatedDurationMinutes,
     cost = cost,
-    finishedAtEpochMillis = finishedAtEpochMillis
+    finishedAtEpochMillis = finishedAtEpochMillis,
+    timeWorkedMillis = timeWorkedMillis
 )

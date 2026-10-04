@@ -7,5 +7,6 @@ sealed interface TasksUiEvent {
     data class ProcessFilterChanged(val processId: String?) : TasksUiEvent
     data class SearchQueryChanged(val query: String) : TasksUiEvent
     data class ToggleTaskStatus(val task: Task) : TasksUiEvent
+    data class CompleteTaskWithDuration(val task: Task, val durationMinutes: Long) : TasksUiEvent
     data class OnTaskSelected(val taskId: String) : TasksUiEvent
 }

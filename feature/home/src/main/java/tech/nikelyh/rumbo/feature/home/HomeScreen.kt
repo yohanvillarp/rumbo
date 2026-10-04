@@ -2,6 +2,7 @@ package tech.nikelyh.rumbo.feature.home
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,20 +11,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.AddTask
-import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,6 +45,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboProcessCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Process
@@ -52,7 +60,7 @@ fun HomeRoute(
     onNavigateToCreateProcess: () -> Unit = {},
     onNavigateToCreateTask: () -> Unit = {},
     onNavigateToLogProgress: () -> Unit = {},
-    onNavigateToStartSession: () -> Unit = {},
+    onNavigateToStartSession: (String?, String?) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -67,10 +75,11 @@ fun HomeRoute(
                 HomeUiEvent.OnCreateProcessClick -> onNavigateToCreateProcess()
                 HomeUiEvent.OnCreateTaskClick -> onNavigateToCreateTask()
                 HomeUiEvent.OnLogProgressClick -> onNavigateToLogProgress()
-                HomeUiEvent.OnStartSessionClick -> onNavigateToStartSession()
+                HomeUiEvent.OnStartSessionClick -> onNavigateToStartSession(null, null)
                 else -> viewModel.onEvent(event)
             }
         },
+        onNavigateToStartSession = onNavigateToStartSession,
         modifier = modifier
     )
 }
@@ -79,6 +88,7 @@ fun HomeRoute(
 internal fun HomeScreen(
     uiState: HomeUiState,
     onEvent: (HomeUiEvent) -> Unit,
+    onNavigateToStartSession: (String?, String?) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     when (uiState) {
@@ -105,6 +115,7 @@ internal fun HomeScreen(
             HomeContent(
                 uiState = uiState,
                 onEvent = onEvent,
+                onNavigateToStartSession = onNavigateToStartSession,
                 modifier = modifier
             )
         }
@@ -115,14 +126,17 @@ internal fun HomeScreen(
 private fun HomeContent(
     uiState: HomeUiState.Content,
     onEvent: (HomeUiEvent) -> Unit,
+    onNavigateToStartSession: (String?, String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    var taskToCompleteWithDuration by remember { mutableStateOf<Task?>(null) }
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         // Greeting Header
         item {
             Column {
@@ -147,11 +161,22 @@ private fun HomeContent(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { onEvent(HomeUiEvent.OnProcessClick(process.id)) }
                 ) {
-                    Text(
-                        text = "Continuar Proceso",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Explore,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "Tu Proceso en Rumbo",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = process.name,
@@ -171,11 +196,14 @@ private fun HomeContent(
                         onClick = { onEvent(HomeUiEvent.OnProcessClick(process.id)) },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Continuar")
-                        Spacer(modifier = Modifier.width(8.dp))
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            imageVector = Icons.Default.PlayCircle,
                             contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (!process.nextAction.isNullOrBlank()) "Reanudar Actividad" else "Reanudar Proceso",
+                            style = MaterialTheme.typography.titleMedium
                         )
                     }
                 }
@@ -220,72 +248,42 @@ private fun HomeContent(
             item {
                 RumboEmptyState(
                     message = "Sin tareas pendientes para hoy",
-                    icon = Icons.Default.Assignment,
+                    icon = Icons.AutoMirrored.Filled.Assignment,
                     modifier = Modifier.height(140.dp)
                 )
             }
         } else {
             items(uiState.todayTasks, key = { it.id }) { taskItem ->
+                val taskProcess = uiState.allProcesses.find { it.id == taskItem.processId }
                 RumboTaskItem(
                     task = taskItem,
-                    onToggleStatus = { onEvent(HomeUiEvent.OnToggleTaskStatus(it)) },
-                    onClick = { onEvent(HomeUiEvent.OnTaskClick(taskItem.id)) }
+                    processColorOrVisualId = taskProcess?.colorOrVisualId,
+                    processName = taskProcess?.name,
+                    onToggleStatus = { task ->
+                        if (!task.isCompleted && task.timeWorkedMillis == 0L) {
+                            taskToCompleteWithDuration = task
+                        } else {
+                            onEvent(HomeUiEvent.OnToggleTaskStatus(task))
+                        }
+                    },
+                    onClick = { onEvent(HomeUiEvent.OnTaskClick(taskItem.id)) },
+                    onStartSession = { task -> onNavigateToStartSession(task.processId, task.id) }
                 )
             }
         }
-
-        // Section 4: Quick Actions
-        item {
-            RumboSectionHeader(title = "Acciones Rápidas")
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.animateContentSize()
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    RumboOutlinedButton(
-                        onClick = { onEvent(HomeUiEvent.OnCreateTaskClick) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.AddTask, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Nueva Tarea")
-                    }
-                    RumboOutlinedButton(
-                        onClick = { onEvent(HomeUiEvent.OnCreateProcessClick) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.FolderOpen, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Nuevo Proceso")
-                    }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    RumboOutlinedButton(
-                        onClick = { onEvent(HomeUiEvent.OnLogProgressClick) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.TrendingUp, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Evaluar Progreso")
-                    }
-                    RumboOutlinedButton(
-                        onClick = { onEvent(HomeUiEvent.OnStartSessionClick) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Iniciar Sesión")
-                    }
-                }
-            }
-        }
     }
+
+    if (taskToCompleteWithDuration != null) {
+        TaskCompletionDurationDialog(
+            taskTitle = taskToCompleteWithDuration!!.title,
+            onConfirm = { minutes ->
+                onEvent(HomeUiEvent.CompleteTaskWithDuration(taskToCompleteWithDuration!!, minutes))
+                taskToCompleteWithDuration = null
+            },
+            onDismiss = { taskToCompleteWithDuration = null }
+        )
+    }
+}
 }
 
 @Preview(name = "Home Light", showBackground = true)

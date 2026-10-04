@@ -13,12 +13,20 @@ fun NavController.navigateToHome(navOptions: NavOptions? = null) {
 
 fun NavGraphBuilder.homeScreen(
     onNavigateToProcess: (String) -> Unit,
-    onNavigateToTask: (String) -> Unit
+    onNavigateToTask: (String) -> Unit,
+    onNavigateToCreateProcess: () -> Unit,
+    onNavigateToCreateTask: () -> Unit,
+    onNavigateToLogProgress: () -> Unit,
+    onNavigateToStartSession: (String?, String?) -> Unit
 ) {
     composable(route = HomeDestination.route) {
         HomeRoute(
             onNavigateToProcess = onNavigateToProcess,
-            onNavigateToTask = onNavigateToTask
+            onNavigateToTask = onNavigateToTask,
+            onNavigateToCreateProcess = onNavigateToCreateProcess,
+            onNavigateToCreateTask = onNavigateToCreateTask,
+            onNavigateToLogProgress = onNavigateToLogProgress,
+            onNavigateToStartSession = onNavigateToStartSession
         )
     }
 }

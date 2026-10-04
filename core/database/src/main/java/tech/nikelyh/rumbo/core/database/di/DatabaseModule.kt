@@ -9,12 +9,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import tech.nikelyh.rumbo.core.database.RumboDatabase
-import tech.nikelyh.rumbo.core.database.model.ProcessEntity
-import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
@@ -24,8 +19,7 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun providesRumboDatabase(
-        @ApplicationContext context: Context,
-        databaseProvider: Provider<RumboDatabase>
+        @ApplicationContext context: Context
     ): RumboDatabase {
         return Room.databaseBuilder(
             context,
@@ -34,21 +28,11 @@ object DatabaseModule {
         ).addCallback(object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
-                CoroutineScope(Dispatchers.IO).launch {
-                    val generalProcess = ProcessEntity(
-                        id = "general",
-                        name = "General",
-                        description = "Proceso del sistema para tareas generales",
-                        statusName = "ACTIVE",
-                        createdAtEpochMillis = System.currentTimeMillis(),
-                        finishedAtEpochMillis = null,
-                        colorOrVisualId = "system_default",
-                        accumulatedDirectCost = 0.0,
-                        nextAction = null,
-                        isSystemProcess = true
-                    )
-                    databaseProvider.get().processDao().insertOrUpdate(generalProcess)
-                }
+                val now = System.currentTimeMillis()
+                db.execSQL(
+                    "INSERT OR REPLACE INTO processes (id, name, description, statusName, createdAtEpochMillis, finishedAtEpochMillis, colorOrVisualId, accumulatedDirectCost, nextAction, isSystemProcess) " +
+                    "VALUES ('general', 'General', 'Proceso del sistema para tareas generales', 'ACTIVE', $now, NULL, 'system_default', 0.0, NULL, 1)"
+                )
             }
         }).build()
     }

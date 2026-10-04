@@ -1,5 +1,6 @@
 package tech.nikelyh.rumbo.core.designsystem.component
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
@@ -12,8 +13,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,6 +33,10 @@ fun RumboTopBar(
     actionIconContentDescription: String? = null,
     onActionClick: () -> Unit = {}
 ) {
+    val containerColor = MaterialTheme.colorScheme.surfaceVariant
+    val onContainerColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val accentColor = MaterialTheme.colorScheme.primary
+
     TopAppBar(
         title = {
             Text(
@@ -35,13 +44,30 @@ fun RumboTopBar(
                 style = MaterialTheme.typography.titleLarge
             )
         },
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .drawBehind {
+                val w = size.width
+                val h = size.height
+
+                // Draw base background color that responds to theme
+                drawRect(color = containerColor)
+
+                // Clean bottom divider line in a gentle tone
+                drawLine(
+                    color = onContainerColor.copy(alpha = 0.08f),
+                    start = Offset(0f, h),
+                    end = Offset(w, h),
+                    strokeWidth = 1.dp.toPx()
+                )
+            },
         navigationIcon = {
             if (navigationIcon != null) {
                 IconButton(onClick = onNavigationClick) {
                     Icon(
                         imageVector = navigationIcon,
-                        contentDescription = navigationIconContentDescription
+                        contentDescription = navigationIconContentDescription,
+                        tint = onContainerColor
                     )
                 }
             }
@@ -51,14 +77,17 @@ fun RumboTopBar(
                 IconButton(onClick = onActionClick) {
                     Icon(
                         imageVector = actionIcon,
-                        contentDescription = actionIconContentDescription
+                        contentDescription = actionIconContentDescription,
+                        tint = onContainerColor
                     )
                 }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            titleContentColor = MaterialTheme.colorScheme.onBackground
+            containerColor = Color.Transparent,
+            titleContentColor = onContainerColor,
+            navigationIconContentColor = onContainerColor,
+            actionIconContentColor = onContainerColor
         )
     )
 }

@@ -41,8 +41,8 @@ class StartSessionViewModelTest {
             savedStateHandle,
             workSessionRepository,
             progressRepository,
-            processRepository,
-            taskRepository
+            taskRepository,
+            processRepository
         )
     }
 
@@ -80,5 +80,45 @@ class StartSessionViewModelTest {
         val entry = savedEntries.first()
         assertEquals(100, entry.progressLevel)
         assertEquals("Buena sesión", entry.note)
+    }
+
+    @Test
+    fun `forgot timer with manual minutes sets duration and transitions to finished`() = runBlocking {
+        viewModel.onEvent(StartSessionUiEvent.ForgotTimerClicked)
+        val stateWithDialog = viewModel.uiState.value
+        assertTrue(stateWithDialog.showForgotTimerDialog)
+
+        viewModel.onEvent(StartSessionUiEvent.ConfirmManualMinutes("40"))
+
+        val stateAfterConfirm = viewModel.uiState.value
+        assertTrue(stateAfterConfirm.isSessionFinished)
+        assertEquals(40 * 60 * 1000L, stateAfterConfirm.elapsedTimeMillis)
+    }
+
+    @Test
+    fun `restores active timer state from repository when reopening session`() = runBlocking {
+        val now = System.currentTimeMillis()
+        val activeState = tech.nikelyh.rumbo.core.model.ActiveSessionState(
+            processId = "p1",
+            taskId = "t1",
+            startTimeEpochMillis = now - 600000L,
+            lastResumeEpochMillis = now - 300000L,
+            accumulatedTimeMillis = 300000L,
+            isRunning = true
+        )
+        workSessionRepository.saveActiveSessionState(activeState)
+
+        val savedHandle = SavedStateHandle(mapOf("processId" to "p1", "taskId" to "t1"))
+        val restoredViewModel = StartSessionViewModel(
+            savedHandle,
+            workSessionRepository,
+            progressRepository,
+            taskRepository,
+            processRepository
+        )
+
+        val state = restoredViewModel.uiState.first { it.elapsedTimeMillis >= 600000L }
+        assertTrue(state.isTimerRunning)
+        assertTrue(state.elapsedTimeMillis >= 600000L)
     }
 }

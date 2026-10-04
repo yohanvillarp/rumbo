@@ -11,11 +11,13 @@ data class Task(
     val dueDateEpochMillis: Long? = null,
     val estimatedDurationMinutes: Int? = null,
     val cost: Double = 0.0,
-    val finishedAtEpochMillis: Long? = null
+    val finishedAtEpochMillis: Long? = null,
+    val timeWorkedMillis: Long = 0L
 ) {
     init {
         require(cost >= 0.0) { "Task cost cannot be negative" }
         require(processId.isNotBlank()) { "Task must belong to a valid processId" }
+        require(timeWorkedMillis >= 0L) { "Worked time cannot be negative" }
     }
 
     val isCompleted: Boolean
@@ -27,6 +29,11 @@ data class Task(
             status = TaskStatus.COMPLETED,
             finishedAtEpochMillis = finishedAt
         )
+    }
+
+    fun addWorkedTime(additionalMillis: Long): Task {
+        require(additionalMillis >= 0L) { "Worked time cannot be negative" }
+        return copy(timeWorkedMillis = timeWorkedMillis + additionalMillis)
     }
 
     fun updateStatus(newStatus: TaskStatus, finishedAt: Long? = null): Task {

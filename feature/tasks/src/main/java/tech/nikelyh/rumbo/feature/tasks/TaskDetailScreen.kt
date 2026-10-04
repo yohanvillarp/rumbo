@@ -40,10 +40,15 @@ import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
 
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlayCircle
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
+
 @Composable
 fun TaskDetailRoute(
     onTaskDeleted: () -> Unit,
     modifier: Modifier = Modifier,
+    onStartSession: (String, String) -> Unit = { _, _ -> },
     viewModel: TaskDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -58,6 +63,7 @@ fun TaskDetailRoute(
                 viewModel.onEvent(event)
             }
         },
+        onStartSession = onStartSession,
         modifier = modifier
     )
 }
@@ -66,9 +72,11 @@ fun TaskDetailRoute(
 internal fun TaskDetailScreen(
     uiState: TaskDetailUiState,
     onEvent: (TaskDetailUiEvent) -> Unit,
+    onStartSession: (String, String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showCompletionDialog by remember { mutableStateOf(false) }
 
     when (uiState) {
         TaskDetailUiState.Loading -> {
@@ -87,6 +95,17 @@ internal fun TaskDetailScreen(
                 RumboSectionHeader(title = "Detalle de Tarea")
 
                 val task = uiState.task
+                val statusSpanish = when (task.status) {
+                    TaskStatus.PENDING -> "Pendiente"
+                    TaskStatus.IN_PROGRESS -> "En progreso"
+                    TaskStatus.COMPLETED -> "Completada"
+                    TaskStatus.CANCELLED -> "Cancelada"
+                }
+                val prioritySpanish = when (task.priority) {
+                    Priority.LOW -> "Baja"
+                    Priority.MEDIUM -> "Media"
+                    Priority.HIGH -> "Alta"
+                }
 
                 RumboCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
@@ -100,7 +119,7 @@ internal fun TaskDetailScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = task.status.name,
+                            text = statusSpanish,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -109,7 +128,7 @@ internal fun TaskDetailScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Proceso: ${uiState.processName}  •  Prioridad: ${task.priority.name}",
+                        text = "Proceso: ${uiState.processName}  •  Prioridad: $prioritySpanish",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -132,6 +151,19 @@ internal fun TaskDetailScreen(
                         )
                     }
 
+                    if (task.timeWorkedMillis > 0) {
+                        val minutes = task.timeWorkedMillis / 60000
+                        val hours = minutes / 60
+                        val remainingMinutes = minutes % 60
+                        val timeText = if (hours > 0) "${hours}h ${remainingMinutes}m" else "${minutes}m"
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Tiempo trabajado: $timeText",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
                     task.estimatedDurationMinutes?.let { minutes ->
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
@@ -144,9 +176,28 @@ internal fun TaskDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Actions
+                // Actions: Primary action is Iniciar / Continuar Sesión
+                val isTaskStarted = uiState.hasStartedSession || task.timeWorkedMillis > 0L || task.status == TaskStatus.IN_PROGRESS
                 RumboButton(
-                    onClick = { onEvent(TaskDetailUiEvent.ToggleStatus) },
+                    onClick = { onStartSession(task.id, task.processId) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = if (isTaskStarted) Icons.Default.PlayCircle else Icons.Default.PlayArrow,
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(if (isTaskStarted) "Continuar Sesión" else "Iniciar Sesión")
+                }
+
+                RumboOutlinedButton(
+                    onClick = {
+                        if (!task.isCompleted && task.timeWorkedMillis == 0L) {
+                            showCompletionDialog = true
+                        } else {
+                            onEvent(TaskDetailUiEvent.ToggleStatus)
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
@@ -164,6 +215,17 @@ internal fun TaskDetailScreen(
                     Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Eliminar Tarea", color = MaterialTheme.colorScheme.error)
+                }
+
+                if (showCompletionDialog) {
+                    TaskCompletionDurationDialog(
+                        taskTitle = task.title,
+                        onConfirm = { minutes ->
+                            onEvent(TaskDetailUiEvent.CompleteWithDuration(minutes))
+                            showCompletionDialog = false
+                        },
+                        onDismiss = { showCompletionDialog = false }
+                    )
                 }
 
                 if (showDeleteDialog) {
