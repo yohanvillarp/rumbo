@@ -83,6 +83,16 @@ internal fun StartSessionScreen(
     var manualMinutesText by remember { mutableStateOf("") }
     var showCancelConfirmDialog by remember { mutableStateOf(false) }
 
+    if (uiState.isLoading) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            androidx.compose.material3.CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+        }
+        return
+    }
+
     if (!uiState.isSessionFinished) {
         // Immersive Fullscreen Timer Mode
         Box(
@@ -96,66 +106,64 @@ internal fun StartSessionScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Header: Task and Process details (calm and focused)
+                // Header: Task and Process details (stable layout, never swaps positions)
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(top = 24.dp)
                 ) {
                     val process = uiState.availableProcesses.firstOrNull { it.id == uiState.selectedProcessId }
                     val processName = process?.name ?: "General"
+                    val titleText = if (uiState.selectedTaskTitle.isNotBlank()) uiState.selectedTaskTitle else "Sesión de Trabajo"
 
-                    if (uiState.selectedTaskTitle.isNotBlank()) {
-                        Text(
-                            text = uiState.selectedTaskTitle,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = processName,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    } else {
-                        Text(
-                            text = processName,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Sesión de Trabajo",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
+                    Text(
+                        text = titleText,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = processName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.secondary,
+                        textAlign = TextAlign.Center
+                    )
                 }
 
-                // Center: Big, Serene Fullscreen Timer Counter
+                // Center: Big, Serene Fullscreen Timer Counter with Tabular Numbers (tnum)
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(
-                        text = formatMillis(uiState.elapsedTimeMillis),
-                        style = MaterialTheme.typography.displayLarge.copy(
-                            fontSize = 68.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = (-1.5).sp
-                        ),
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.Center
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = formatMillis(uiState.elapsedTimeMillis),
+                            style = MaterialTheme.typography.displayLarge.copy(
+                                fontSize = 64.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFeatureSettings = "tnum"
+                            ),
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center
+                        )
+                    }
 
-                    Text(
-                        text = if (uiState.isTimerRunning) "Sesión en curso" else "Sesión en pausa",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (uiState.isTimerRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (uiState.isTimerRunning) "Sesión en curso" else "Sesión en pausa",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (uiState.isTimerRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                        )
+                    }
                 }
 
                 // Bottom: Action Controls
@@ -244,7 +252,9 @@ internal fun StartSessionScreen(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = formatMillis(uiState.elapsedTimeMillis),
-                        style = MaterialTheme.typography.displayMedium,
+                        style = MaterialTheme.typography.displayMedium.copy(
+                            fontFeatureSettings = "tnum"
+                        ),
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -394,7 +404,11 @@ private fun formatMillis(millis: Long): String {
 private fun StartSessionScreenPreviewLight() {
     RumboTheme(darkTheme = false) {
         StartSessionScreen(
-            uiState = StartSessionUiState(elapsedTimeMillis = 3600000L + 120000L),
+            uiState = StartSessionUiState(
+                isLoading = false,
+                elapsedTimeMillis = 3600000L + 120000L,
+                selectedTaskTitle = "Organizar documentos del hogar"
+            ),
             onEvent = {}
         )
     }

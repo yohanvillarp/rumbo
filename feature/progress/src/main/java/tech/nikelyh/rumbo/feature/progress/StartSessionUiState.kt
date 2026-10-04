@@ -5,6 +5,7 @@ import tech.nikelyh.rumbo.core.model.ProgressLevel
 import tech.nikelyh.rumbo.core.model.Task
 
 data class StartSessionUiState(
+    val isLoading: Boolean = true,
     val selectedProcessId: String = "general",
     val selectedTaskId: String? = null,
     val selectedTaskTitle: String = "",
