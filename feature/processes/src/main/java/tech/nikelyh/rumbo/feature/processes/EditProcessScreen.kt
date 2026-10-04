@@ -87,7 +87,7 @@ internal fun EditProcessScreen(
     ) {
         RumboSectionHeader(
             title = "Editar Proceso",
-            subtitle = "Actualiza el nombre, costo directo o siguiente acción."
+            subtitle = "Actualiza los detalles o el siguiente paso de tu proceso."
         )
 
         // Name
@@ -96,7 +96,7 @@ internal fun EditProcessScreen(
             onValueChange = { onEvent(EditProcessUiEvent.NameChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Nombre del proceso *") },
-            placeholder = { Text("Ej. Plan de bienestar y salud") },
+            placeholder = { Text("Ej. Renovar el hogar o Plan de estudio") },
             leadingIcon = { Icon(Icons.Default.Folder, contentDescription = null) },
             isError = uiState.nameError != null,
             supportingText = {
@@ -121,7 +121,7 @@ internal fun EditProcessScreen(
             onValueChange = { onEvent(EditProcessUiEvent.DescriptionChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Descripción (opcional)") },
-            placeholder = { Text("Objetivos, metas y contexto general del proceso") },
+            placeholder = { Text("¿En qué consiste este proyecto y qué esperas lograr?") },
             leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
             maxLines = 3,
             keyboardOptions = KeyboardOptions(
@@ -132,7 +132,7 @@ internal fun EditProcessScreen(
 
         // Circular Color Picker (No English text labels!)
         Text(
-            text = "Identificador Visual / Color",
+            text = "Color representativo",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -173,7 +173,7 @@ internal fun EditProcessScreen(
             value = uiState.costInput,
             onValueChange = { onEvent(EditProcessUiEvent.CostChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Costo Inicial Directo ($)") },
+            label = { Text("Presupuesto o costo inicial ($)") },
             placeholder = { Text("0.0") },
             leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null) },
             isError = uiState.costError != null,
@@ -198,8 +198,8 @@ internal fun EditProcessScreen(
             value = uiState.nextAction,
             onValueChange = { onEvent(EditProcessUiEvent.NextActionChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Siguiente Acción (opcional)") },
-            placeholder = { Text("Ej. Definir lista de prioridades") },
+            label = { Text("Primer paso a realizar (opcional)") },
+            placeholder = { Text("Ej. Revisar opciones y armar lista") },
             leadingIcon = { Icon(Icons.Default.PlayArrow, contentDescription = null) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(

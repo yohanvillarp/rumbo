@@ -309,11 +309,6 @@ private fun OnboardingTutorialStep(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text(
-                    text = "Puntos Clave",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
                 step.keyPoints.forEach { point ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),

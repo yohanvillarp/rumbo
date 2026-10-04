@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Event
@@ -53,6 +54,7 @@ private val TASK_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern
 fun TaskDetailRoute(
     onTaskDeleted: () -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateToEditTask: (String) -> Unit = {},
     onStartSession: (String, String) -> Unit = { _, _ -> },
     viewModel: TaskDetailViewModel = hiltViewModel()
 ) {
@@ -68,6 +70,11 @@ fun TaskDetailRoute(
                 viewModel.onEvent(event)
             }
         },
+        onNavigateToEditTask = {
+            if (uiState is TaskDetailUiState.Content) {
+                onNavigateToEditTask((uiState as TaskDetailUiState.Content).task.id)
+            }
+        },
         onStartSession = onStartSession,
         modifier = modifier
     )
@@ -77,6 +84,7 @@ fun TaskDetailRoute(
 internal fun TaskDetailScreen(
     uiState: TaskDetailUiState,
     onEvent: (TaskDetailUiEvent) -> Unit,
+    onNavigateToEditTask: () -> Unit = {},
     onStartSession: (String, String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
@@ -237,13 +245,27 @@ internal fun TaskDetailScreen(
                     Text(if (task.isCompleted) "Marcar Pendiente" else "Marcar Completada")
                 }
 
-                RumboOutlinedButton(
-                    onClick = { showDeleteDialog = true },
-                    modifier = Modifier.fillMaxWidth()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Eliminar Tarea", color = MaterialTheme.colorScheme.error)
+                    RumboOutlinedButton(
+                        onClick = onNavigateToEditTask,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Editar")
+                    }
+
+                    RumboOutlinedButton(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    }
                 }
 
                 if (showCompletionDialog) {

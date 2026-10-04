@@ -2,42 +2,41 @@ package tech.nikelyh.rumbo.feature.onboarding
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.TrendingUp
 import tech.nikelyh.rumbo.core.designsystem.component.MascotState
 
 /**
  * Proveedor de contenido del tutorial interactivo y guía de Rumbo.
- * Diseñado bajo el patrón de registro escalable para admitir fácilmente
- * nuevos pasos a medida que el sistema agregue funcionalidades.
+ * Diseñado con lenguaje cercano, humano y empático para cualquier persona.
  */
 object TutorialContent {
     val steps: List<TutorialStep> = listOf(
         TutorialStep(
             id = "processes",
-            title = "Procesos y Subprocesos",
-            subtitle = "Estructura tus metas y actividades",
-            description = "Los procesos son tus proyectos o áreas clave de vida. Puedes anidar subprocesos, asignar colores e hitos para darles orden.",
+            title = "¿Qué es un Proceso?",
+            subtitle = "Tu gran objetivo dividido en pasos posibles",
+            description = "Un proceso es una tarea grande que para completarse necesita de varias tareas más pequeñas. Si uno de esos pasos también es grande, se convierte en otro proceso dentro de él.",
             keyPoints = listOf(
-                "Proceso General siempre listo para tus actividades diarias",
-                "Crea jerarquías de procesos principales y secundarios",
-                "Define costos iniciales y hitos de avance",
-                "Puedes finalizar y reabrir procesos cuando lo necesites"
+                "Divide lo que parece difícil en pasos simples y alcanzables",
+                "Si una tarea crece mucho, conviértela en un nuevo proceso",
+                "Cuentas con un espacio General para tus tareas del día a día",
+                "Puedes pausar, culminar y reactivar tus procesos cuando quieras"
             ),
             icon = Icons.Default.AccountTree,
             mascotState = MascotState.FOCUSED
         ),
         TutorialStep(
             id = "tasks",
-            title = "Tareas y Límites",
-            subtitle = "Acciones claras con día y hora de cierre",
-            description = "Cada tarea pertenece a un proceso. Puedes fijar fecha y hora límite, costos directos y prioridades para saber qué sigue.",
+            title = "Tus Tareas Diarias",
+            subtitle = "Acciones concretas con día y hora de cierre",
+            description = "Las tareas son los pasos prácticos de tu proceso. Cada una tiene su fecha y hora límite para que siempre sepas cuál es el siguiente paso y cuándo terminarlo.",
             keyPoints = listOf(
-                "Fecha y hora límite configurables con un solo toque",
-                "Asignación de costos para monitorear tu inversión",
-                "Filtrado rápido por prioridad y proceso",
-                "Cálculo automático de duración total al culminar"
+                "Elige la fecha y la hora límite de forma rápida y sencilla",
+                "Puedes editar y ajustar tus tareas en cualquier momento",
+                "Asigna un costo estimado si la actividad requiere alguna compra",
+                "Calculamos automáticamente el tiempo que le dedicas"
             ),
             icon = Icons.AutoMirrored.Filled.Assignment,
             mascotState = MascotState.DEFAULT
@@ -45,28 +44,28 @@ object TutorialContent {
         TutorialStep(
             id = "sessions",
             title = "Sesiones de Enfoque",
-            subtitle = "Medición real de tu tiempo invertido",
-            description = "Inicia el temporizador en cualquier tarea para registrar el tiempo que realmente dedicas. Tu tiempo sigue corriendo incluso si sales de la aplicación.",
+            subtitle = "Dedica tiempo con calma y concentración",
+            description = "Inicia el temporizador en cualquier tarea para avanzar con serenidad. La aplicación cuidará tu tiempo en segundo plano mientras trabajas a tu propio ritmo.",
             keyPoints = listOf(
-                "Cronómetro persistente en segundo plano",
-                "Registra notas de lo que lograste en cada bloque",
-                "El tiempo acumulado se respeta como base al marcar completada",
-                "Permite pausar o cancelar sesiones sin perder el control"
+                "El cronómetro sigue corriendo aunque salgas de la app",
+                "Anota tus aprendizajes o ideas al terminar cada sesión",
+                "Al marcar la tarea como lista, respetamos todo el tiempo acumulado",
+                "Pausa o cancela tu sesión libremente cuando lo necesites"
             ),
             icon = Icons.Default.Timer,
             mascotState = MascotState.FOCUSED
         ),
         TutorialStep(
             id = "progress",
-            title = "Métricas e Inversión",
-            subtitle = "Conoce a fondo a dónde va tu tiempo",
-            description = "Visualiza gráficos de inversión de tiempo y dinero por proceso, facilitando la toma de decisiones serenas y conscientes.",
+            title = "Tu Progreso Real",
+            subtitle = "Descubre a dónde va tu tiempo y energía",
+            description = "Visualiza de forma clara y amable cuánto tiempo y dedicación le has entregado a cada proyecto. Cada minuto invertido te acerca a lo que deseas lograr.",
             keyPoints = listOf(
-                "Resumen diario y semanal de tiempo trabajado",
-                "Distribución de costos acumulados por proyecto",
-                "Historial detallado de todas tus sesiones de enfoque"
+                "Resumen diario y semanal fácil de comprender",
+                "Conoce el total invertido en cada uno de tus proyectos",
+                "Celebra tus avances y reflexiona sobre tu ritmo de vida"
             ),
-            icon = Icons.Default.TrendingUp,
+            icon = Icons.AutoMirrored.Filled.TrendingUp,
             mascotState = MascotState.SUCCESS
         )
     )

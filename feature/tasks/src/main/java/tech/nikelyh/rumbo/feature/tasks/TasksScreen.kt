@@ -13,8 +13,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -83,9 +83,9 @@ internal fun TasksScreen(
         }
         TasksUiState.Empty -> {
             RumboEmptyState(
-                message = "Sin tareas registradas",
-                subtitle = "Crea tu primera tarea para dar seguimiento a tus actividades.",
-                icon = Icons.Default.Assignment,
+                message = "Sin tareas por ahora",
+                subtitle = "Agrega una tarea para saber exactamente qué hacer hoy o en los próximos días.",
+                icon = Icons.AutoMirrored.Filled.Assignment,
                 actionLabel = "Crear Tarea",
                 onActionClick = onCreateTaskClick,
                 modifier = modifier
@@ -119,7 +119,7 @@ private fun TasksContent(
     ) {
         RumboSectionHeader(
             title = "Tareas",
-            subtitle = "Pendientes, hoy y completadas"
+            subtitle = "Tus pasos y actividades del día a día"
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -164,7 +164,7 @@ private fun TasksContent(
         if (uiState.tasks.isEmpty()) {
             RumboEmptyState(
                 message = "No hay tareas en este filtro",
-                icon = Icons.Default.Assignment,
+                icon = Icons.AutoMirrored.Filled.Assignment,
                 modifier = Modifier.weight(1f)
             )
         } else {

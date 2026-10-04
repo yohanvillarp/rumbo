@@ -50,6 +50,7 @@ import tech.nikelyh.rumbo.core.model.ActiveSessionState
 import tech.nikelyh.rumbo.core.navigation.CreateProcessDestination
 import tech.nikelyh.rumbo.core.navigation.CreateTaskDestination
 import tech.nikelyh.rumbo.core.navigation.EditProcessDestination
+import tech.nikelyh.rumbo.core.navigation.EditTaskDestination
 import tech.nikelyh.rumbo.core.navigation.HomeDestination
 import tech.nikelyh.rumbo.core.navigation.LogProgressDestination
 import tech.nikelyh.rumbo.core.navigation.OnboardingDestination
@@ -78,6 +79,7 @@ import tech.nikelyh.rumbo.feature.progress.navigation.progressScreen
 import tech.nikelyh.rumbo.feature.settings.navigation.navigateToSettings
 import tech.nikelyh.rumbo.feature.settings.navigation.settingsScreen
 import tech.nikelyh.rumbo.feature.tasks.navigation.navigateToCreateTask
+import tech.nikelyh.rumbo.feature.tasks.navigation.navigateToEditTask
 import tech.nikelyh.rumbo.feature.tasks.navigation.navigateToTaskDetail
 import tech.nikelyh.rumbo.feature.tasks.navigation.navigateToTasks
 import tech.nikelyh.rumbo.feature.tasks.navigation.tasksScreen
@@ -177,6 +179,7 @@ fun RumboApp(
                                     CreateProcessDestination.route -> "Nuevo Proceso"
                                     EditProcessDestination.route -> "Editar Proceso"
                                     CreateTaskDestination.route -> "Nueva Tarea"
+                                    EditTaskDestination.route -> "Editar Tarea"
                                     ProcessDetailDestination.route -> "Detalle de Proceso"
                                     TaskDetailDestination.route -> "Detalle de Tarea"
                                     StartSessionDestination.route -> "Sesión de Trabajo"
@@ -296,7 +299,13 @@ fun RumboApp(
                                 onNavigateToCreateTask = {
                                     navController.navigateToCreateTask()
                                 },
+                                onNavigateToEditTask = { taskId ->
+                                    navController.navigateToEditTask(taskId)
+                                },
                                 onTaskCreated = {
+                                    navController.popBackStack()
+                                },
+                                onTaskUpdated = {
                                     navController.popBackStack()
                                 },
                                 onTaskDeleted = {

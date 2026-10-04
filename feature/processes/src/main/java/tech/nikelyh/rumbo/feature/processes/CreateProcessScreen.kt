@@ -96,7 +96,7 @@ internal fun CreateProcessScreen(
     ) {
         RumboSectionHeader(
             title = "Nuevo Proceso",
-            subtitle = "Define el nombre, costos e hito inicial de tu proceso."
+            subtitle = "Organiza una meta o proyecto que requiere varios pasos o tareas para concretarse."
         )
 
         // Name
@@ -105,7 +105,7 @@ internal fun CreateProcessScreen(
             onValueChange = { onEvent(CreateProcessUiEvent.NameChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Nombre del proceso *") },
-            placeholder = { Text("Ej. Plan de bienestar y salud") },
+            placeholder = { Text("Ej. Renovar el hogar o Plan de estudio") },
             leadingIcon = { Icon(Icons.Default.Folder, contentDescription = null) },
             isError = uiState.nameError != null,
             supportingText = {
@@ -130,7 +130,7 @@ internal fun CreateProcessScreen(
             onValueChange = { onEvent(CreateProcessUiEvent.DescriptionChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Descripción (opcional)") },
-            placeholder = { Text("Objetivos, metas y contexto general del proceso") },
+            placeholder = { Text("¿En qué consiste este proyecto y qué esperas lograr?") },
             leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
             maxLines = 3,
             keyboardOptions = KeyboardOptions(
@@ -149,7 +149,7 @@ internal fun CreateProcessScreen(
                 value = selectedParentLabel,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Proceso Padre (opcional)") },
+                label = { Text("¿Forma parte de otro proceso? (opcional)") },
                 leadingIcon = { Icon(Icons.Default.AccountTree, contentDescription = null) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentDropdownExpanded) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
@@ -163,7 +163,7 @@ internal fun CreateProcessScreen(
                 onDismissRequest = { parentDropdownExpanded = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text("Ninguno (Proceso Principal)") },
+                    text = { Text("Ninguno (Es un proceso principal)") },
                     onClick = {
                         onEvent(CreateProcessUiEvent.ParentProcessSelected(null))
                         parentDropdownExpanded = false
@@ -183,7 +183,7 @@ internal fun CreateProcessScreen(
 
         // Circular Color Picker (No English text labels!)
         Text(
-            text = "Identificador Visual / Color",
+            text = "Color representativo",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -224,7 +224,7 @@ internal fun CreateProcessScreen(
             value = uiState.costInput,
             onValueChange = { onEvent(CreateProcessUiEvent.CostChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Costo Inicial Directo ($)") },
+            label = { Text("Presupuesto o costo inicial ($)") },
             placeholder = { Text("0.0") },
             leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null) },
             isError = uiState.costError != null,
@@ -249,8 +249,8 @@ internal fun CreateProcessScreen(
             value = uiState.nextAction,
             onValueChange = { onEvent(CreateProcessUiEvent.NextActionChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Siguiente Acción (opcional)") },
-            placeholder = { Text("Ej. Definir lista de prioridades") },
+            label = { Text("Primer paso a realizar (opcional)") },
+            placeholder = { Text("Ej. Revisar opciones y armar lista") },
             leadingIcon = { Icon(Icons.Default.PlayArrow, contentDescription = null) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(

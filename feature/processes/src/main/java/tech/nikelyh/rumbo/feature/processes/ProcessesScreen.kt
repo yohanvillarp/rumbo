@@ -75,8 +75,8 @@ internal fun ProcessesScreen(
         }
         ProcessesUiState.Empty -> {
             RumboEmptyState(
-                message = "No tienes procesos creados",
-                subtitle = "Crea un proceso estructurado para dar rumbo a tus metas.",
+                message = "Aún no tienes procesos",
+                subtitle = "Crea un proceso para dividir un proyecto grande en tareas más sencillas.",
                 mascotState = MascotState.DEFAULT,
                 actionLabel = "Crear Proceso",
                 onActionClick = onCreateProcessClick,
@@ -114,7 +114,7 @@ private fun ProcessesContent(
         ) {
             RumboSectionHeader(
                 title = "Procesos",
-                subtitle = "Estructura y seguimiento continuo"
+                subtitle = "Tus metas y proyectos en marcha"
             )
         }
 

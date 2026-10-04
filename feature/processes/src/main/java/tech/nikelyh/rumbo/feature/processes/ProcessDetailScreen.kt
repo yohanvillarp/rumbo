@@ -190,7 +190,7 @@ private fun ProcessDetailContent(
                 process.nextAction?.let { action ->
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Siguiente acción: $action",
+                        text = "Siguiente paso: $action",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -201,7 +201,7 @@ private fun ProcessDetailContent(
                 val timeHours = uiState.totalTimeInvestedMillis / (1000 * 60 * 60)
                 val timeMinutes = (uiState.totalTimeInvestedMillis / (1000 * 60)) % 60
                 Text(
-                    text = "Invertido: ${timeHours}h ${timeMinutes}m  •  Costo: $${process.accumulatedDirectCost}  •  Sesiones: ${uiState.workSessions.size}",
+                    text = "Tiempo dedicado: ${timeHours}h ${timeMinutes}m  •  Inversión: $${process.accumulatedDirectCost}  •  ${uiState.workSessions.size} sesiones",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -225,7 +225,7 @@ private fun ProcessDetailContent(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Subproceso de: ${uiState.parentProcess.name}",
+                                text = "Parte de: ${uiState.parentProcess.name}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
@@ -457,7 +457,7 @@ private fun ProcessDetailContent(
         // Section: Milestones (shown when milestones exist)
         if (uiState.milestones.isNotEmpty()) {
             item {
-                RumboSectionHeader(title = "Hitos clave")
+                RumboSectionHeader(title = "Hitos del proceso")
             }
 
             items(uiState.milestones, key = { it.id }) { milestone ->
@@ -492,7 +492,7 @@ private fun ProcessDetailContent(
         if (uiState.pendingTasks.isEmpty()) {
             item {
                 Text(
-                    text = "Sin tareas pendientes asignadas a este proceso.",
+                    text = "Aún no tienes tareas pendientes en este proceso.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
@@ -556,7 +556,7 @@ private fun ProcessDetailContent(
                     value = weeklyGoalInput,
                     onValueChange = { weeklyGoalInput = it },
                     label = { Text("Descripción del objetivo") },
-                    placeholder = { Text("Ej. Completar las tareas clave de la semana") },
+                    placeholder = { Text("Ej. Avanzar con las actividades prioritarias") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )

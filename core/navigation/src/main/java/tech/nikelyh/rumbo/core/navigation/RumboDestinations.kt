@@ -72,6 +72,12 @@ object CreateTaskDestination : RumboNavigationDestination {
     }
 }
 
+object EditTaskDestination : RumboNavigationDestination {
+    override val route = "edit_task/{taskId}"
+    override val destination = "edit_task_destination"
+    fun createRoute(taskId: String) = "edit_task/$taskId"
+}
+
 object LogProgressDestination : RumboNavigationDestination {
     override val route = "log_progress/{processId}"
     override val destination = "log_progress_destination"

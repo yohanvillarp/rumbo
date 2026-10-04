@@ -1,5 +1,6 @@
 package tech.nikelyh.rumbo.feature.tasks
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.AttachMoney
@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
+import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
@@ -63,31 +64,35 @@ import java.time.format.DateTimeFormatter
 private val TASK_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
 
 @Composable
-fun CreateTaskRoute(
-    onTaskCreated: () -> Unit,
+fun EditTaskRoute(
+    onTaskUpdated: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: CreateTaskViewModel = hiltViewModel()
+    viewModel: EditTaskViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
-            onTaskCreated()
+            onTaskUpdated()
         }
     }
 
-    CreateTaskScreen(
-        uiState = uiState,
-        onEvent = viewModel::onEvent,
-        modifier = modifier
-    )
+    if (uiState.isLoading) {
+        RumboLoadingState(isLoading = true, modifier = modifier)
+    } else {
+        EditTaskScreen(
+            uiState = uiState,
+            onEvent = viewModel::onEvent,
+            modifier = modifier
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun CreateTaskScreen(
-    uiState: CreateTaskUiState,
-    onEvent: (CreateTaskUiEvent) -> Unit,
+internal fun EditTaskScreen(
+    uiState: EditTaskUiState,
+    onEvent: (EditTaskUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var processDropdownExpanded by remember { mutableStateOf(false) }
@@ -97,9 +102,9 @@ internal fun CreateTaskScreen(
         initialSelectedDateMillis = uiState.dueDateEpochMillis ?: System.currentTimeMillis()
     )
 
-    val selectableProcesses = uiState.availableProcesses.filter { it.id != "general" && !it.isFinished }
+    val selectableProcesses = uiState.availableProcesses
     val selectedProcess = selectableProcesses.firstOrNull { it.id == uiState.selectedProcessId }
-    val selectedProcessLabel = selectedProcess?.name ?: if (selectableProcesses.isEmpty()) "Sin procesos disponibles" else "Selecciona un proceso"
+    val selectedProcessLabel = selectedProcess?.name ?: if (uiState.selectedProcessId == "general") "General" else "Selecciona un proceso"
 
     val dueDateFormatted = remember(uiState.dueDateEpochMillis) {
         val dueMillis = uiState.dueDateEpochMillis
@@ -119,14 +124,14 @@ internal fun CreateTaskScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         RumboSectionHeader(
-            title = "Nueva Tarea",
-            subtitle = "Define una acción concreta y asígnala al proceso correspondiente."
+            title = "Editar Tarea",
+            subtitle = "Modifica los detalles, prioridad o fecha límite de tu tarea."
         )
 
         // Title
         OutlinedTextField(
             value = uiState.title,
-            onValueChange = { onEvent(CreateTaskUiEvent.TitleChanged(it)) },
+            onValueChange = { onEvent(EditTaskUiEvent.TitleChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("¿Qué necesitas hacer? *") },
             placeholder = { Text("Ej. Comprar materiales o Enviar informe") },
@@ -151,7 +156,7 @@ internal fun CreateTaskScreen(
         // Description
         OutlinedTextField(
             value = uiState.description,
-            onValueChange = { onEvent(CreateTaskUiEvent.DescriptionChanged(it)) },
+            onValueChange = { onEvent(EditTaskUiEvent.DescriptionChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Notas o detalles (opcional)") },
             placeholder = { Text("Agrega cualquier apunte o instrucción útil") },
@@ -163,7 +168,7 @@ internal fun CreateTaskScreen(
             )
         )
 
-        // Process Selection Dropdown List (No General, No Completed Processes)
+        // Process Selection Dropdown List
         ExposedDropdownMenuBox(
             expanded = processDropdownExpanded,
             onExpandedChange = { processDropdownExpanded = !processDropdownExpanded },
@@ -203,7 +208,7 @@ internal fun CreateTaskScreen(
                         DropdownMenuItem(
                             text = { Text(process.name) },
                             onClick = {
-                                onEvent(CreateTaskUiEvent.ProcessSelected(process.id))
+                                onEvent(EditTaskUiEvent.ProcessSelected(process.id))
                                 processDropdownExpanded = false
                             }
                         )
@@ -212,7 +217,7 @@ internal fun CreateTaskScreen(
             }
         }
 
-        // Fecha Límite (Solicitud requerida con hora configurable)
+        // Due date & time picker
         OutlinedTextField(
             value = dueDateFormatted,
             onValueChange = {},
@@ -220,7 +225,7 @@ internal fun CreateTaskScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { showDatePicker = true },
-            label = { Text("Fecha límite *") },
+            label = { Text("Fecha y hora límite *") },
             placeholder = { Text("Toca para elegir fecha") },
             leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
             trailingIcon = {
@@ -269,7 +274,7 @@ internal fun CreateTaskScreen(
                                     .toInstant()
                                     .toEpochMilli()
 
-                                onEvent(CreateTaskUiEvent.DueDateChanged(combinedMillis))
+                                onEvent(EditTaskUiEvent.DueDateChanged(combinedMillis))
                             }
                             showDatePicker = false
                             showTimePicker = true
@@ -305,7 +310,7 @@ internal fun CreateTaskScreen(
                             val updatedZdt = currentZdt.toLocalDate()
                                 .atTime(timePickerState.hour, timePickerState.minute)
                                 .atZone(java.time.ZoneId.systemDefault())
-                            onEvent(CreateTaskUiEvent.DueDateChanged(updatedZdt.toInstant().toEpochMilli()))
+                            onEvent(EditTaskUiEvent.DueDateChanged(updatedZdt.toInstant().toEpochMilli()))
                             showTimePicker = false
                         }
                     ) {
@@ -329,7 +334,7 @@ internal fun CreateTaskScreen(
             )
         }
 
-        // Priority Selection (In Spanish)
+        // Priority Selection
         Text(
             text = "Prioridad",
             style = MaterialTheme.typography.labelSmall,
@@ -340,25 +345,25 @@ internal fun CreateTaskScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Priority.entries.forEach { priority ->
-                val SpanishLabel = when (priority) {
+                val spanishLabel = when (priority) {
                     Priority.LOW -> "Baja"
                     Priority.MEDIUM -> "Media"
                     Priority.HIGH -> "Alta"
                 }
                 FilterChip(
                     selected = uiState.priority == priority,
-                    onClick = { onEvent(CreateTaskUiEvent.PriorityChanged(priority)) },
-                    label = { Text(SpanishLabel) }
+                    onClick = { onEvent(EditTaskUiEvent.PriorityChanged(priority)) },
+                    label = { Text(spanishLabel) }
                 )
             }
         }
 
-        // Estimated Duration (STRICT Digits Only + KeyboardType.Number)
+        // Estimated Duration
         OutlinedTextField(
             value = uiState.estimatedDurationMinutesInput,
             onValueChange = { input ->
                 if (input.all { it.isDigit() }) {
-                    onEvent(CreateTaskUiEvent.DurationChanged(input))
+                    onEvent(EditTaskUiEvent.DurationChanged(input))
                 }
             },
             modifier = Modifier.fillMaxWidth(),
@@ -372,10 +377,10 @@ internal fun CreateTaskScreen(
             )
         )
 
-        // Cost (KeyboardType.Decimal)
+        // Cost
         OutlinedTextField(
             value = uiState.costInput,
-            onValueChange = { onEvent(CreateTaskUiEvent.CostChanged(it)) },
+            onValueChange = { onEvent(EditTaskUiEvent.CostChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Costo estimado ($)") },
             placeholder = { Text("0.0") },
@@ -400,21 +405,21 @@ internal fun CreateTaskScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         RumboButton(
-            onClick = { onEvent(CreateTaskUiEvent.SubmitTask) },
+            onClick = { onEvent(EditTaskUiEvent.SubmitTask) },
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isSubmitting
         ) {
-            Text("Guardar Tarea")
+            Text("Guardar Cambios")
         }
     }
 }
 
-@Preview(name = "Create Task Light", showBackground = true)
+@Preview(name = "Edit Task Light", showBackground = true)
 @Composable
-private fun CreateTaskScreenPreviewLight() {
+private fun EditTaskScreenPreviewLight() {
     RumboTheme(darkTheme = false) {
-        CreateTaskScreen(
-            uiState = CreateTaskUiState(),
+        EditTaskScreen(
+            uiState = EditTaskUiState(title = "Preparar informe mensual"),
             onEvent = {}
         )
     }
