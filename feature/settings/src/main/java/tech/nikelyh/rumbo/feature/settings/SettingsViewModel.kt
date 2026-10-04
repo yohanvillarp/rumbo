@@ -22,7 +22,7 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val isResettingFlow = MutableStateFlow(false)
-    private val _resetCompleted = MutableSharedFlow<Unit>()
+    private val _resetCompleted = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val resetCompleted: SharedFlow<Unit> = _resetCompleted.asSharedFlow()
 
     val uiState: StateFlow<SettingsUiState> = combine(
@@ -57,6 +57,7 @@ class SettingsViewModel @Inject constructor(
                     try {
                         settingsRepository.resetApplicationData()
                         _resetCompleted.emit(Unit)
+                    } catch (_: Exception) {
                     } finally {
                         isResettingFlow.value = false
                     }

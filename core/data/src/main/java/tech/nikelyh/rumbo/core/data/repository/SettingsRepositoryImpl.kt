@@ -1,6 +1,11 @@
 package tech.nikelyh.rumbo.core.data.repository
 
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+import tech.nikelyh.rumbo.core.common.Dispatcher
+import tech.nikelyh.rumbo.core.common.RumboDispatchers
 import tech.nikelyh.rumbo.core.data.datasource.RumboPreferencesDataSource
 import tech.nikelyh.rumbo.core.database.RumboDatabase
 import tech.nikelyh.rumbo.core.model.UserProfile
@@ -10,7 +15,8 @@ import javax.inject.Inject
 class SettingsRepositoryImpl @Inject constructor(
     private val preferencesDataSource: RumboPreferencesDataSource,
     private val rumboDatabase: RumboDatabase,
-    private val processRepository: ProcessRepository
+    private val processRepository: ProcessRepository,
+    @param:Dispatcher(RumboDispatchers.IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : SettingsRepository {
 
     override val userSettings: Flow<UserSettings> = preferencesDataSource.userSettings
@@ -33,7 +39,7 @@ class SettingsRepositoryImpl @Inject constructor(
         preferencesDataSource.setUserName(name)
     }
 
-    override suspend fun resetApplicationData() {
+    override suspend fun resetApplicationData() = withContext(ioDispatcher) {
         rumboDatabase.clearAllTables()
         preferencesDataSource.clearAllData()
         processRepository.ensureGeneralProcessExists()

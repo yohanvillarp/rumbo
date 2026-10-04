@@ -127,6 +127,15 @@ fun RumboApp(
             kotlinx.coroutines.delay(800)
             isSplashFinished = true
         }
+        if (hasCompletedOnboarding == false) {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route
+            if (currentRoute != null && currentRoute != OnboardingDestination.route) {
+                navController.navigate(OnboardingDestination.route) {
+                    popUpTo(navController.graph.id) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        }
     }
 
     RumboTheme(darkTheme = darkTheme) {
@@ -178,7 +187,7 @@ fun RumboApp(
                         }
                     },
                     bottomBar = {
-                        if (!isOnboarding && isCompact) {
+                        if (isTopLevel && isCompact) {
                             RumboBottomBar(
                                 destinations = TopLevelDestination.entries,
                                 onNavigateToDestination = { destination ->
@@ -194,7 +203,7 @@ fun RumboApp(
                             .fillMaxSize()
                             .padding(paddingValues)
                     ) {
-                        if (!isOnboarding && !isCompact) {
+                        if (isTopLevel && !isCompact) {
                             RumboNavigationRail(
                                 destinations = TopLevelDestination.entries,
                                 onNavigateToDestination = { destination ->
@@ -293,7 +302,7 @@ fun RumboApp(
                                     if (!navController.popBackStack()) {
                                         navController.navigateToHome(
                                             navOptions {
-                                                popUpTo(0) { inclusive = true }
+                                                popUpTo(navController.graph.id) { inclusive = true }
                                             }
                                         )
                                     }
@@ -305,7 +314,8 @@ fun RumboApp(
                             settingsScreen(
                                 onResetCompleted = {
                                     navController.navigate(OnboardingDestination.route) {
-                                        popUpTo(0) { inclusive = true }
+                                        popUpTo(navController.graph.id) { inclusive = true }
+                                        launchSingleTop = true
                                     }
                                 }
                             )
@@ -324,10 +334,10 @@ private fun navigateToTopLevelDestination(
 ) {
     val topLevelNavOptions = navOptions {
         popUpTo(navController.graph.findStartDestination().id) {
-            saveState = true
+            saveState = false
         }
         launchSingleTop = true
-        restoreState = true
+        restoreState = false
     }
     when (destination) {
         TopLevelDestination.HOME -> navController.navigateToHome(topLevelNavOptions)
