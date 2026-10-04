@@ -234,7 +234,7 @@ private fun ProcessAnalyticsView(
                 )
             }
         } else {
-            items(data.comparisons, key = { it.processId }) { comparison ->
+            items(data.comparisons, key = { "comparison_${it.processId}" }) { comparison ->
                 RumboCard(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -273,7 +273,7 @@ private fun ProcessAnalyticsView(
             RumboSectionHeader(title = "Inversión Acumulada por Proceso")
         }
 
-        items(data.processInvestmentSummaries, key = { it.processId }) { summary ->
+        items(data.processInvestmentSummaries, key = { "summary_${it.processId}" }) { summary ->
             RumboCard(modifier = Modifier.fillMaxWidth()) {
                 val hours = summary.timeInvestedMillis / (1000 * 3600)
                 val mins = (summary.timeInvestedMillis / (1000 * 60)) % 60
