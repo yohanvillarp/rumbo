@@ -250,7 +250,7 @@ private fun ProcessDetailContent(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Proceso del sistema para tareas generales (no editable ni eliminable)",
+                                text = "Espacio base para tareas generales (no editable ni eliminable)",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
@@ -447,7 +447,7 @@ private fun ProcessDetailContent(
         // Section: Milestones (shown when milestones exist)
         if (uiState.milestones.isNotEmpty()) {
             item {
-                RumboSectionHeader(title = "Hitos / Milestones")
+                RumboSectionHeader(title = "Hitos clave")
             }
 
             items(uiState.milestones, key = { it.id }) { milestone ->
@@ -546,7 +546,7 @@ private fun ProcessDetailContent(
                     value = weeklyGoalInput,
                     onValueChange = { weeklyGoalInput = it },
                     label = { Text("Descripción del objetivo") },
-                    placeholder = { Text("Ej. Terminar el dashboard OLAP") },
+                    placeholder = { Text("Ej. Completar las tareas clave de la semana") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -618,7 +618,7 @@ private fun ProcessDetailScreenPreviewLight() {
                     id = "g1",
                     processId = "p1",
                     weekIdentifier = "2026-W40",
-                    description = "Terminar el dashboard OLAP"
+                    description = "Completar las tareas clave de la semana"
                 )
             ),
             onEvent = {},

@@ -64,7 +64,7 @@ data class Process(
         fun createGeneralProcess(createdAt: Long): Process = Process(
             id = GENERAL_PROCESS_ID,
             name = "General",
-            description = "Proceso del sistema para tareas generales",
+            description = "Espacio para actividades cotidianas y tareas varias",
             status = ProcessStatus.ACTIVE,
             createdAtEpochMillis = createdAt,
             colorOrVisualId = "system_default",

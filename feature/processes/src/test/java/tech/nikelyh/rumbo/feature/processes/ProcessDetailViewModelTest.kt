@@ -98,12 +98,12 @@ class ProcessDetailViewModelTest {
         val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
         viewModel.uiState.first { it is ProcessDetailUiState.Content }
 
-        viewModel.onEvent(ProcessDetailUiEvent.SaveWeeklyGoal("Terminar dashboard OLAP"))
+        viewModel.onEvent(ProcessDetailUiEvent.SaveWeeklyGoal("Completar las tareas clave de la semana"))
 
         val savedGoals = weeklyGoalRepository.getWeeklyGoalsByProcessId("p100").first()
         assertEquals(1, savedGoals.size)
         val goal = savedGoals.first()
-        assertEquals("Terminar dashboard OLAP", goal.description)
+        assertEquals("Completar las tareas clave de la semana", goal.description)
 
         collectJob.cancel()
     }
@@ -113,7 +113,7 @@ class ProcessDetailViewModelTest {
         val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
         viewModel.uiState.first { it is ProcessDetailUiState.Content }
 
-        viewModel.onEvent(ProcessDetailUiEvent.SaveWeeklyGoal("Terminar dashboard OLAP"))
+        viewModel.onEvent(ProcessDetailUiEvent.SaveWeeklyGoal("Completar las tareas clave de la semana"))
         val firstGoal = weeklyGoalRepository.getWeeklyGoalsByProcessId("p100").first().first()
 
         viewModel.onEvent(ProcessDetailUiEvent.CarryOverWeeklyGoal(firstGoal.id))

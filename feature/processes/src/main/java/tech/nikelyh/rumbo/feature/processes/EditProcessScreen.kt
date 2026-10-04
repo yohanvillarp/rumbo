@@ -96,7 +96,7 @@ internal fun EditProcessScreen(
             onValueChange = { onEvent(EditProcessUiEvent.NameChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Nombre del proceso *") },
-            placeholder = { Text("Ej. Aprender Jetpack Compose") },
+            placeholder = { Text("Ej. Plan de bienestar y salud") },
             leadingIcon = { Icon(Icons.Default.Folder, contentDescription = null) },
             isError = uiState.nameError != null,
             supportingText = {
@@ -121,7 +121,7 @@ internal fun EditProcessScreen(
             onValueChange = { onEvent(EditProcessUiEvent.DescriptionChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Descripción (opcional)") },
-            placeholder = { Text("Objetivos y contexto general del proceso") },
+            placeholder = { Text("Objetivos, metas y contexto general del proceso") },
             leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
             maxLines = 3,
             keyboardOptions = KeyboardOptions(
@@ -199,7 +199,7 @@ internal fun EditProcessScreen(
             onValueChange = { onEvent(EditProcessUiEvent.NextActionChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Siguiente Acción (opcional)") },
-            placeholder = { Text("Ej. Comprar libro de referencia") },
+            placeholder = { Text("Ej. Definir lista de prioridades") },
             leadingIcon = { Icon(Icons.Default.PlayArrow, contentDescription = null) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(

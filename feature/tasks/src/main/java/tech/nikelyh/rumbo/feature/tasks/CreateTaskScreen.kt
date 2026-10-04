@@ -129,7 +129,7 @@ internal fun CreateTaskScreen(
             onValueChange = { onEvent(CreateTaskUiEvent.TitleChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Título de la tarea *") },
-            placeholder = { Text("Ej. Configurar módulo :core:data") },
+            placeholder = { Text("Ej. Revisar presupuesto del mes") },
             leadingIcon = { Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null) },
             isError = uiState.titleError != null,
             supportingText = {

@@ -32,7 +32,7 @@ object DatabaseModule {
                 val now = System.currentTimeMillis()
                 db.execSQL(
                     "INSERT OR REPLACE INTO processes (id, name, description, statusName, createdAtEpochMillis, finishedAtEpochMillis, colorOrVisualId, accumulatedDirectCost, nextAction, isSystemProcess, parentProcessId) " +
-                    "VALUES ('general', 'General', 'Proceso del sistema para tareas generales', 'ACTIVE', $now, NULL, 'system_default', 0.0, NULL, 1, NULL)"
+                    "VALUES ('general', 'General', 'Espacio para actividades cotidianas y tareas varias', 'ACTIVE', $now, NULL, 'system_default', 0.0, NULL, 1, NULL)"
                 )
             }
         }).build()
