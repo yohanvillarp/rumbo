@@ -120,13 +120,6 @@ private fun TasksContent(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        RumboSectionHeader(
-            title = "Tareas",
-            subtitle = "Tus pasos y actividades del día a día"
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
         // Search Bar
         OutlinedTextField(
             value = uiState.searchQuery,

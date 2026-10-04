@@ -170,7 +170,7 @@ fun RumboApp(
                         if (!isOnboarding) {
                             RumboTopBar(
                                 title = when (currentRoute) {
-                                    HomeDestination.route -> "Inicio"
+                                    HomeDestination.route -> "Rumbo"
                                     ProcessesDestination.route -> "Procesos"
                                     TasksDestination.route -> "Tareas"
                                     ProgressDestination.route -> "Progreso"

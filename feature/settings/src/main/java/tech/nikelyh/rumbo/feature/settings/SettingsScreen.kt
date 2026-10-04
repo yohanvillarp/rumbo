@@ -84,12 +84,6 @@ internal fun SettingsScreen(
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-        Text(
-            text = stringResource(R.string.settings_title),
-            style = MaterialTheme.typography.titleLarge
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
         when (uiState) {
             SettingsUiState.Loading -> RumboLoadingWheel()
             is SettingsUiState.Success -> {

@@ -37,6 +37,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -118,11 +119,6 @@ internal fun CreateTaskScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        RumboSectionHeader(
-            title = "Nueva Tarea",
-            subtitle = "Define una acción concreta y asígnala al proceso correspondiente."
-        )
-
         // Title
         OutlinedTextField(
             value = uiState.title,
@@ -212,40 +208,47 @@ internal fun CreateTaskScreen(
             }
         }
 
-        // Fecha Límite (Solicitud requerida con hora configurable)
-        OutlinedTextField(
-            value = dueDateFormatted,
-            onValueChange = {},
-            readOnly = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showDatePicker = true },
-            label = { Text("Fecha límite *") },
-            placeholder = { Text("Toca para elegir fecha") },
-            leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
-            trailingIcon = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Default.CalendarToday, contentDescription = "Elegir fecha")
-                    }
-                    if (uiState.dueDateEpochMillis != null) {
-                        IconButton(onClick = { showTimePicker = true }) {
-                            Icon(Icons.Default.Schedule, contentDescription = "Elegir hora")
+        // Fecha y hora límite
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = dueDateFormatted,
+                onValueChange = {},
+                readOnly = true,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Fecha y hora límite *") },
+                placeholder = { Text("Toca para elegir fecha y hora") },
+                leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
+                trailingIcon = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { showDatePicker = true }) {
+                            Icon(Icons.Default.CalendarToday, contentDescription = "Elegir fecha")
+                        }
+                        if (uiState.dueDateEpochMillis != null) {
+                            IconButton(onClick = { showTimePicker = true }) {
+                                Icon(Icons.Default.Schedule, contentDescription = "Elegir hora")
+                            }
                         }
                     }
+                },
+                isError = uiState.dueDateError != null,
+                supportingText = {
+                    uiState.dueDateError?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
                 }
-            },
-            isError = uiState.dueDateError != null,
-            supportingText = {
-                uiState.dueDateError?.let {
-                    Text(
-                        text = it,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
-            }
-        )
+            )
+            // Overlay so clicking anywhere on the field opens the date/time picker
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .padding(end = if (uiState.dueDateEpochMillis != null) 96.dp else 48.dp)
+                    .clickable { showDatePicker = true }
+            )
+        }
 
         if (showDatePicker) {
             DatePickerDialog(
@@ -323,7 +326,16 @@ internal fun CreateTaskScreen(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
-                        TimePicker(state = timePickerState)
+                        TimePicker(
+                            state = timePickerState,
+                            colors = TimePickerDefaults.colors(
+                                periodSelectorSelectedContainerColor = MaterialTheme.colorScheme.primary,
+                                periodSelectorSelectedContentColor = MaterialTheme.colorScheme.onPrimary,
+                                periodSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                periodSelectorUnselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                periodSelectorBorderColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
                     }
                 }
             )

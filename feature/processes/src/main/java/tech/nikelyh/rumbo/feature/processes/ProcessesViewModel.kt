@@ -44,7 +44,6 @@ class ProcessesViewModel @Inject constructor(
         val msg = flows[5] as String?
 
         val active = processes.filter { it.status == ProcessStatus.ACTIVE }
-        val paused = processes.filter { it.status == ProcessStatus.PAUSED }
         val completed = processes.filter { it.status == ProcessStatus.COMPLETED || it.status == ProcessStatus.ARCHIVED }
 
         fun processList(list: List<Process>): List<Process> {
@@ -83,7 +82,7 @@ class ProcessesViewModel @Inject constructor(
         } else {
             ProcessesUiState.Content(
                 activeProcesses = processList(active),
-                pausedProcesses = processList(paused),
+                pausedProcesses = emptyList(),
                 completedProcesses = processList(completed),
                 selectedFilter = filter,
                 selectedTypeFilter = typeFilter,

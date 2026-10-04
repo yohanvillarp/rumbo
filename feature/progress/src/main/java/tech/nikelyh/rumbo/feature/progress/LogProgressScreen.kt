@@ -81,11 +81,6 @@ internal fun LogProgressScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        RumboSectionHeader(
-            title = "Registrar Progreso",
-            subtitle = "Evalúa cualitativamente el avance de tu proceso sin requerir una sesión previa."
-        )
-
         // Process Selection Dropdown List
         ExposedDropdownMenuBox(
             expanded = processDropdownExpanded,

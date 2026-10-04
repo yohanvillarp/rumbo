@@ -58,13 +58,11 @@ class ProcessesViewModelTest {
     }
 
     @Test
-    fun `filtering by status separates active, paused, and completed processes`() = runBlocking {
+    fun `filtering by status separates active and completed processes`() = runBlocking {
         val pActive = Process(id = "p1", name = "Activo", status = ProcessStatus.ACTIVE, createdAtEpochMillis = 1000L, colorOrVisualId = "teal")
-        val pPaused = Process(id = "p2", name = "Pausado", status = ProcessStatus.PAUSED, createdAtEpochMillis = 2000L, colorOrVisualId = "blue")
         val pCompleted = Process(id = "p3", name = "Completado", status = ProcessStatus.COMPLETED, createdAtEpochMillis = 3000L, colorOrVisualId = "green", finishedAtEpochMillis = 4000L)
 
         processRepository.saveProcess(pActive)
-        processRepository.saveProcess(pPaused)
         processRepository.saveProcess(pCompleted)
 
         val state = viewModel.uiState.first()
@@ -72,10 +70,8 @@ class ProcessesViewModelTest {
 
         val content = state as ProcessesUiState.Content
         assertEquals(1, content.activeProcesses.size)
-        assertEquals(1, content.pausedProcesses.size)
         assertEquals(1, content.completedProcesses.size)
         assertEquals("p1", content.activeProcesses.first().id)
-        assertEquals("p2", content.pausedProcesses.first().id)
         assertEquals("p3", content.completedProcesses.first().id)
     }
 

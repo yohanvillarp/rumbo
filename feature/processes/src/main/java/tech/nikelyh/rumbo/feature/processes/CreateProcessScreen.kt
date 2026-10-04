@@ -94,11 +94,6 @@ internal fun CreateProcessScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        RumboSectionHeader(
-            title = "Nuevo Proceso",
-            subtitle = "Organiza una meta o proyecto que requiere varios pasos o tareas para concretarse."
-        )
-
         // Name
         OutlinedTextField(
             value = uiState.name,

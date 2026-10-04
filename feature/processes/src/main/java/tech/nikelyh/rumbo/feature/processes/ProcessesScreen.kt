@@ -130,73 +130,56 @@ private fun ProcessesContent(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-        // Header & Create Button
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RumboSectionHeader(
-                title = "Procesos",
-                subtitle = "Tus metas y proyectos en marcha"
+            // Search Bar
+            OutlinedTextField(
+                value = uiState.searchQuery,
+                onValueChange = { onEvent(ProcessesUiEvent.SearchQueryChanged(it)) },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Buscar procesos...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                singleLine = true
             )
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-        // Search Bar
-        OutlinedTextField(
-            value = uiState.searchQuery,
-            onValueChange = { onEvent(ProcessesUiEvent.SearchQueryChanged(it)) },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Buscar procesos...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
-            singleLine = true
-        )
+            // Status Filter Row (Active, Completed)
+            ProcessStatusFilterRow(
+                selectedFilter = uiState.selectedFilter,
+                activeCount = uiState.activeProcesses.size,
+                completedCount = uiState.completedProcesses.size,
+                onFilterSelected = { status -> onEvent(ProcessesUiEvent.FilterChanged(status)) }
+            )
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        // Status Filter Row (Active, Paused, Completed)
-        ProcessStatusFilterRow(
-            selectedFilter = uiState.selectedFilter,
-            activeCount = uiState.activeProcesses.size,
-            pausedCount = uiState.pausedProcesses.size,
-            completedCount = uiState.completedProcesses.size,
-            onFilterSelected = { status -> onEvent(ProcessesUiEvent.FilterChanged(status)) }
-        )
+            // Secondary Filters: Hierarchy Type & Sorting Criteria
+            ProcessSecondaryFilterRow(
+                selectedTypeFilter = uiState.selectedTypeFilter,
+                onTypeFilterSelected = { typeFilter -> onEvent(ProcessesUiEvent.TypeFilterChanged(typeFilter)) },
+                sortOrder = uiState.sortOrder,
+                onSortOrderSelected = { order -> onEvent(ProcessesUiEvent.SortOrderChanged(order)) }
+            )
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Secondary Filters: Hierarchy Type & Sorting Criteria
-        ProcessSecondaryFilterRow(
-            selectedTypeFilter = uiState.selectedTypeFilter,
-            onTypeFilterSelected = { typeFilter -> onEvent(ProcessesUiEvent.TypeFilterChanged(typeFilter)) },
-            sortOrder = uiState.sortOrder,
-            onSortOrderSelected = { order -> onEvent(ProcessesUiEvent.SortOrderChanged(order)) }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Process List
-        val displayList = when (uiState.selectedFilter) {
-            ProcessStatus.ACTIVE -> uiState.activeProcesses
-            ProcessStatus.PAUSED -> uiState.pausedProcesses
-            ProcessStatus.COMPLETED, ProcessStatus.ARCHIVED -> uiState.completedProcesses
-        }
-
-        if (displayList.isEmpty()) {
-            val emptyMessage = when (uiState.selectedFilter) {
-                ProcessStatus.ACTIVE -> "Sin procesos activos"
-                ProcessStatus.PAUSED -> "Sin procesos pausados"
-                else -> "Sin procesos completados"
+            // Process List
+            val displayList = when (uiState.selectedFilter) {
+                ProcessStatus.COMPLETED, ProcessStatus.ARCHIVED -> uiState.completedProcesses
+                else -> uiState.activeProcesses
             }
-            RumboEmptyState(
-                message = emptyMessage,
-                subtitle = "Usa el botón inferior para crear un nuevo proceso.",
-                mascotState = MascotState.RESTING,
-                modifier = Modifier.weight(1f)
-            )
-        } else {
+
+            if (displayList.isEmpty()) {
+                val emptyMessage = when (uiState.selectedFilter) {
+                    ProcessStatus.COMPLETED, ProcessStatus.ARCHIVED -> "Sin procesos completados"
+                    else -> "Sin procesos activos"
+                }
+                RumboEmptyState(
+                    message = emptyMessage,
+                    subtitle = "Usa el botón inferior para crear un nuevo proceso.",
+                    mascotState = MascotState.RESTING,
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier
@@ -241,7 +224,6 @@ private fun ProcessesContent(
 private fun ProcessStatusFilterRow(
     selectedFilter: ProcessStatus,
     activeCount: Int,
-    pausedCount: Int,
     completedCount: Int,
     onFilterSelected: (ProcessStatus) -> Unit,
     modifier: Modifier = Modifier
@@ -257,11 +239,6 @@ private fun ProcessStatusFilterRow(
             selected = selectedFilter == ProcessStatus.ACTIVE,
             onClick = { onFilterSelected(ProcessStatus.ACTIVE) },
             label = { Text("Activos ($activeCount)") }
-        )
-        FilterChip(
-            selected = selectedFilter == ProcessStatus.PAUSED,
-            onClick = { onFilterSelected(ProcessStatus.PAUSED) },
-            label = { Text("Pausados ($pausedCount)") }
         )
         FilterChip(
             selected = selectedFilter == ProcessStatus.COMPLETED,
