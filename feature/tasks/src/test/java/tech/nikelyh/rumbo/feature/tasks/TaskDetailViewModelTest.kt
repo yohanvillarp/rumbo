@@ -118,4 +118,26 @@ class TaskDetailViewModelTest {
 
         collectJob.cancel()
     }
+
+    @Test
+    fun `hasStartedSession is true when an active session for the task is running`() = runBlocking {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is TaskDetailUiState.Content }
+
+        workSessionRepository.saveActiveSessionState(
+            tech.nikelyh.rumbo.core.model.ActiveSessionState(
+                taskId = "t100",
+                processId = "p1",
+                startTimeEpochMillis = 1000L,
+                isRunning = true
+            )
+        )
+
+        val state = viewModel.uiState.first {
+            it is TaskDetailUiState.Content && it.hasStartedSession
+        } as TaskDetailUiState.Content
+        assertTrue(state.hasStartedSession)
+
+        collectJob.cancel()
+    }
 }

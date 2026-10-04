@@ -29,16 +29,20 @@ class TaskDetailViewModel @Inject constructor(
 
     val uiState: StateFlow<TaskDetailUiState> = combine(
         taskRepository.getTaskById(taskId),
-        processRepository.getProcesses()
-    ) { task, processes ->
+        processRepository.getProcesses(),
+        workSessionRepository.activeSessionState
+    ) { task, processes, activeSession ->
         if (task == null) {
             TaskDetailUiState.Error("Tarea no encontrada")
         } else {
             val process = processes.firstOrNull { it.id == task.processId }
             val processName = process?.name ?: "General"
+            val isSessionActive = activeSession.hasActiveSession && activeSession.taskId == task.id
+            val hasStarted = isSessionActive || task.timeWorkedMillis > 0L || task.status == TaskStatus.IN_PROGRESS
             TaskDetailUiState.Content(
                 task = task,
-                processName = processName
+                processName = processName,
+                hasStartedSession = hasStarted
             )
         }
     }.stateIn(

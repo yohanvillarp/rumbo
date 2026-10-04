@@ -41,6 +41,7 @@ import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
 
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlayCircle
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 
 @Composable
@@ -94,6 +95,17 @@ internal fun TaskDetailScreen(
                 RumboSectionHeader(title = "Detalle de Tarea")
 
                 val task = uiState.task
+                val statusSpanish = when (task.status) {
+                    TaskStatus.PENDING -> "Pendiente"
+                    TaskStatus.IN_PROGRESS -> "En progreso"
+                    TaskStatus.COMPLETED -> "Completada"
+                    TaskStatus.CANCELLED -> "Cancelada"
+                }
+                val prioritySpanish = when (task.priority) {
+                    Priority.LOW -> "Baja"
+                    Priority.MEDIUM -> "Media"
+                    Priority.HIGH -> "Alta"
+                }
 
                 RumboCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
@@ -107,7 +119,7 @@ internal fun TaskDetailScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = task.status.name,
+                            text = statusSpanish,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -116,7 +128,7 @@ internal fun TaskDetailScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Proceso: ${uiState.processName}  •  Prioridad: ${task.priority.name}",
+                        text = "Proceso: ${uiState.processName}  •  Prioridad: $prioritySpanish",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -164,17 +176,18 @@ internal fun TaskDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Actions: Primary action is Iniciar Sesión
+                // Actions: Primary action is Iniciar / Continuar Sesión
+                val isTaskStarted = uiState.hasStartedSession || task.timeWorkedMillis > 0L || task.status == TaskStatus.IN_PROGRESS
                 RumboButton(
                     onClick = { onStartSession(task.id, task.processId) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.PlayArrow,
+                        imageVector = if (isTaskStarted) Icons.Default.PlayCircle else Icons.Default.PlayArrow,
                         contentDescription = null
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Iniciar Sesión")
+                    Text(if (isTaskStarted) "Continuar Sesión" else "Iniciar Sesión")
                 }
 
                 RumboOutlinedButton(

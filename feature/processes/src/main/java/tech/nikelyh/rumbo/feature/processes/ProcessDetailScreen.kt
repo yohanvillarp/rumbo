@@ -50,6 +50,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
+import tech.nikelyh.rumbo.core.model.GoalStatus
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.model.ProcessStatus
@@ -135,6 +136,13 @@ private fun ProcessDetailContent(
         // Header
         item {
             RumboCard(modifier = Modifier.fillMaxWidth()) {
+                val processStatusSpanish = when (process.status) {
+                    ProcessStatus.ACTIVE -> "Activo"
+                    ProcessStatus.PAUSED -> "Pausado"
+                    ProcessStatus.COMPLETED -> "Completado"
+                    ProcessStatus.ARCHIVED -> "Archivado"
+                }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -146,7 +154,7 @@ private fun ProcessDetailContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = process.status.name,
+                        text = processStatusSpanish,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -188,6 +196,13 @@ private fun ProcessDetailContent(
             val goal = uiState.weeklyGoal
 
             if (goal != null) {
+                val goalStatusSpanish = when (goal.status) {
+                    GoalStatus.PENDING -> "Pendiente"
+                    GoalStatus.IN_PROGRESS -> "En progreso"
+                    GoalStatus.ACHIEVED -> "Alcanzado"
+                    GoalStatus.CANCELLED -> "Cancelado"
+                }
+
                 RumboCard(modifier = Modifier.fillMaxWidth()) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
@@ -196,7 +211,7 @@ private fun ProcessDetailContent(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "Semana: ${goal.weekIdentifier}  •  Estado: ${goal.status.name}",
+                            text = "Semana: ${goal.weekIdentifier}  •  Estado: $goalStatusSpanish",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.secondary
                         )
