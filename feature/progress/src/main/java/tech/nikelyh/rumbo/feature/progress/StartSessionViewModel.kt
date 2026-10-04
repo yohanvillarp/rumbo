@@ -95,6 +95,7 @@ class StartSessionViewModel @Inject constructor(
                         isTimerRunning = activeState.isRunning
                     )
                 }
+                saveActiveState(isRunning = activeState.isRunning)
                 if (activeState.isRunning) {
                     resumeTimerLoop()
                 }
@@ -176,6 +177,24 @@ class StartSessionViewModel @Inject constructor(
             }
             StartSessionUiEvent.SubmitSession -> {
                 submitSession()
+            }
+            StartSessionUiEvent.CancelSession -> {
+                cancelSession()
+            }
+        }
+    }
+
+    private fun cancelSession() {
+        timerJob?.cancel()
+        timerJob = null
+        viewModelScope.launch {
+            workSessionRepository.clearActiveSessionState()
+            _uiState.update {
+                it.copy(
+                    isTimerRunning = false,
+                    isSessionFinished = true,
+                    isSuccess = true
+                )
             }
         }
     }

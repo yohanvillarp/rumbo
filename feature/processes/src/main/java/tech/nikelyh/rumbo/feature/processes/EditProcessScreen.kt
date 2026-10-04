@@ -110,7 +110,7 @@ internal fun EditProcessScreen(
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Words,
+                capitalization = KeyboardCapitalization.Sentences,
                 imeAction = ImeAction.Next
             )
         )

@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Pause
@@ -80,6 +81,7 @@ internal fun StartSessionScreen(
     modifier: Modifier = Modifier
 ) {
     var manualMinutesText by remember { mutableStateOf("") }
+    var showCancelConfirmDialog by remember { mutableStateOf(false) }
 
     if (!uiState.isSessionFinished) {
         // Immersive Fullscreen Timer Mode
@@ -189,12 +191,26 @@ internal fun StartSessionScreen(
                         Text(if (uiState.isTimerRunning) "Pausar" else "Continuar")
                     }
 
-                    TextButton(
-                        onClick = { onEvent(StartSessionUiEvent.ForgotTimerClicked) }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Olvidé detenerlo", color = MaterialTheme.colorScheme.secondary)
+                        TextButton(
+                            onClick = { onEvent(StartSessionUiEvent.ForgotTimerClicked) }
+                        ) {
+                            Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Olvidé detenerlo", color = MaterialTheme.colorScheme.secondary)
+                        }
+
+                        TextButton(
+                            onClick = { showCancelConfirmDialog = true }
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Cancelar Sesión", color = MaterialTheme.colorScheme.error)
+                        }
                     }
                 }
             }
@@ -292,7 +308,39 @@ internal fun StartSessionScreen(
             ) {
                 Text("Guardar Sesión")
             }
+
+            TextButton(
+                onClick = { showCancelConfirmDialog = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("Descartar Sesión", color = MaterialTheme.colorScheme.error)
+            }
         }
+    }
+
+    if (showCancelConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showCancelConfirmDialog = false },
+            title = { Text("¿Cancelar sesión?") },
+            text = { Text("Se descartará el tiempo transcurrido en esta sesión y no se guardará ningún registro.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showCancelConfirmDialog = false
+                        onEvent(StartSessionUiEvent.CancelSession)
+                    }
+                ) {
+                    Text("Sí, cancelar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCancelConfirmDialog = false }) {
+                    Text("Volver")
+                }
+            }
+        )
     }
 
     // Dialog for "Olvidé detenerlo"

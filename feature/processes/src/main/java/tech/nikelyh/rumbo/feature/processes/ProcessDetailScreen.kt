@@ -260,6 +260,73 @@ private fun ProcessDetailContent(
             }
         }
 
+        // Primary Actions
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (!process.isFinished) {
+                    RumboButton(
+                        onClick = onNavigateToCreateTask,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.AddTask, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Nueva Tarea")
+                    }
+
+                    if (!process.isSystem) {
+                        RumboOutlinedButton(
+                            onClick = { onNavigateToCreateProcess(process.id) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.AccountTree, contentDescription = null)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Nuevo Proceso")
+                        }
+                    }
+                } else {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Este proceso ha sido completado. No admite nuevas tareas.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+
+                if (!process.isSystem) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        RumboOutlinedButton(
+                            onClick = onNavigateToEditProcess,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Editar")
+                        }
+
+                        if (process.isActive || process.status == ProcessStatus.PAUSED) {
+                            OutlinedButton(
+                                onClick = { onEvent(ProcessDetailUiEvent.FinishProcess) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(Icons.Default.CheckCircle, contentDescription = null)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Finalizar")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Section: Weekly Goal
         item {
             RumboSectionHeader(title = "Objetivo Semanal")
@@ -347,89 +414,28 @@ private fun ProcessDetailContent(
             }
         }
 
-        // Primary Actions
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (!process.isFinished) {
-                    RumboButton(
-                        onClick = onNavigateToCreateTask,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Default.AddTask, contentDescription = null)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Nueva Tarea")
-                    }
-                } else {
-                    Surface(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Este proceso ha sido completado. No admite nuevas tareas.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(12.dp)
-                        )
-                    }
-                }
-
-                if (!process.isSystem) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        RumboOutlinedButton(
-                            onClick = onNavigateToEditProcess,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.Edit, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Editar")
-                        }
-
-                        if (process.isActive || process.status == ProcessStatus.PAUSED) {
-                            OutlinedButton(
-                                onClick = { onEvent(ProcessDetailUiEvent.FinishProcess) },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(Icons.Default.CheckCircle, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Finalizar")
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Section: Subprocesses
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RumboSectionHeader(title = "Subprocesos (${uiState.subProcesses.size})")
-                if (!process.isFinished && !process.isSystem) {
-                    TextButton(onClick = { onNavigateToCreateProcess(process.id) }) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Nuevo Subproceso")
-                    }
-                }
-            }
-        }
-
-        if (uiState.subProcesses.isEmpty()) {
+        // Section: Subprocesses (shown when sub-processes exist)
+        if (uiState.subProcesses.isNotEmpty()) {
             item {
-                Text(
-                    text = "Sin subprocesos creados.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RumboSectionHeader(
+                        title = "Subprocesos (${uiState.subProcesses.size})",
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (!process.isFinished && !process.isSystem) {
+                        TextButton(onClick = { onNavigateToCreateProcess(process.id) }) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Nuevo Subproceso")
+                        }
+                    }
+                }
             }
-        } else {
+
             items(uiState.subProcesses, key = { it.id }) { subProcess ->
                 RumboProcessCard(
                     process = subProcess,
@@ -438,20 +444,12 @@ private fun ProcessDetailContent(
             }
         }
 
-        // Section: Milestones
-        item {
-            RumboSectionHeader(title = "Hitos / Milestones")
-        }
-
-        if (uiState.milestones.isEmpty()) {
+        // Section: Milestones (shown when milestones exist)
+        if (uiState.milestones.isNotEmpty()) {
             item {
-                Text(
-                    text = "Sin hitos definidos.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                )
+                RumboSectionHeader(title = "Hitos / Milestones")
             }
-        } else {
+
             items(uiState.milestones, key = { it.id }) { milestone ->
                 RumboCard(modifier = Modifier.fillMaxWidth()) {
                     Row(

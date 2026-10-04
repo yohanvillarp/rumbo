@@ -100,12 +100,10 @@ fun RumboApp(
     val isSystemDark = isSystemInDarkTheme()
     val darkTheme = isDarkMode ?: isSystemDark
 
-    val isSessionRunning = hasCompletedOnboarding == true && activeSession != null && activeSession.isRunning
-
-    val startDestination = when {
-        hasCompletedOnboarding == false -> OnboardingDestination.route
-        isSessionRunning -> StartSessionDestination.createRoute(activeSession?.processId, activeSession?.taskId)
-        else -> HomeDestination.route
+    val startDestination = if (hasCompletedOnboarding == false) {
+        OnboardingDestination.route
+    } else {
+        HomeDestination.route
     }
 
     LaunchedEffect(activeSession?.isRunning) {

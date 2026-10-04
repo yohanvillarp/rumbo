@@ -121,4 +121,19 @@ class StartSessionViewModelTest {
         assertTrue(state.isTimerRunning)
         assertTrue(state.elapsedTimeMillis >= 600000L)
     }
+
+    @Test
+    fun `canceling active session clears active state and exits without saving session`() = runBlocking {
+        viewModel.onEvent(StartSessionUiEvent.CancelSession)
+
+        val state = viewModel.uiState.value
+        assertTrue(state.isSuccess)
+        assertTrue(state.isSessionFinished)
+
+        val activeState = workSessionRepository.activeSessionState.first()
+        assertTrue(!activeState.hasActiveSession)
+
+        val savedSessions = workSessionRepository.getWorkSessionsByProcessId("p1").first()
+        assertTrue(savedSessions.isEmpty())
+    }
 }

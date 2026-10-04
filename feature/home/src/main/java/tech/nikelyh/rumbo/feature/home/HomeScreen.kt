@@ -147,7 +147,7 @@ private fun HomeContent(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "¿Qué debería continuar ahora?",
+                    text = "¿En qué deseas avanzar hoy?",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f)
                 )
@@ -172,7 +172,7 @@ private fun HomeContent(
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
-                            text = "Tu Proceso en Rumbo",
+                            text = "Proceso activo destacado",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
