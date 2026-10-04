@@ -9,5 +9,6 @@ sealed interface CreateTaskUiEvent {
     data class PriorityChanged(val priority: Priority) : CreateTaskUiEvent
     data class DurationChanged(val minutes: String) : CreateTaskUiEvent
     data class CostChanged(val cost: String) : CreateTaskUiEvent
+    data class DueDateChanged(val millis: Long?) : CreateTaskUiEvent
     data object SubmitTask : CreateTaskUiEvent
 }

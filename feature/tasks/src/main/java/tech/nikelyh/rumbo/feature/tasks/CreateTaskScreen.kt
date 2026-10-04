@@ -11,21 +11,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -74,12 +82,24 @@ internal fun CreateTaskScreen(
     modifier: Modifier = Modifier
 ) {
     var processDropdownExpanded by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = uiState.dueDateEpochMillis ?: System.currentTimeMillis()
+    )
 
-    val selectedProcess = uiState.availableProcesses.firstOrNull { it.id == uiState.selectedProcessId }
-    val selectedProcessLabel = when {
-        uiState.selectedProcessId == "general" -> "General (Proceso por defecto)"
-        selectedProcess != null -> selectedProcess.name
-        else -> "General (Proceso por defecto)"
+    val selectableProcesses = uiState.availableProcesses.filter { it.id != "general" && !it.isFinished }
+    val selectedProcess = selectableProcesses.firstOrNull { it.id == uiState.selectedProcessId }
+    val selectedProcessLabel = selectedProcess?.name ?: if (selectableProcesses.isEmpty()) "Sin procesos disponibles" else "Selecciona un proceso"
+
+    val dueDateFormatted = remember(uiState.dueDateEpochMillis) {
+        val dueMillis = uiState.dueDateEpochMillis
+        if (dueMillis != null) {
+            val instant = java.time.Instant.ofEpochMilli(dueMillis)
+            val zone = java.time.ZoneId.systemDefault()
+            val localDate = instant.atZone(zone).toLocalDate()
+            val formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
+            localDate.format(formatter)
+        } else ""
     }
 
     Column(
@@ -134,7 +154,7 @@ internal fun CreateTaskScreen(
             )
         )
 
-        // Process Selection Dropdown List
+        // Process Selection Dropdown List (No General, No Completed Processes)
         ExposedDropdownMenuBox(
             expanded = processDropdownExpanded,
             onExpandedChange = { processDropdownExpanded = !processDropdownExpanded },
@@ -148,6 +168,12 @@ internal fun CreateTaskScreen(
                 leadingIcon = { Icon(Icons.Default.Folder, contentDescription = null) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = processDropdownExpanded) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                isError = uiState.processError != null,
+                supportingText = {
+                    uiState.processError?.let {
+                        Text(text = it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                    }
+                },
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth()
@@ -157,22 +183,74 @@ internal fun CreateTaskScreen(
                 expanded = processDropdownExpanded,
                 onDismissRequest = { processDropdownExpanded = false }
             ) {
-                DropdownMenuItem(
-                    text = { Text("General (Proceso por defecto)") },
-                    onClick = {
-                        onEvent(CreateTaskUiEvent.ProcessSelected("general"))
-                        processDropdownExpanded = false
-                    }
-                )
-                uiState.availableProcesses.filter { it.id != "general" }.forEach { process ->
+                if (selectableProcesses.isEmpty()) {
                     DropdownMenuItem(
-                        text = { Text(process.name) },
-                        onClick = {
-                            onEvent(CreateTaskUiEvent.ProcessSelected(process.id))
-                            processDropdownExpanded = false
-                        }
+                        text = { Text("No hay procesos activos disponibles") },
+                        enabled = false,
+                        onClick = {}
+                    )
+                } else {
+                    selectableProcesses.forEach { process ->
+                        DropdownMenuItem(
+                            text = { Text(process.name) },
+                            onClick = {
+                                onEvent(CreateTaskUiEvent.ProcessSelected(process.id))
+                                processDropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        // Fecha de Caducidad (Solicitud requerida)
+        OutlinedTextField(
+            value = dueDateFormatted,
+            onValueChange = {},
+            readOnly = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showDatePicker = true },
+            label = { Text("Fecha de Caducidad *") },
+            placeholder = { Text("Toca para elegir fecha de caducidad") },
+            leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
+            trailingIcon = {
+                IconButton(onClick = { showDatePicker = true }) {
+                    Icon(Icons.Default.CalendarToday, contentDescription = "Elegir fecha")
+                }
+            },
+            isError = uiState.dueDateError != null,
+            supportingText = {
+                uiState.dueDateError?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.labelSmall
                     )
                 }
+            }
+        )
+
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            onEvent(CreateTaskUiEvent.DueDateChanged(datePickerState.selectedDateMillis))
+                            showDatePicker = false
+                        }
+                    ) {
+                        Text("Aceptar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
             }
         }
 

@@ -32,7 +32,18 @@ class CreateTaskViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             processRepository.getProcesses().collect { processes ->
-                _uiState.update { it.copy(availableProcesses = processes) }
+                val activeProcesses = processes.filter { !it.isFinished && it.id != Process.GENERAL_PROCESS_ID }
+                _uiState.update { current ->
+                    val resolvedProcessId = if (current.selectedProcessId == Process.GENERAL_PROCESS_ID && activeProcesses.isNotEmpty()) {
+                        activeProcesses.first().id
+                    } else {
+                        current.selectedProcessId
+                    }
+                    current.copy(
+                        availableProcesses = activeProcesses,
+                        selectedProcessId = resolvedProcessId
+                    )
+                }
             }
         }
     }
@@ -51,7 +62,7 @@ class CreateTaskViewModel @Inject constructor(
                 _uiState.update { it.copy(description = event.description) }
             }
             is CreateTaskUiEvent.ProcessSelected -> {
-                _uiState.update { it.copy(selectedProcessId = event.processId) }
+                _uiState.update { it.copy(selectedProcessId = event.processId, processError = null) }
             }
             is CreateTaskUiEvent.PriorityChanged -> {
                 _uiState.update { it.copy(priority = event.priority) }
@@ -67,13 +78,31 @@ class CreateTaskViewModel @Inject constructor(
                     )
                 }
             }
+            is CreateTaskUiEvent.DueDateChanged -> {
+                _uiState.update { it.copy(dueDateEpochMillis = event.millis, dueDateError = null) }
+            }
             CreateTaskUiEvent.SubmitTask -> {
                 val current = _uiState.value
                 val titleErr = validateTitle(current.title)
                 val costErr = validateCost(current.costInput)
+                val dueDateErr = if (current.dueDateEpochMillis == null) {
+                    "La fecha de caducidad es obligatoria"
+                } else null
 
-                if (titleErr != null || costErr != null) {
-                    _uiState.update { it.copy(titleError = titleErr, costError = costErr) }
+                val selectedProc = current.availableProcesses.firstOrNull { it.id == current.selectedProcessId }
+                val processErr = if (selectedProc != null && selectedProc.isFinished) {
+                    "No se pueden agregar tareas a un proceso culminado"
+                } else null
+
+                if (titleErr != null || costErr != null || dueDateErr != null || processErr != null) {
+                    _uiState.update { 
+                        it.copy(
+                            titleError = titleErr, 
+                            costError = costErr, 
+                            dueDateError = dueDateErr,
+                            processError = processErr
+                        ) 
+                    }
                     return
                 }
 
@@ -90,6 +119,7 @@ class CreateTaskViewModel @Inject constructor(
                     status = TaskStatus.PENDING,
                     priority = current.priority,
                     createdAtEpochMillis = System.currentTimeMillis(),
+                    dueDateEpochMillis = current.dueDateEpochMillis,
                     cost = costDouble,
                     estimatedDurationMinutes = durationInt
                 )
