@@ -40,6 +40,13 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboEmptyState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
+import tech.nikelyh.rumbo.feature.progress.chart.ProcessComparisonCard
+import tech.nikelyh.rumbo.feature.progress.chart.ProcessDistributionDonutChart
+import tech.nikelyh.rumbo.feature.progress.chart.ProcessInvestmentBarChart
+import tech.nikelyh.rumbo.feature.progress.chart.ProcessMetricTiles
+import tech.nikelyh.rumbo.feature.progress.chart.TaskCompletionGauge
+import tech.nikelyh.rumbo.feature.progress.chart.TaskDistributionBar
+import tech.nikelyh.rumbo.feature.progress.chart.TaskMetricTiles
 import java.util.Locale
 
 @Composable
@@ -168,35 +175,36 @@ private fun ProcessAnalyticsView(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        // High Level Process Summary
+        // High Level Metric Stat Tiles
         item {
-            RumboCard(modifier = Modifier.fillMaxWidth()) {
-                val totalHours = data.totalTimeInvestedMillis / (1000 * 3600)
-                val totalMins = (data.totalTimeInvestedMillis / (1000 * 60)) % 60
-                Text(
-                    text = "Métricas Generales de Procesos",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Tiempo total: ${totalHours}h ${totalMins}m  •  Sesiones: ${data.totalSessionsCount}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Días activos: ${data.totalActiveDays}  •  Costo acumulado: $${data.totalAccumulatedCost}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
+            ProcessMetricTiles(data = data)
         }
 
-        // Contribution Calendar
-        item {
-            RumboCard(modifier = Modifier.fillMaxWidth()) {
-                ContributionCalendar(
-                    activeDates = data.activeDaysMap.values.flatten().toSet()
+        // Process Time Distribution Donut Chart
+        if (data.processInvestmentSummaries.isNotEmpty()) {
+            item {
+                RumboSectionHeader(
+                    title = "Distribución del Tiempo",
+                    subtitle = "Proporción de horas dedicadas por cada proceso"
                 )
+            }
+            item {
+                RumboCard(modifier = Modifier.fillMaxWidth()) {
+                    ProcessDistributionDonutChart(items = data.processInvestmentSummaries)
+                }
+            }
+
+            // Process Investment Comparative Bar Chart
+            item {
+                RumboSectionHeader(
+                    title = "Inversión por Proceso",
+                    subtitle = "Comparativa de horas acumuladas y costos"
+                )
+            }
+            item {
+                RumboCard(modifier = Modifier.fillMaxWidth()) {
+                    ProcessInvestmentBarChart(items = data.processInvestmentSummaries)
+                }
             }
         }
 
@@ -204,92 +212,36 @@ private fun ProcessAnalyticsView(
         item {
             RumboSectionHeader(
                 title = "Tiempo Invertido vs Progreso Declarado",
-                subtitle = "Comparación transparente entre dedicación y evaluación cualitativa"
+                subtitle = "Comparación entre dedicación temporal y nivel cualitativo"
             )
-            RumboCard(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                ) {
-                    Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    Spacer(modifier = Modifier.padding(start = 8.dp))
-                    Text(
-                        text = "El tiempo invertido y el progreso cualitativo son conceptos independientes.",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
         }
 
         if (data.comparisons.isEmpty()) {
             item {
                 Text(
                     text = "Sin procesos para comparar.",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
             }
         } else {
             items(data.comparisons, key = { "comparison_${it.processId}" }) { comparison ->
-                RumboCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .semantics {
-                            contentDescription = "Proceso ${comparison.processName}: ${comparison.timeInvestedHours} horas invertidas, progreso declarado ${comparison.declaredProgressLevelLabel}."
-                        }
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = comparison.processName,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = "Tiempo invertido: ${String.format(Locale.getDefault(), "%.1f", comparison.timeInvestedHours)}h",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                        }
-                        Text(
-                            text = "Progreso: ${comparison.declaredProgressLevelLabel}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+                ProcessComparisonCard(comparison = comparison)
             }
         }
 
-        // Investment Summary Table
+        // Activity Calendar
         item {
-            RumboSectionHeader(title = "Inversión Acumulada por Proceso")
+            RumboSectionHeader(
+                title = "Consistencia y Actividad",
+                subtitle = "Días con sesiones registradas en el período"
+            )
         }
-
-        items(data.processInvestmentSummaries, key = { "summary_${it.processId}" }) { summary ->
+        item {
             RumboCard(modifier = Modifier.fillMaxWidth()) {
-                val hours = summary.timeInvestedMillis / (1000 * 3600)
-                val mins = (summary.timeInvestedMillis / (1000 * 60)) % 60
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = summary.processName,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "Tiempo: ${hours}h ${mins}m  •  Costo: $${summary.cost}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                ContributionCalendar(
+                    activeDates = data.activeDaysMap.values.flatten().toSet()
+                )
             }
         }
     }
@@ -303,36 +255,34 @@ private fun TaskAnalyticsView(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
+        // High Level Task Metric Tiles
         item {
-            RumboSectionHeader(
-                title = "Métricas de Tareas",
-                subtitle = "Desglose exclusivo del estado de tareas"
-            )
+            TaskMetricTiles(data = data)
         }
 
+        // Task Completion Circular Gauge
+        item {
+            RumboSectionHeader(
+                title = "Tasa de Finalización",
+                subtitle = "Porcentaje de tareas completadas del total"
+            )
+        }
         item {
             RumboCard(modifier = Modifier.fillMaxWidth()) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Tareas Completadas: ${data.completedTasksCount}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = "Tareas Pendientes: ${data.pendingTasksCount}",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Text(
-                        text = "Tareas Vencidas: ${data.overdueTasksCount}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Text(
-                        text = "Total Registradas: ${data.totalTasksCount}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
+                TaskCompletionGauge(data = data)
+            }
+        }
+
+        // Task Status Proportional Distribution Bar
+        item {
+            RumboSectionHeader(
+                title = "Distribución de Estados",
+                subtitle = "Proporción entre completadas, pendientes y vencidas"
+            )
+        }
+        item {
+            RumboCard(modifier = Modifier.fillMaxWidth()) {
+                TaskDistributionBar(data = data)
             }
         }
     }
