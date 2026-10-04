@@ -20,9 +20,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val mainUiState by viewModel.uiState.collectAsStateWithLifecycle()
-            val hasCompletedOnboarding = (mainUiState as? MainUiState.Success)?.hasCompletedOnboarding
+            val successState = mainUiState as? MainUiState.Success
+            val hasCompletedOnboarding = successState?.hasCompletedOnboarding
+            val isDarkMode = successState?.isDarkMode
 
-            RumboApp(hasCompletedOnboarding = hasCompletedOnboarding)
+            RumboApp(
+                hasCompletedOnboarding = hasCompletedOnboarding,
+                isDarkMode = isDarkMode
+            )
         }
     }
 }

@@ -9,7 +9,8 @@ import javax.inject.Inject
 
 class SettingsRepositoryImpl @Inject constructor(
     private val preferencesDataSource: RumboPreferencesDataSource,
-    private val rumboDatabase: RumboDatabase
+    private val rumboDatabase: RumboDatabase,
+    private val processRepository: ProcessRepository
 ) : SettingsRepository {
 
     override val userSettings: Flow<UserSettings> = preferencesDataSource.userSettings
@@ -35,5 +36,6 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun resetApplicationData() {
         rumboDatabase.clearAllTables()
         preferencesDataSource.clearAllData()
+        processRepository.ensureGeneralProcessExists()
     }
 }

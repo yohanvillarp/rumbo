@@ -12,7 +12,10 @@ import javax.inject.Inject
 
 sealed interface MainUiState {
     data object Loading : MainUiState
-    data class Success(val hasCompletedOnboarding: Boolean) : MainUiState
+    data class Success(
+        val hasCompletedOnboarding: Boolean,
+        val isDarkMode: Boolean? = null
+    ) : MainUiState
 }
 
 @HiltViewModel
@@ -21,7 +24,12 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
 
     val uiState: StateFlow<MainUiState> = settingsRepository.userSettings
-        .map { MainUiState.Success(it.hasCompletedOnboarding) }
+        .map { 
+            MainUiState.Success(
+                hasCompletedOnboarding = it.hasCompletedOnboarding,
+                isDarkMode = it.isDarkModeEnabled
+            ) 
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

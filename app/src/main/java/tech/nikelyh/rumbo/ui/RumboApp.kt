@@ -3,6 +3,7 @@ package tech.nikelyh.rumbo.ui
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -85,9 +86,13 @@ enum class TopLevelDestination(
 @Composable
 fun RumboApp(
     hasCompletedOnboarding: Boolean?,
+    isDarkMode: Boolean? = null,
     navController: NavHostController = rememberNavController()
 ) {
-    RumboTheme {
+    val isSystemDark = isSystemInDarkTheme()
+    val darkTheme = isDarkMode ?: isSystemDark
+
+    RumboTheme(darkTheme = darkTheme) {
         if (hasCompletedOnboarding == null) {
             RumboLoadingState(isLoading = true)
         } else {

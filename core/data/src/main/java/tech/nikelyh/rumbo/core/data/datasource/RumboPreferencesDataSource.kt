@@ -31,7 +31,7 @@ class RumboPreferencesDataSource @Inject constructor(
 
     val userSettings: Flow<UserSettings> = context.dataStore.data.map { preferences ->
         UserSettings(
-            isDarkModeEnabled = preferences[PreferencesKeys.DARK_MODE] ?: false,
+            isDarkModeEnabled = preferences[PreferencesKeys.DARK_MODE],
             isNotificationsEnabled = preferences[PreferencesKeys.NOTIFICATIONS] ?: true,
             hasCompletedOnboarding = preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
         )

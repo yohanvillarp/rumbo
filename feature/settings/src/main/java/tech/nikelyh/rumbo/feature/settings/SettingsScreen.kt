@@ -3,6 +3,7 @@ package tech.nikelyh.rumbo.feature.settings
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,12 +16,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +47,13 @@ fun SettingsRoute(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    LaunchedEffect(viewModel) {
+        viewModel.resetCompleted.collect {
+            context.findActivity()?.recreate()
+        }
+    }
 
     SettingsScreen(
         uiState = uiState,
@@ -58,7 +68,6 @@ internal fun SettingsScreen(
     onEvent: (SettingsUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     var showResetDialog by remember { mutableStateOf(false) }
 
     Column(
@@ -76,15 +85,30 @@ internal fun SettingsScreen(
             SettingsUiState.Loading -> RumboLoadingWheel()
             is SettingsUiState.Success -> {
                 val settings = uiState.userSettings
+                val isSystemDark = isSystemInDarkTheme()
+                val isDarkActive = settings.isDarkModeEnabled ?: isSystemDark
+                val themeModeSubtitle = when (settings.isDarkModeEnabled) {
+                    null -> "Automático (según el dispositivo)"
+                    true -> "Modo oscuro activado"
+                    false -> "Modo claro activado"
+                }
+
                 RumboCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Modo Oscuro", style = MaterialTheme.typography.bodyLarge)
+                        Column {
+                            Text(text = "Modo Oscuro", style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                text = themeModeSubtitle,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
                         Switch(
-                            checked = settings.isDarkModeEnabled,
+                            checked = isDarkActive,
                             onCheckedChange = { onEvent(SettingsUiEvent.ToggleDarkMode(it)) }
                         )
                     }
@@ -121,11 +145,22 @@ internal fun SettingsScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         RumboOutlinedButton(
                             onClick = { showResetDialog = true },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !uiState.isResetting
                         ) {
-                            Icon(Icons.Default.DeleteForever, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Restablecer Aplicación", color = MaterialTheme.colorScheme.error)
+                            if (uiState.isResetting) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.height(20.dp).width(20.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Restableciendo datos...", color = MaterialTheme.colorScheme.error)
+                            } else {
+                                Icon(Icons.Default.DeleteForever, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Restablecer Aplicación", color = MaterialTheme.colorScheme.error)
+                            }
                         }
                     }
                 }
@@ -137,13 +172,12 @@ internal fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
             title = { Text("¿Restablecer Aplicación?") },
-            text = { Text("Se eliminarán todos tus datos (procesos, tareas, historial y configuración) de forma permanente. La aplicación se reiniciará.") },
+            text = { Text("Se eliminarán todos tus datos (procesos, tareas, historial y configuración) de forma permanente. La aplicación se reiniciará con el proceso general por defecto.") },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showResetDialog = false
                         onEvent(SettingsUiEvent.ResetApplicationData)
-                        context.findActivity()?.recreate()
                     }
                 ) {
                     Text("Restablecer", color = MaterialTheme.colorScheme.error)
