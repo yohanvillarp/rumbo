@@ -4,6 +4,9 @@ import tech.nikelyh.rumbo.core.model.ProcessSortOrder
 import tech.nikelyh.rumbo.core.model.ProcessStatus
 import tech.nikelyh.rumbo.core.model.ProcessTypeFilter
 
+/**
+ * User interaction events dispatched from the processes overview screen.
+ */
 sealed interface ProcessesUiEvent {
     data class SearchQueryChanged(val query: String) : ProcessesUiEvent
     data class FilterChanged(val status: ProcessStatus) : ProcessesUiEvent

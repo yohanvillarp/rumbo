@@ -44,6 +44,13 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboLogo
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 
+/**
+ * Multi-step interactive onboarding tutorial screen highlighting core workflow paradigms in Rumbo.
+ *
+ * @param onFinishTutorial Callback invoked when the user reaches the end and confirms completion.
+ * @param modifier Optional [Modifier] for layout adjustments.
+ * @param steps Sequence of [TutorialStep] pages to display in the horizontal carousel.
+ */
 @Composable
 fun TutorialScreen(
     onFinishTutorial: () -> Unit,

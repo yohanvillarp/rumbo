@@ -136,72 +136,24 @@ private fun ProcessesContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Filter Chips (ACTIVE vs PAUSED vs COMPLETED)
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-        ) {
-            FilterChip(
-                selected = uiState.selectedFilter == ProcessStatus.ACTIVE,
-                onClick = { onEvent(ProcessesUiEvent.FilterChanged(ProcessStatus.ACTIVE)) },
-                label = { Text("Activos (${uiState.activeProcesses.size})") }
-            )
-            FilterChip(
-                selected = uiState.selectedFilter == ProcessStatus.PAUSED,
-                onClick = { onEvent(ProcessesUiEvent.FilterChanged(ProcessStatus.PAUSED)) },
-                label = { Text("Pausados (${uiState.pausedProcesses.size})") }
-            )
-            FilterChip(
-                selected = uiState.selectedFilter == ProcessStatus.COMPLETED,
-                onClick = { onEvent(ProcessesUiEvent.FilterChanged(ProcessStatus.COMPLETED)) },
-                label = { Text("Completados (${uiState.completedProcesses.size})") }
-            )
-        }
+        // Status Filter Row (Active, Paused, Completed)
+        ProcessStatusFilterRow(
+            selectedFilter = uiState.selectedFilter,
+            activeCount = uiState.activeProcesses.size,
+            pausedCount = uiState.pausedProcesses.size,
+            completedCount = uiState.completedProcesses.size,
+            onFilterSelected = { status -> onEvent(ProcessesUiEvent.FilterChanged(status)) }
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Secondary Filters: Type (Principales, Subprocesos) & Sorting criteria
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-        ) {
-            FilterChip(
-                selected = uiState.selectedTypeFilter == ProcessTypeFilter.ALL,
-                onClick = { onEvent(ProcessesUiEvent.TypeFilterChanged(ProcessTypeFilter.ALL)) },
-                label = { Text("Todos") }
-            )
-            FilterChip(
-                selected = uiState.selectedTypeFilter == ProcessTypeFilter.MAIN,
-                onClick = { onEvent(ProcessesUiEvent.TypeFilterChanged(ProcessTypeFilter.MAIN)) },
-                label = { Text("Principales") }
-            )
-            FilterChip(
-                selected = uiState.selectedTypeFilter == ProcessTypeFilter.SUBPROCESS,
-                onClick = { onEvent(ProcessesUiEvent.TypeFilterChanged(ProcessTypeFilter.SUBPROCESS)) },
-                label = { Text("Subprocesos") }
-            )
-            FilterChip(
-                selected = uiState.sortOrder == ProcessSortOrder.RECENT,
-                onClick = { onEvent(ProcessesUiEvent.SortOrderChanged(ProcessSortOrder.RECENT)) },
-                label = { Text("Más recientes") }
-            )
-            FilterChip(
-                selected = uiState.sortOrder == ProcessSortOrder.NAME,
-                onClick = { onEvent(ProcessesUiEvent.SortOrderChanged(ProcessSortOrder.NAME)) },
-                label = { Text("Alfabético (A-Z)") }
-            )
-            FilterChip(
-                selected = uiState.sortOrder == ProcessSortOrder.ACCUMULATED_COST,
-                onClick = { onEvent(ProcessesUiEvent.SortOrderChanged(ProcessSortOrder.ACCUMULATED_COST)) },
-                label = { Text("Mayor inversión") }
-            )
-        }
+        // Secondary Filters: Hierarchy Type & Sorting Criteria
+        ProcessSecondaryFilterRow(
+            selectedTypeFilter = uiState.selectedTypeFilter,
+            onTypeFilterSelected = { typeFilter -> onEvent(ProcessesUiEvent.TypeFilterChanged(typeFilter)) },
+            sortOrder = uiState.sortOrder,
+            onSortOrderSelected = { order -> onEvent(ProcessesUiEvent.SortOrderChanged(order)) }
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -250,6 +202,107 @@ private fun ProcessesContent(
             Spacer(modifier = Modifier.width(8.dp))
             Text("Nuevo Proceso")
         }
+    }
+}
+
+/**
+ * Horizontally scrollable status filter chips for processes (Active, Paused, Completed).
+ *
+ * @param selectedFilter Currently active [ProcessStatus].
+ * @param activeCount Number of active processes available.
+ * @param pausedCount Number of paused processes available.
+ * @param completedCount Number of completed processes available.
+ * @param onFilterSelected Callback invoked when a status filter chip is clicked.
+ * @param modifier Optional [Modifier] for layout adjustments.
+ */
+@Composable
+private fun ProcessStatusFilterRow(
+    selectedFilter: ProcessStatus,
+    activeCount: Int,
+    pausedCount: Int,
+    completedCount: Int,
+    onFilterSelected: (ProcessStatus) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+    ) {
+        FilterChip(
+            selected = selectedFilter == ProcessStatus.ACTIVE,
+            onClick = { onFilterSelected(ProcessStatus.ACTIVE) },
+            label = { Text("Activos ($activeCount)") }
+        )
+        FilterChip(
+            selected = selectedFilter == ProcessStatus.PAUSED,
+            onClick = { onFilterSelected(ProcessStatus.PAUSED) },
+            label = { Text("Pausados ($pausedCount)") }
+        )
+        FilterChip(
+            selected = selectedFilter == ProcessStatus.COMPLETED,
+            onClick = { onFilterSelected(ProcessStatus.COMPLETED) },
+            label = { Text("Completados ($completedCount)") }
+        )
+    }
+}
+
+/**
+ * Horizontally scrollable secondary filter chips for process hierarchy type and sort ordering.
+ *
+ * @param selectedTypeFilter Currently active [ProcessTypeFilter] (All, Main, Subprocess).
+ * @param onTypeFilterSelected Callback invoked when a process hierarchy type is selected.
+ * @param sortOrder Currently active [ProcessSortOrder] (Recent, Name, Accumulated Cost).
+ * @param onSortOrderSelected Callback invoked when a sort order is selected.
+ * @param modifier Optional [Modifier] for layout adjustments.
+ */
+@Composable
+private fun ProcessSecondaryFilterRow(
+    selectedTypeFilter: ProcessTypeFilter,
+    onTypeFilterSelected: (ProcessTypeFilter) -> Unit,
+    sortOrder: ProcessSortOrder,
+    onSortOrderSelected: (ProcessSortOrder) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+    ) {
+        FilterChip(
+            selected = selectedTypeFilter == ProcessTypeFilter.ALL,
+            onClick = { onTypeFilterSelected(ProcessTypeFilter.ALL) },
+            label = { Text("Todos") }
+        )
+        FilterChip(
+            selected = selectedTypeFilter == ProcessTypeFilter.MAIN,
+            onClick = { onTypeFilterSelected(ProcessTypeFilter.MAIN) },
+            label = { Text("Principales") }
+        )
+        FilterChip(
+            selected = selectedTypeFilter == ProcessTypeFilter.SUBPROCESS,
+            onClick = { onTypeFilterSelected(ProcessTypeFilter.SUBPROCESS) },
+            label = { Text("Subprocesos") }
+        )
+        FilterChip(
+            selected = sortOrder == ProcessSortOrder.RECENT,
+            onClick = { onSortOrderSelected(ProcessSortOrder.RECENT) },
+            label = { Text("Más recientes") }
+        )
+        FilterChip(
+            selected = sortOrder == ProcessSortOrder.NAME,
+            onClick = { onSortOrderSelected(ProcessSortOrder.NAME) },
+            label = { Text("Alfabético (A-Z)") }
+        )
+        FilterChip(
+            selected = sortOrder == ProcessSortOrder.ACCUMULATED_COST,
+            onClick = { onSortOrderSelected(ProcessSortOrder.ACCUMULATED_COST) },
+            label = { Text("Mayor inversión") }
+        )
     }
 }
 

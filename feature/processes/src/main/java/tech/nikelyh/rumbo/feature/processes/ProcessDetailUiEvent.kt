@@ -2,7 +2,11 @@ package tech.nikelyh.rumbo.feature.processes
 
 import tech.nikelyh.rumbo.core.model.Milestone
 import tech.nikelyh.rumbo.core.model.Task
+import tech.nikelyh.rumbo.core.model.TaskSortOrder
 
+/**
+ * User interaction events dispatched from the process detail screen.
+ */
 sealed interface ProcessDetailUiEvent {
     data object PauseProcess : ProcessDetailUiEvent
     data object ResumeProcess : ProcessDetailUiEvent

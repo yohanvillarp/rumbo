@@ -8,8 +8,8 @@ import androidx.compose.material.icons.filled.Timer
 import tech.nikelyh.rumbo.core.designsystem.component.MascotState
 
 /**
- * Proveedor de contenido del tutorial interactivo y guía de Rumbo.
- * Diseñado con lenguaje cercano, humano y empático para cualquier persona.
+ * Content provider for the onboarding tutorial and interactive user guide.
+ * Employs accessible, empathetic phrasing tailored for everyday users across diverse backgrounds.
  */
 object TutorialContent {
     val steps: List<TutorialStep> = listOf(

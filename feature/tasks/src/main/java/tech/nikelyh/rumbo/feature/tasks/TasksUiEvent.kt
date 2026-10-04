@@ -4,6 +4,9 @@ import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskSortOrder
 
+/**
+ * User interaction events dispatched from the tasks overview screen.
+ */
 sealed interface TasksUiEvent {
     data class FilterChanged(val filter: TaskFilter) : TasksUiEvent
     data class ProcessFilterChanged(val processId: String?) : TasksUiEvent

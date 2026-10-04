@@ -5,6 +5,9 @@ import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskSortOrder
 
+/**
+ * UI state representation for the tasks screen.
+ */
 sealed interface TasksUiState {
     data object Loading : TasksUiState
     data class Content(

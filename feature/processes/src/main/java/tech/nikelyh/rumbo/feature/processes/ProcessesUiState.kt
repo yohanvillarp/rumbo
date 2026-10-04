@@ -5,6 +5,9 @@ import tech.nikelyh.rumbo.core.model.ProcessSortOrder
 import tech.nikelyh.rumbo.core.model.ProcessStatus
 import tech.nikelyh.rumbo.core.model.ProcessTypeFilter
 
+/**
+ * UI state representation for the processes overview screen.
+ */
 sealed interface ProcessesUiState {
     data object Loading : ProcessesUiState
     data class Content(

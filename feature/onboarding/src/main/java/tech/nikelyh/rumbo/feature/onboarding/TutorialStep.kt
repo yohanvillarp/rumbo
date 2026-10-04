@@ -4,8 +4,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import tech.nikelyh.rumbo.core.designsystem.component.MascotState
 
 /**
- * Modelo de datos escalable para pasos de tutorial y guía de uso.
- * Permite incorporar nuevas funcionalidades y explicaciones a medida que el sistema evoluciona.
+ * Scalable data model representing an interactive onboarding tutorial step.
+ * Designed to accommodate new educational flows and feature highlights as Rumbo evolves.
  */
 data class TutorialStep(
     val id: String,

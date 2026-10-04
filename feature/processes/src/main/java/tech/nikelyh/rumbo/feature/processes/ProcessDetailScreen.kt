@@ -1,6 +1,8 @@
 package tech.nikelyh.rumbo.feature.processes
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -493,26 +495,10 @@ private fun ProcessDetailContent(
 
         if (uiState.pendingTasks.isNotEmpty()) {
             item {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FilterChip(
-                        selected = uiState.taskSortOrder == TaskSortOrder.DUE_DATE,
-                        onClick = { onEvent(ProcessDetailUiEvent.ChangeTaskSortOrder(TaskSortOrder.DUE_DATE)) },
-                        label = { Text("Próximas a vencer") }
-                    )
-                    FilterChip(
-                        selected = uiState.taskSortOrder == TaskSortOrder.RECENT,
-                        onClick = { onEvent(ProcessDetailUiEvent.ChangeTaskSortOrder(TaskSortOrder.RECENT)) },
-                        label = { Text("Más recientes") }
-                    )
-                    FilterChip(
-                        selected = uiState.taskSortOrder == TaskSortOrder.PRIORITY,
-                        onClick = { onEvent(ProcessDetailUiEvent.ChangeTaskSortOrder(TaskSortOrder.PRIORITY)) },
-                        label = { Text("Mayor prioridad") }
-                    )
-                }
+                PendingTasksSortRow(
+                    taskSortOrder = uiState.taskSortOrder,
+                    onSortOrderSelected = { order -> onEvent(ProcessDetailUiEvent.ChangeTaskSortOrder(order)) }
+                )
             }
         }
 
@@ -623,6 +609,44 @@ private fun ProcessDetailContent(
                 taskToCompleteWithDuration = null
             },
             onDismiss = { taskToCompleteWithDuration = null }
+        )
+    }
+}
+
+/**
+ * Horizontal filter chip row allowing the user to sort pending tasks inside a process.
+ *
+ * @param taskSortOrder Current [TaskSortOrder] applied.
+ * @param onSortOrderSelected Callback invoked when a sort order chip is clicked.
+ * @param modifier Optional [Modifier] for layout adjustments.
+ */
+@Composable
+private fun PendingTasksSortRow(
+    taskSortOrder: TaskSortOrder,
+    onSortOrderSelected: (TaskSortOrder) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+    ) {
+        FilterChip(
+            selected = taskSortOrder == TaskSortOrder.DUE_DATE,
+            onClick = { onSortOrderSelected(TaskSortOrder.DUE_DATE) },
+            label = { Text("Próximas a vencer") }
+        )
+        FilterChip(
+            selected = taskSortOrder == TaskSortOrder.RECENT,
+            onClick = { onSortOrderSelected(TaskSortOrder.RECENT) },
+            label = { Text("Más recientes") }
+        )
+        FilterChip(
+            selected = taskSortOrder == TaskSortOrder.PRIORITY,
+            onClick = { onSortOrderSelected(TaskSortOrder.PRIORITY) },
+            label = { Text("Mayor prioridad") }
         )
     }
 }
