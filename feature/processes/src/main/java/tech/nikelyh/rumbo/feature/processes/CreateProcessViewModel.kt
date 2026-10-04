@@ -1,5 +1,6 @@
 package tech.nikelyh.rumbo.feature.processes
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,11 +16,23 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CreateProcessViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val processRepository: ProcessRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(CreateProcessUiState())
+    private val initialParentId: String? = savedStateHandle.get<String>("parentProcessId")
+
+    private val _uiState = MutableStateFlow(CreateProcessUiState(parentProcessId = initialParentId))
     val uiState: StateFlow<CreateProcessUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            processRepository.getProcesses().collect { processes ->
+                val activeParents = processes.filter { !it.isFinished && it.id != Process.GENERAL_PROCESS_ID }
+                _uiState.update { it.copy(availableParents = activeParents) }
+            }
+        }
+    }
 
     fun onEvent(event: CreateProcessUiEvent) {
         when (event) {
@@ -37,31 +50,20 @@ class CreateProcessViewModel @Inject constructor(
             is CreateProcessUiEvent.ColorChanged -> {
                 _uiState.update { it.copy(colorOrVisualId = event.colorOrVisualId) }
             }
-            is CreateProcessUiEvent.CostChanged -> {
-                _uiState.update { current ->
-                    current.copy(
-                        costInput = event.cost,
-                        costError = if (current.costError != null) validateCost(event.cost) else null
-                    )
-                }
-            }
-            is CreateProcessUiEvent.NextActionChanged -> {
-                _uiState.update { it.copy(nextAction = event.nextAction) }
+            is CreateProcessUiEvent.ParentProcessSelected -> {
+                _uiState.update { it.copy(parentProcessId = event.parentId) }
             }
             CreateProcessUiEvent.SubmitProcess -> {
                 val current = _uiState.value
                 val nameErr = validateName(current.name)
-                val costErr = validateCost(current.costInput)
 
-                if (nameErr != null || costErr != null) {
-                    _uiState.update { it.copy(nameError = nameErr, costError = costErr) }
+                if (nameErr != null) {
+                    _uiState.update { it.copy(nameError = nameErr) }
                     return
                 }
 
                 val trimmedName = current.name.trim()
                 val trimmedDesc = current.description.trim().ifBlank { null }
-                val trimmedNextAction = current.nextAction.trim().ifBlank { null }
-                val costDouble = current.costInput.trim().toDoubleOrNull() ?: 0.0
 
                 val newProcess = Process(
                     id = UUID.randomUUID().toString(),
@@ -69,8 +71,8 @@ class CreateProcessViewModel @Inject constructor(
                     description = trimmedDesc,
                     createdAtEpochMillis = System.currentTimeMillis(),
                     colorOrVisualId = current.colorOrVisualId,
-                    accumulatedDirectCost = costDouble,
-                    nextAction = trimmedNextAction
+                    accumulatedDirectCost = 0.0,
+                    parentProcessId = current.parentProcessId
                 )
 
                 viewModelScope.launch {
@@ -87,16 +89,6 @@ class CreateProcessViewModel @Inject constructor(
         return when {
             trimmed.isBlank() -> "El nombre del proceso es obligatorio"
             trimmed.length > 50 -> "El nombre no puede superar los 50 caracteres"
-            else -> null
-        }
-    }
-
-    private fun validateCost(input: String): String? {
-        if (input.isBlank()) return null
-        val parsed = input.trim().toDoubleOrNull()
-        return when {
-            parsed == null -> "El costo debe ser un valor numérico"
-            parsed < 0 -> "El costo inicial no puede ser negativo"
             else -> null
         }
     }

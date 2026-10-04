@@ -134,7 +134,8 @@ fun TaskDistributionBar(
 ) {
     val total = data.totalTasksCount.coerceAtLeast(1)
     val completedRatio = data.completedTasksCount.toFloat() / total.toFloat()
-    val pendingRatio = data.pendingTasksCount.toFloat() / total.toFloat()
+    val onTimePendingCount = (data.pendingTasksCount - data.overdueTasksCount).coerceAtLeast(0)
+    val onTimePendingRatio = onTimePendingCount.toFloat() / total.toFloat()
     val overdueRatio = data.overdueTasksCount.toFloat() / total.toFloat()
 
     val completedColor = Color(0xFF2E7D32)
@@ -162,11 +163,11 @@ fun TaskDistributionBar(
                             .background(completedColor)
                     )
                 }
-                if (pendingRatio > 0f) {
+                if (onTimePendingRatio > 0f) {
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
-                            .weight(pendingRatio)
+                            .weight(onTimePendingRatio)
                             .background(pendingColor)
                     )
                 }
@@ -192,7 +193,7 @@ fun TaskDistributionBar(
             )
             LegendIndicator(
                 color = pendingColor,
-                label = "Pendientes (${data.pendingTasksCount})"
+                label = if (data.overdueTasksCount > 0) "A tiempo ($onTimePendingCount)" else "Pendientes (${data.pendingTasksCount})"
             )
             if (data.overdueTasksCount > 0) {
                 LegendIndicator(

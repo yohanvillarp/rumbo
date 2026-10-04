@@ -93,6 +93,14 @@ class MainViewModelTest {
         assertNull(state.activeSession)
     }
 
+    @Test
+    fun `uiState emits languageCode configured in settings`() = runTest {
+        settingsRepository.setLanguage("en")
+        val state = viewModel.uiState.first { it is MainUiState.Success } as MainUiState.Success
+
+        assertEquals("en", state.languageCode)
+    }
+
     private class TestSettingsRepository : SettingsRepository {
         private val settingsFlow = MutableStateFlow(UserSettings())
         private val profileFlow = MutableStateFlow<UserProfile?>(null)
@@ -114,6 +122,10 @@ class MainViewModelTest {
 
         override suspend fun setUserName(name: String) {
             profileFlow.value = UserProfile(id = "user_me", name = name, createdAtEpochMillis = 1000L)
+        }
+
+        override suspend fun setLanguage(languageCode: String?) {
+            settingsFlow.value = settingsFlow.value.copy(languageCode = languageCode)
         }
 
         override suspend fun resetApplicationData() {

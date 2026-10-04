@@ -22,7 +22,11 @@ class ProcessTest {
         assertFalse(process.isPaused)
         assertFalse(process.isFinished)
         assertEquals(0.0, process.accumulatedDirectCost, 0.001)
-        assertNull(process.nextAction)
+        assertFalse(process.isStarred)
+
+        val starred = process.toggleStarred()
+        assertTrue(starred.isStarred)
+        assertFalse(starred.toggleStarred().isStarred)
     }
 
     @Test
@@ -77,6 +81,12 @@ class ProcessTest {
         val archived = finished.archive()
         assertEquals(ProcessStatus.ARCHIVED, archived.status)
         assertTrue(archived.isFinished)
+
+        val reopened = finished.reopen()
+        assertEquals(ProcessStatus.ACTIVE, reopened.status)
+        assertTrue(reopened.isActive)
+        assertFalse(reopened.isFinished)
+        assertNull(reopened.finishedAtEpochMillis)
     }
 
     @Test

@@ -3,6 +3,7 @@ package tech.nikelyh.rumbo.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -10,8 +11,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import tech.nikelyh.rumbo.core.data.repository.ProcessRepository
 import tech.nikelyh.rumbo.core.data.repository.SettingsRepository
+import tech.nikelyh.rumbo.core.data.repository.StarProcessResult
 import tech.nikelyh.rumbo.core.data.repository.TaskRepository
 import tech.nikelyh.rumbo.core.data.repository.WorkSessionRepository
+import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.model.TaskStatus
 import tech.nikelyh.rumbo.core.model.WorkSession
 import java.time.LocalTime
@@ -20,17 +23,20 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    processRepository: ProcessRepository,
+    private val processRepository: ProcessRepository,
     private val taskRepository: TaskRepository,
     private val workSessionRepository: WorkSessionRepository,
     settingsRepository: SettingsRepository
 ) : ViewModel() {
 
+    private val userMessage = MutableStateFlow<String?>(null)
+
     val uiState: StateFlow<HomeUiState> = combine(
         processRepository.getProcesses(),
         taskRepository.getAllTasks(),
-        settingsRepository.userProfile
-    ) { processes, tasks, userProfile ->
+        settingsRepository.userProfile,
+        userMessage
+    ) { processes, tasks, userProfile, msg ->
         val name = userProfile?.name ?: "Explorador"
         val hour = try {
             LocalTime.now().hour
@@ -41,22 +47,26 @@ class HomeViewModel @Inject constructor(
         val greetingPrefix = getGreetingForHour(hour)
         val fullGreeting = "$greetingPrefix, $name"
 
-        val activeProcesses = processes.filter { it.isActive }
-        val featuredProcess = activeProcesses.firstOrNull { !it.nextAction.isNullOrBlank() }
-            ?: activeProcesses.firstOrNull()
+        val nonGeneralProcesses = processes.filter { it.id != Process.GENERAL_PROCESS_ID }
+        val activeProcesses = nonGeneralProcesses.filter { it.isActive }
+            .sortedWith(
+                compareByDescending<Process> { it.isStarred }
+                    .thenByDescending { it.createdAtEpochMillis }
+            )
 
         val pendingTasks = tasks.filter { !it.isCompleted }
 
-        if (processes.isEmpty() && tasks.isEmpty()) {
+        if (nonGeneralProcesses.isEmpty() && tasks.isEmpty()) {
             HomeUiState.Empty
         } else {
             HomeUiState.Content(
                 greeting = fullGreeting,
                 userName = name,
-                continueProcess = featuredProcess,
+                continueProcess = null,
                 activeProcesses = activeProcesses.take(3),
                 todayTasks = pendingTasks.take(5),
-                allProcesses = processes
+                allProcesses = processes,
+                userMessage = msg
             )
         }
     }.stateIn(
@@ -67,6 +77,17 @@ class HomeViewModel @Inject constructor(
 
     fun onEvent(event: HomeUiEvent) {
         when (event) {
+            is HomeUiEvent.ToggleStar -> {
+                viewModelScope.launch {
+                    val result = processRepository.toggleProcessStarred(event.processId)
+                    if (result is StarProcessResult.MaxLimitReached) {
+                        userMessage.value = "Solo es posible destacar hasta 3 procesos"
+                    }
+                }
+            }
+            HomeUiEvent.DismissUserMessage -> {
+                userMessage.value = null
+            }
             is HomeUiEvent.OnToggleTaskStatus -> {
                 viewModelScope.launch {
                     val newStatus = if (event.task.isCompleted) TaskStatus.PENDING else TaskStatus.COMPLETED
@@ -77,19 +98,23 @@ class HomeViewModel @Inject constructor(
             }
             is HomeUiEvent.CompleteTaskWithDuration -> {
                 viewModelScope.launch {
-                    val durationMillis = event.durationMinutes * 60 * 1000L
+                    val targetTotalMillis = event.durationMinutes * 60 * 1000L
+                    val additionalMillis = maxOf(0L, targetTotalMillis - event.task.timeWorkedMillis)
                     val now = System.currentTimeMillis()
-                    val session = WorkSession(
-                        id = UUID.randomUUID().toString(),
-                        processId = event.task.processId,
-                        taskId = event.task.id,
-                        startTimeEpochMillis = now - durationMillis,
-                        endTimeEpochMillis = now,
-                        durationMillis = durationMillis,
-                        note = "Duración registrada al culminar tarea"
-                    )
-                    workSessionRepository.saveWorkSession(session)
-                    val updatedTask = event.task.addWorkedTime(durationMillis).updateStatus(TaskStatus.COMPLETED, finishedAt = now)
+                    if (additionalMillis > 0L) {
+                        val session = WorkSession(
+                            id = UUID.randomUUID().toString(),
+                            processId = event.task.processId,
+                            taskId = event.task.id,
+                            startTimeEpochMillis = now - additionalMillis,
+                            endTimeEpochMillis = now,
+                            durationMillis = additionalMillis,
+                            note = "Duración registrada al culminar tarea"
+                        )
+                        workSessionRepository.saveWorkSession(session)
+                    }
+                    val updatedTask = event.task.copy(timeWorkedMillis = maxOf(event.task.timeWorkedMillis, targetTotalMillis))
+                        .updateStatus(TaskStatus.COMPLETED, finishedAt = now)
                     taskRepository.saveTask(updatedTask)
                 }
             }

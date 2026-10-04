@@ -108,20 +108,22 @@ fun ProcessInvestmentBarChart(
                         .clip(RoundedCornerShape(5.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(fraction = ratio.coerceIn(0.02f, 1f))
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(5.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        color,
-                                        color.copy(alpha = 0.75f)
+                    if (ratio > 0f && item.timeInvestedMillis > 0L) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(fraction = ratio.coerceIn(0f, 1f))
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(5.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        colors = listOf(
+                                            color,
+                                            color.copy(alpha = 0.75f)
+                                        )
                                     )
                                 )
-                            )
-                    )
+                        )
+                    }
                 }
             }
         }

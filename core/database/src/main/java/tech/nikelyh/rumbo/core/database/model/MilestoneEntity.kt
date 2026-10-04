@@ -1,9 +1,15 @@
 package tech.nikelyh.rumbo.core.database.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "milestones")
+@Entity(
+    tableName = "milestones",
+    indices = [
+        Index(value = ["processId"])
+    ]
+)
 data class MilestoneEntity(
     @PrimaryKey
     val id: String,

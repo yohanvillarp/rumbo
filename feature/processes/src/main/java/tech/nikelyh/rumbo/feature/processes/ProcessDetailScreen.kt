@@ -1,5 +1,8 @@
 package tech.nikelyh.rumbo.feature.processes
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,26 +11,37 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Redo
+import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddTask
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -43,6 +57,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboCard
+import tech.nikelyh.rumbo.core.designsystem.component.RumboProcessCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboEmptyState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
@@ -50,11 +65,11 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
-import tech.nikelyh.rumbo.core.model.GoalStatus
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.model.ProcessStatus
 import tech.nikelyh.rumbo.core.model.Task
+import tech.nikelyh.rumbo.core.model.TaskSortOrder
 import tech.nikelyh.rumbo.core.model.TaskStatus
 import tech.nikelyh.rumbo.core.model.WeeklyGoal
 
@@ -64,6 +79,8 @@ fun ProcessDetailRoute(
     onNavigateToCreateTask: (String) -> Unit,
     onNavigateToStartSession: (String, String?) -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateToCreateProcess: (String?) -> Unit = {},
+    onNavigateToProcessDetail: (String) -> Unit = {},
     onNavigateToLogProgress: ((String) -> Unit)? = null,
     onNavigateToTask: (String) -> Unit = {},
     viewModel: ProcessDetailViewModel = hiltViewModel()
@@ -76,6 +93,8 @@ fun ProcessDetailRoute(
         onNavigateToEditProcess = { onNavigateToEditProcess(viewModel.processId) },
         onNavigateToCreateTask = { onNavigateToCreateTask(viewModel.processId) },
         onNavigateToStartSession = { taskId -> onNavigateToStartSession(viewModel.processId, taskId) },
+        onNavigateToCreateProcess = onNavigateToCreateProcess,
+        onNavigateToProcessDetail = onNavigateToProcessDetail,
         onNavigateToTask = onNavigateToTask,
         modifier = modifier
     )
@@ -88,8 +107,10 @@ internal fun ProcessDetailScreen(
     onNavigateToEditProcess: () -> Unit,
     onNavigateToCreateTask: () -> Unit,
     onNavigateToStartSession: (String?) -> Unit,
-    onNavigateToTask: (String) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNavigateToCreateProcess: (String?) -> Unit = {},
+    onNavigateToProcessDetail: (String) -> Unit = {},
+    onNavigateToTask: (String) -> Unit = {}
 ) {
     when (uiState) {
         ProcessDetailUiState.Loading -> {
@@ -105,6 +126,8 @@ internal fun ProcessDetailScreen(
                 onNavigateToEditProcess = onNavigateToEditProcess,
                 onNavigateToCreateTask = onNavigateToCreateTask,
                 onNavigateToStartSession = onNavigateToStartSession,
+                onNavigateToCreateProcess = onNavigateToCreateProcess,
+                onNavigateToProcessDetail = onNavigateToProcessDetail,
                 onNavigateToTask = onNavigateToTask,
                 modifier = modifier
             )
@@ -119,12 +142,12 @@ private fun ProcessDetailContent(
     onNavigateToEditProcess: () -> Unit,
     onNavigateToCreateTask: () -> Unit,
     onNavigateToStartSession: (String?) -> Unit,
+    onNavigateToCreateProcess: (String?) -> Unit,
+    onNavigateToProcessDetail: (String) -> Unit,
     onNavigateToTask: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val process = uiState.process
-    var showWeeklyGoalDialog by remember { mutableStateOf(false) }
-    var weeklyGoalInput by remember { mutableStateOf("") }
     var taskToCompleteWithDuration by remember { mutableStateOf<Task?>(null) }
 
     LazyColumn(
@@ -151,13 +174,32 @@ private fun ProcessDetailContent(
                     Text(
                         text = process.name,
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
                     )
-                    Text(
-                        text = processStatusSpanish,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = processStatusSpanish,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        if (!process.isSystem) {
+                            IconButton(onClick = { onEvent(ProcessDetailUiEvent.ToggleStar) }) {
+                                Icon(
+                                    imageVector = if (process.isStarred) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                                    contentDescription = if (process.isStarred) {
+                                        stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_action_unstar)
+                                    } else {
+                                        stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_action_star)
+                                    },
+                                    tint = if (process.isStarred) Color(0xFFFFB300) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
+                            }
+                        }
+                    }
                 }
 
                 process.description?.let { desc ->
@@ -169,110 +211,67 @@ private fun ProcessDetailContent(
                     )
                 }
 
-                process.nextAction?.let { action ->
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Siguiente acción: $action",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
-
                 Spacer(modifier = Modifier.height(12.dp))
 
                 val timeHours = uiState.totalTimeInvestedMillis / (1000 * 60 * 60)
                 val timeMinutes = (uiState.totalTimeInvestedMillis / (1000 * 60)) % 60
                 Text(
-                    text = "Invertido: ${timeHours}h ${timeMinutes}m  •  Costo: $${process.accumulatedDirectCost}  •  Sesiones: ${uiState.workSessions.size}",
+                    text = "Tiempo dedicado: ${timeHours}h ${timeMinutes}m  •  Inversión: $${process.accumulatedDirectCost}  •  ${uiState.workSessions.size} sesiones",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            }
-        }
 
-        // Section: Weekly Goal
-        item {
-            RumboSectionHeader(title = "Objetivo Semanal")
-            val goal = uiState.weeklyGoal
-
-            if (goal != null) {
-                val goalStatusSpanish = when (goal.status) {
-                    GoalStatus.PENDING -> "Pendiente"
-                    GoalStatus.IN_PROGRESS -> "En progreso"
-                    GoalStatus.ACHIEVED -> "Alcanzado"
-                    GoalStatus.CANCELLED -> "Cancelado"
-                }
-
-                RumboCard(modifier = Modifier.fillMaxWidth()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = goal.description,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "Semana: ${goal.weekIdentifier}  •  Estado: $goalStatusSpanish",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-
+                if (uiState.parentProcess != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Surface(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.clickable { onNavigateToProcessDetail(uiState.parentProcess.id) }
+                    ) {
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            RumboButton(
-                                onClick = { onEvent(ProcessDetailUiEvent.CompleteWeeklyGoal(goal.id)) },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(Icons.Default.CheckCircle, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Completar")
-                            }
-                            RumboOutlinedButton(
-                                onClick = { onEvent(ProcessDetailUiEvent.CarryOverWeeklyGoal(goal.id)) },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Mover")
-                            }
-                        }
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            TextButton(
-                                onClick = {
-                                    weeklyGoalInput = goal.description
-                                    showWeeklyGoalDialog = true
-                                }
-                            ) {
-                                Icon(Icons.Default.Edit, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Editar")
-                            }
-                            TextButton(
-                                onClick = { onEvent(ProcessDetailUiEvent.DiscardWeeklyGoal(goal.id)) }
-                            ) {
-                                Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Descartar", color = MaterialTheme.colorScheme.error)
-                            }
+                            Icon(
+                                Icons.Default.AccountTree,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Parte de: ${uiState.parentProcess.name}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
                         }
                     }
                 }
-            } else {
-                RumboOutlinedButton(
-                    onClick = {
-                        weeklyGoalInput = ""
-                        showWeeklyGoalDialog = true
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Definir Objetivo Semanal")
+
+                if (process.isSystem) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Info,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Espacio para tus tareas y actividades cotidianas",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -280,56 +279,115 @@ private fun ProcessDetailContent(
         // Primary Actions
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                RumboButton(
-                    onClick = onNavigateToCreateTask,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.AddTask, contentDescription = null)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Nueva Tarea")
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    RumboOutlinedButton(
-                        onClick = onNavigateToEditProcess,
-                        modifier = Modifier.weight(1f)
+                if (!process.isFinished) {
+                    RumboButton(
+                        onClick = onNavigateToCreateTask,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Default.Edit, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Editar")
+                        Icon(Icons.Default.AddTask, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Nueva Tarea")
                     }
 
-                    if (process.isActive || process.status == ProcessStatus.PAUSED) {
-                        OutlinedButton(
-                            onClick = { onEvent(ProcessDetailUiEvent.FinishProcess) },
+                    if (!process.isSystem) {
+                        RumboOutlinedButton(
+                            onClick = { onNavigateToCreateProcess(process.id) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.AccountTree, contentDescription = null)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Nuevo Proceso")
+                        }
+                    }
+                } else {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Este proceso ha sido completado.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+
+                    RumboButton(
+                        onClick = { onEvent(ProcessDetailUiEvent.ReopenProcess) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Reabrir Proceso")
+                    }
+                }
+
+                if (!process.isSystem) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        RumboOutlinedButton(
+                            onClick = onNavigateToEditProcess,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Icon(Icons.Default.CheckCircle, contentDescription = null)
+                            Icon(Icons.Default.Edit, contentDescription = null)
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Finalizar")
+                            Text("Editar")
+                        }
+
+                        if (process.isActive || process.status == ProcessStatus.PAUSED) {
+                            OutlinedButton(
+                                onClick = { onEvent(ProcessDetailUiEvent.FinishProcess) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(Icons.Default.CheckCircle, contentDescription = null)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Finalizar")
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Section: Milestones
-        item {
-            RumboSectionHeader(title = "Hitos / Milestones")
-        }
-
-        if (uiState.milestones.isEmpty()) {
+        // Section: Subprocesses (shown when sub-processes exist)
+        if (uiState.subProcesses.isNotEmpty()) {
             item {
-                Text(
-                    text = "Sin hitos definidos.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RumboSectionHeader(
+                        title = "Subprocesos (${uiState.subProcesses.size})",
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (!process.isFinished && !process.isSystem) {
+                        TextButton(onClick = { onNavigateToCreateProcess(process.id) }) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Nuevo Subproceso")
+                        }
+                    }
+                }
+            }
+
+            items(uiState.subProcesses, key = { it.id }) { subProcess ->
+                RumboProcessCard(
+                    process = subProcess,
+                    onClick = { onNavigateToProcessDetail(subProcess.id) }
                 )
             }
-        } else {
+        }
+
+        // Section: Milestones (shown when milestones exist)
+        if (uiState.milestones.isNotEmpty()) {
+            item {
+                RumboSectionHeader(title = "Hitos del proceso")
+            }
+
             items(uiState.milestones, key = { it.id }) { milestone ->
                 RumboCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
@@ -359,10 +417,19 @@ private fun ProcessDetailContent(
             RumboSectionHeader(title = "Tareas Pendientes")
         }
 
+        if (uiState.pendingTasks.isNotEmpty()) {
+            item {
+                PendingTasksSortRow(
+                    taskSortOrder = uiState.taskSortOrder,
+                    onSortOrderSelected = { order -> onEvent(ProcessDetailUiEvent.ChangeTaskSortOrder(order)) }
+                )
+            }
+        }
+
         if (uiState.pendingTasks.isEmpty()) {
             item {
                 Text(
-                    text = "Sin tareas pendientes asignadas a este proceso.",
+                    text = "Aún no tienes tareas pendientes en este proceso.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
@@ -374,7 +441,7 @@ private fun ProcessDetailContent(
                     processColorOrVisualId = process.colorOrVisualId,
                     processName = process.name,
                     onToggleStatus = { task ->
-                        if (!task.isCompleted && task.timeWorkedMillis == 0L) {
+                        if (!task.isCompleted) {
                             taskToCompleteWithDuration = task
                         } else {
                             onEvent(ProcessDetailUiEvent.ToggleTaskStatus(task))
@@ -407,7 +474,7 @@ private fun ProcessDetailContent(
     if (uiState.userMessage != null) {
         AlertDialog(
             onDismissRequest = { onEvent(ProcessDetailUiEvent.DismissUserMessage) },
-            title = { Text("Tareas Pendientes Existentes") },
+            title = { Text("No se puede finalizar el proceso") },
             text = { Text(uiState.userMessage) },
             confirmButton = {
                 TextButton(onClick = { onEvent(ProcessDetailUiEvent.DismissUserMessage) }) {
@@ -417,48 +484,59 @@ private fun ProcessDetailContent(
         )
     }
 
-    if (showWeeklyGoalDialog) {
-        AlertDialog(
-            onDismissRequest = { showWeeklyGoalDialog = false },
-            title = { Text("Objetivo Semanal") },
-            text = {
-                OutlinedTextField(
-                    value = weeklyGoalInput,
-                    onValueChange = { weeklyGoalInput = it },
-                    label = { Text("Descripción del objetivo") },
-                    placeholder = { Text("Ej. Terminar el dashboard OLAP") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        if (weeklyGoalInput.isNotBlank()) {
-                            onEvent(ProcessDetailUiEvent.SaveWeeklyGoal(weeklyGoalInput.trim()))
-                            showWeeklyGoalDialog = false
-                        }
-                    }
-                ) {
-                    Text("Guardar")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showWeeklyGoalDialog = false }) {
-                    Text("Cancelar")
-                }
-            }
-        )
-    }
-
     if (taskToCompleteWithDuration != null) {
+        val task = taskToCompleteWithDuration!!
+        val sessionMinutes = if (task.timeWorkedMillis > 0L) {
+            (task.timeWorkedMillis + 59_999L) / 60_000L
+        } else 0L
+        val minMinutes = if (sessionMinutes > 0L) sessionMinutes else 1L
         TaskCompletionDurationDialog(
-            taskTitle = taskToCompleteWithDuration!!.title,
+            taskTitle = task.title,
+            initialMinutes = if (sessionMinutes > 0L) sessionMinutes else 0L,
+            minMinutes = minMinutes,
             onConfirm = { minutes ->
-                onEvent(ProcessDetailUiEvent.CompleteTaskWithDuration(taskToCompleteWithDuration!!, minutes))
+                onEvent(ProcessDetailUiEvent.CompleteTaskWithDuration(task, minutes))
                 taskToCompleteWithDuration = null
             },
             onDismiss = { taskToCompleteWithDuration = null }
+        )
+    }
+}
+
+/**
+ * Horizontal filter chip row allowing the user to sort pending tasks inside a process.
+ *
+ * @param taskSortOrder Current [TaskSortOrder] applied.
+ * @param onSortOrderSelected Callback invoked when a sort order chip is clicked.
+ * @param modifier Optional [Modifier] for layout adjustments.
+ */
+@Composable
+private fun PendingTasksSortRow(
+    taskSortOrder: TaskSortOrder,
+    onSortOrderSelected: (TaskSortOrder) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+    ) {
+        FilterChip(
+            selected = taskSortOrder == TaskSortOrder.DUE_DATE,
+            onClick = { onSortOrderSelected(TaskSortOrder.DUE_DATE) },
+            label = { Text("Próximas a vencer") }
+        )
+        FilterChip(
+            selected = taskSortOrder == TaskSortOrder.RECENT,
+            onClick = { onSortOrderSelected(TaskSortOrder.RECENT) },
+            label = { Text("Más recientes") }
+        )
+        FilterChip(
+            selected = taskSortOrder == TaskSortOrder.PRIORITY,
+            onClick = { onSortOrderSelected(TaskSortOrder.PRIORITY) },
+            label = { Text("Mayor prioridad") }
         )
     }
 }
@@ -476,8 +554,7 @@ private fun ProcessDetailScreenPreviewLight() {
                     status = ProcessStatus.ACTIVE,
                     createdAtEpochMillis = 1000L,
                     colorOrVisualId = "teal",
-                    accumulatedDirectCost = 250.0,
-                    nextAction = "Escribir pruebas unitarias"
+                    accumulatedDirectCost = 250.0
                 ),
                 pendingTasks = listOf(
                     Task(
@@ -493,13 +570,7 @@ private fun ProcessDetailScreenPreviewLight() {
                 milestones = emptyList(),
                 workSessions = emptyList(),
                 totalTimeInvestedMillis = 3600000L * 3,
-                progressEntries = emptyList(),
-                weeklyGoal = WeeklyGoal(
-                    id = "g1",
-                    processId = "p1",
-                    weekIdentifier = "2026-W40",
-                    description = "Terminar el dashboard OLAP"
-                )
+                progressEntries = emptyList()
             ),
             onEvent = {},
             onNavigateToEditProcess = {},

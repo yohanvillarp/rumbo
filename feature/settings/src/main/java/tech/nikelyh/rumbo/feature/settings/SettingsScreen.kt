@@ -3,6 +3,7 @@ package tech.nikelyh.rumbo.feature.settings
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,10 +14,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -31,14 +35,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import tech.nikelyh.rumbo.core.common.LocaleHelper
 import tech.nikelyh.rumbo.core.designsystem.component.RumboCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingWheel
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
+import tech.nikelyh.rumbo.core.model.AppLanguage
 import tech.nikelyh.rumbo.core.model.UserSettings
 
 @Composable
@@ -68,19 +75,15 @@ internal fun SettingsScreen(
     onEvent: (SettingsUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var showResetDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-        Text(
-            text = "Configuración",
-            style = MaterialTheme.typography.titleLarge
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
         when (uiState) {
             SettingsUiState.Loading -> RumboLoadingWheel()
             is SettingsUiState.Success -> {
@@ -88,11 +91,12 @@ internal fun SettingsScreen(
                 val isSystemDark = isSystemInDarkTheme()
                 val isDarkActive = settings.isDarkModeEnabled ?: isSystemDark
                 val themeModeSubtitle = when (settings.isDarkModeEnabled) {
-                    null -> "Automático (según el dispositivo)"
-                    true -> "Modo oscuro activado"
-                    false -> "Modo claro activado"
+                    null -> stringResource(R.string.settings_theme_system)
+                    true -> stringResource(R.string.settings_theme_dark)
+                    false -> stringResource(R.string.settings_theme_light)
                 }
 
+                // General Preferences: Dark Mode & Notifications
                 RumboCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -100,7 +104,10 @@ internal fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text(text = "Modo Oscuro", style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                text = stringResource(R.string.settings_dark_mode),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
                             Text(
                                 text = themeModeSubtitle,
                                 style = MaterialTheme.typography.labelSmall,
@@ -118,7 +125,10 @@ internal fun SettingsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Notificaciones", style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            text = stringResource(R.string.settings_notifications),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                         Switch(
                             checked = settings.isNotificationsEnabled,
                             onCheckedChange = { onEvent(SettingsUiEvent.ToggleNotifications(it)) }
@@ -126,11 +136,22 @@ internal fun SettingsScreen(
                     }
                 }
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Language Preferences Section
+                SettingsLanguageCard(
+                    selectedLanguageCode = settings.languageCode,
+                    onLanguageSelected = { language ->
+                        onEvent(SettingsUiEvent.ChangeLanguage(language))
+                        LocaleHelper.applyLanguage(context, language.code)
+                    }
+                )
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Reset Application Section
                 Text(
-                    text = "Zona de Restablecimiento",
+                    text = stringResource(R.string.settings_reset_zone),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -138,7 +159,7 @@ internal fun SettingsScreen(
                 RumboCard(modifier = Modifier.fillMaxWidth()) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            text = "Elimina permanentemente todos los procesos, tareas, sesiones de trabajo e historial almacenados en este dispositivo.",
+                            text = stringResource(R.string.settings_reset_description),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -155,11 +176,17 @@ internal fun SettingsScreen(
                                     color = MaterialTheme.colorScheme.error
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Restableciendo datos...", color = MaterialTheme.colorScheme.error)
+                                Text(
+                                    text = stringResource(R.string.settings_resetting),
+                                    color = MaterialTheme.colorScheme.error
+                                )
                             } else {
                                 Icon(Icons.Default.DeleteForever, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Restablecer Aplicación", color = MaterialTheme.colorScheme.error)
+                                Text(
+                                    text = stringResource(R.string.settings_reset_button),
+                                    color = MaterialTheme.colorScheme.error
+                                )
                             }
                         }
                     }
@@ -171,8 +198,8 @@ internal fun SettingsScreen(
     if (showResetDialog) {
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
-            title = { Text("¿Restablecer Aplicación?") },
-            text = { Text("Se eliminarán todos tus datos (procesos, tareas, historial y configuración) de forma permanente. La aplicación se reiniciará con el proceso general por defecto.") },
+            title = { Text(stringResource(R.string.settings_reset_dialog_title)) },
+            text = { Text(stringResource(R.string.settings_reset_dialog_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -180,27 +207,72 @@ internal fun SettingsScreen(
                         onEvent(SettingsUiEvent.ResetApplicationData)
                     }
                 ) {
-                    Text("Restablecer", color = MaterialTheme.colorScheme.error)
+                    Text(
+                        text = stringResource(R.string.settings_reset_dialog_confirm),
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showResetDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.settings_reset_dialog_cancel))
                 }
             }
         )
     }
 }
 
-private fun Context.findActivity(): Activity? {
-    var currentContext = this
-    while (currentContext is ContextWrapper) {
-        if (currentContext is Activity) {
-            return currentContext
+/**
+ * Clean, modular card component for selecting the application's active language.
+ *
+ * @param selectedLanguageCode Currently saved ISO language tag, or null for system default.
+ * @param onLanguageSelected Callback invoked when a user chooses an [AppLanguage].
+ * @param modifier Optional [Modifier] for layout adjustments.
+ */
+@Composable
+private fun SettingsLanguageCard(
+    selectedLanguageCode: String?,
+    onLanguageSelected: (AppLanguage) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val currentLanguage = AppLanguage.fromCode(selectedLanguageCode)
+
+    RumboCard(modifier = modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = stringResource(R.string.settings_language),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = stringResource(R.string.settings_language_subtitle),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = currentLanguage == AppLanguage.SYSTEM,
+                    onClick = { onLanguageSelected(AppLanguage.SYSTEM) },
+                    label = { Text(stringResource(R.string.settings_language_system)) }
+                )
+                FilterChip(
+                    selected = currentLanguage == AppLanguage.SPANISH,
+                    onClick = { onLanguageSelected(AppLanguage.SPANISH) },
+                    label = { Text(stringResource(R.string.settings_language_spanish)) }
+                )
+                FilterChip(
+                    selected = currentLanguage == AppLanguage.ENGLISH,
+                    onClick = { onLanguageSelected(AppLanguage.ENGLISH) },
+                    label = { Text(stringResource(R.string.settings_language_english)) }
+                )
+            }
         }
-        currentContext = currentContext.baseContext
     }
-    return null
 }
 
 @Preview(name = "Settings Light", showBackground = true)

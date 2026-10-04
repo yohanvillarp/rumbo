@@ -54,7 +54,7 @@ class StartSessionViewModelTest {
     @Test
     fun `finishing and submitting work session saves session with duration and note`() = runBlocking {
         viewModel.onEvent(StartSessionUiEvent.FinishTimer)
-        viewModel.onEvent(StartSessionUiEvent.NoteChanged("Concentración profunda en arquitectura"))
+        viewModel.onEvent(StartSessionUiEvent.NoteChanged("Planificación y organización de la semana"))
         viewModel.onEvent(StartSessionUiEvent.SubmitSession)
 
         val state = viewModel.uiState.value
@@ -64,7 +64,7 @@ class StartSessionViewModelTest {
         assertEquals(1, savedSessions.size)
         val session = savedSessions.first()
         assertEquals("p1", session.processId)
-        assertEquals("Concentración profunda en arquitectura", session.note)
+        assertEquals("Planificación y organización de la semana", session.note)
     }
 
     @Test
@@ -120,5 +120,20 @@ class StartSessionViewModelTest {
         val state = restoredViewModel.uiState.first { it.elapsedTimeMillis >= 600000L }
         assertTrue(state.isTimerRunning)
         assertTrue(state.elapsedTimeMillis >= 600000L)
+    }
+
+    @Test
+    fun `canceling active session clears active state and exits without saving session`() = runBlocking {
+        viewModel.onEvent(StartSessionUiEvent.CancelSession)
+
+        val state = viewModel.uiState.value
+        assertTrue(state.isSuccess)
+        assertTrue(state.isSessionFinished)
+
+        val activeState = workSessionRepository.activeSessionState.first()
+        assertTrue(!activeState.hasActiveSession)
+
+        val savedSessions = workSessionRepository.getWorkSessionsByProcessId("p1").first()
+        assertTrue(savedSessions.isEmpty())
     }
 }

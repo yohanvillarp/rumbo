@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tech.nikelyh.rumbo.core.data.repository.ProcessRepository
@@ -28,20 +29,19 @@ class EditProcessViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            processRepository.getProcessById(processId).collect { process ->
-                if (process != null) {
-                    originalProcess = process
-                    _uiState.update { current ->
-                        current.copy(
-                            name = process.name,
-                            description = process.description ?: "",
-                            colorOrVisualId = process.colorOrVisualId,
-                            costInput = process.accumulatedDirectCost.toString(),
-                            nextAction = process.nextAction ?: "",
-                            isLoading = false
-                        )
-                    }
+            val process = processRepository.getProcessById(processId).firstOrNull()
+            if (process != null) {
+                originalProcess = process
+                _uiState.update { current ->
+                    current.copy(
+                        name = process.name,
+                        description = process.description ?: "",
+                        colorOrVisualId = process.colorOrVisualId,
+                        isLoading = false
+                    )
                 }
+            } else {
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
@@ -62,39 +62,26 @@ class EditProcessViewModel @Inject constructor(
             is EditProcessUiEvent.ColorChanged -> {
                 _uiState.update { it.copy(colorOrVisualId = event.colorOrVisualId) }
             }
-            is EditProcessUiEvent.CostChanged -> {
-                _uiState.update { current ->
-                    current.copy(
-                        costInput = event.cost,
-                        costError = if (current.costError != null) validateCost(event.cost) else null
-                    )
-                }
-            }
-            is EditProcessUiEvent.NextActionChanged -> {
-                _uiState.update { it.copy(nextAction = event.nextAction) }
-            }
             EditProcessUiEvent.SubmitProcess -> {
                 val current = _uiState.value
                 val nameErr = validateName(current.name)
-                val costErr = validateCost(current.costInput)
 
-                if (nameErr != null || costErr != null) {
-                    _uiState.update { it.copy(nameError = nameErr, costError = costErr) }
+                if (nameErr != null) {
+                    _uiState.update { it.copy(nameError = nameErr) }
                     return
                 }
 
                 val target = originalProcess ?: return
+                if (target.isSystem || target.id == Process.GENERAL_PROCESS_ID) {
+                    return
+                }
                 val trimmedName = current.name.trim()
                 val trimmedDesc = current.description.trim().ifBlank { null }
-                val trimmedNextAction = current.nextAction.trim().ifBlank { null }
-                val costDouble = current.costInput.trim().toDoubleOrNull() ?: 0.0
 
                 val updatedProcess = target.copy(
                     name = trimmedName,
                     description = trimmedDesc,
-                    colorOrVisualId = current.colorOrVisualId,
-                    accumulatedDirectCost = costDouble,
-                    nextAction = trimmedNextAction
+                    colorOrVisualId = current.colorOrVisualId
                 )
 
                 viewModelScope.launch {
@@ -111,16 +98,6 @@ class EditProcessViewModel @Inject constructor(
         return when {
             trimmed.isBlank() -> "El nombre del proceso es obligatorio"
             trimmed.length > 50 -> "El nombre no puede superar los 50 caracteres"
-            else -> null
-        }
-    }
-
-    private fun validateCost(input: String): String? {
-        if (input.isBlank()) return null
-        val parsed = input.trim().toDoubleOrNull()
-        return when {
-            parsed == null -> "El costo debe ser un valor numérico"
-            parsed < 0 -> "El costo no puede ser negativo"
             else -> null
         }
     }

@@ -1,0 +1,56 @@
+<resources>
+    <!-- Tutorial Navigation & Step Indicators -->
+    <string name="tutorial_step_indicator">Step %1$d of %2$d</string>
+    <string name="tutorial_back">Back</string>
+    <string name="tutorial_next">Next</string>
+    <string name="tutorial_finish">Get Started</string>
+
+    <!-- Language Selector on Last Step -->
+    <string name="tutorial_language_label">App language</string>
+    <string name="tutorial_language_system">System</string>
+    <string name="tutorial_language_spanish">Español</string>
+    <string name="tutorial_language_english">English</string>
+
+    <!-- Step 1: Processes -->
+    <string name="tutorial_process_title">What is a Process?</string>
+    <string name="tutorial_process_subtitle">Your major goal divided into achievable steps</string>
+    <string name="tutorial_process_description">A process is a significant endeavor that requires smaller tasks to be accomplished. If one of those steps also expands, it becomes another process within it.</string>
+    <string name="tutorial_process_point_1">Break down challenging goals into simple, reachable milestones</string>
+    <string name="tutorial_process_point_2">If a task grows too large, easily turn it into a new process</string>
+    <string name="tutorial_process_point_3">Enjoy a dedicated General space for your everyday standalone tasks</string>
+    <string name="tutorial_process_point_4">Pause, complete, and reopen your processes whenever you need</string>
+
+    <!-- Step 2: Tasks -->
+    <string name="tutorial_tasks_title">Your Daily Tasks</string>
+    <string name="tutorial_tasks_subtitle">Concrete actions with specific deadlines</string>
+    <string name="tutorial_tasks_description">Tasks are the practical steps of your process. Each task has a date and time deadline so you always know what to tackle next and when to finish.</string>
+    <string name="tutorial_tasks_point_1">Set your deadline and time quickly and effortlessly</string>
+    <string name="tutorial_tasks_point_2">Edit and adjust your tasks at any given moment</string>
+    <string name="tutorial_tasks_point_3">Assign an estimated budget if the activity requires purchases</string>
+    <string name="tutorial_tasks_point_4">We automatically calculate and track the time you invest</string>
+
+    <!-- Step 3: Focus Sessions -->
+    <string name="tutorial_sessions_title">Focus Sessions</string>
+    <string name="tutorial_sessions_subtitle">Dedicate focused time with peace and clarity</string>
+    <string name="tutorial_sessions_description">Start the timer on any task to move forward serenely. The app reliably tracks your focus in the background at your own rhythm.</string>
+    <string name="tutorial_sessions_point_1">The timer keeps running smoothly even when you leave the app</string>
+    <string name="tutorial_sessions_point_2">Jot down insights or reflections when completing each session</string>
+    <string name="tutorial_sessions_point_3">When completing a task, all accumulated time is fully preserved</string>
+    <string name="tutorial_sessions_point_4">Pause or cancel your active session freely whenever needed</string>
+
+    <!-- Step 4: Real Progress -->
+    <string name="tutorial_progress_title">Your Real Progress</string>
+    <string name="tutorial_progress_subtitle">Discover where your time and energy go</string>
+    <string name="tutorial_progress_description">Visually appreciate how much dedication you give to each project. Every minute invested brings you closer to your aspirations.</string>
+    <string name="tutorial_progress_point_1">Easy-to-understand daily and weekly overviews</string>
+    <string name="tutorial_progress_point_2">Discover the total investment made in each of your projects</string>
+    <string name="tutorial_progress_point_3">Celebrate your wins and cultivate a mindful, balanced pace</string>
+
+    <!-- Onboarding Name Step -->
+    <string name="onboarding_ready_title">Ready to get started!</string>
+    <string name="onboarding_ready_subtitle">To personalize your experience, tell us what you\'d like us to call you.</string>
+    <string name="onboarding_name_label">What is your name?</string>
+    <string name="onboarding_name_placeholder">Enter your name</string>
+    <string name="onboarding_name_icon_desc">Name</string>
+    <string name="onboarding_start_button">Begin my Journey</string>
+</resources>

@@ -50,68 +50,67 @@ class StartSessionViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            processRepository.getProcesses().collect { processes ->
-                _uiState.update { it.copy(availableProcesses = processes) }
-            }
-        }
-        viewModelScope.launch {
-            taskRepository.getAllTasks().collect { tasks ->
-                _uiState.update { current ->
-                    val selectedTask = tasks.firstOrNull { it.id == current.selectedTaskId }
-                    current.copy(
-                        availableTasks = tasks,
-                        selectedTaskTitle = selectedTask?.title ?: ""
-                    )
-                }
-            }
-        }
-        initializeSession()
-    }
-
-    private fun initializeSession() {
-        viewModelScope.launch {
             val activeState = workSessionRepository.activeSessionState.firstOrNull() ?: ActiveSessionState()
+            val processes = processRepository.getProcesses().firstOrNull() ?: emptyList()
+            val tasks = taskRepository.getAllTasks().firstOrNull() ?: emptyList()
             val now = System.currentTimeMillis()
 
             val isRestoring = activeState.hasActiveSession && (initialTaskId == null || initialTaskId == activeState.taskId)
 
-            if (isRestoring) {
-                val restoredProcessId = activeState.processId ?: initialProcessId
-                val restoredTaskId = activeState.taskId ?: initialTaskId
-                val restoredElapsed = if (activeState.isRunning) {
+            val resolvedProcessId = if (isRestoring) (activeState.processId ?: initialProcessId) else initialProcessId
+            val resolvedTaskId = if (isRestoring) (activeState.taskId ?: initialTaskId) else initialTaskId
+            val resolvedTask = tasks.firstOrNull { it.id == resolvedTaskId }
+
+            val resolvedElapsed = if (isRestoring) {
+                if (activeState.isRunning) {
                     activeState.accumulatedTimeMillis + (now - activeState.lastResumeEpochMillis).coerceAtLeast(0L)
                 } else {
                     activeState.accumulatedTimeMillis
                 }
-                sessionStartTimeEpochMillis = activeState.startTimeEpochMillis
-                lastResumeEpochMillis = now
-                accumulatedTimeMillis = if (activeState.isRunning) restoredElapsed else activeState.accumulatedTimeMillis
+            } else 0L
 
-                _uiState.update { current ->
-                    current.copy(
-                        selectedProcessId = restoredProcessId,
-                        selectedTaskId = restoredTaskId,
-                        elapsedTimeMillis = restoredElapsed,
-                        isTimerRunning = activeState.isRunning
-                    )
-                }
-                if (activeState.isRunning) {
-                    resumeTimerLoop()
-                }
-            } else {
-                sessionStartTimeEpochMillis = now
-                lastResumeEpochMillis = now
-                accumulatedTimeMillis = 0L
-                _uiState.update { current ->
-                    current.copy(
-                        selectedProcessId = initialProcessId,
-                        selectedTaskId = initialTaskId,
-                        elapsedTimeMillis = 0L,
-                        isTimerRunning = true
-                    )
-                }
-                saveActiveState(isRunning = true)
+            val isRunning = if (isRestoring) activeState.isRunning else true
+
+            sessionStartTimeEpochMillis = if (isRestoring) activeState.startTimeEpochMillis else now
+            lastResumeEpochMillis = now
+            accumulatedTimeMillis = if (isRestoring) {
+                if (activeState.isRunning) resolvedElapsed else activeState.accumulatedTimeMillis
+            } else 0L
+
+            _uiState.update {
+                it.copy(
+                    selectedProcessId = resolvedProcessId,
+                    selectedTaskId = resolvedTaskId,
+                    selectedTaskTitle = resolvedTask?.title ?: "",
+                    availableProcesses = processes,
+                    availableTasks = tasks,
+                    elapsedTimeMillis = resolvedElapsed,
+                    isTimerRunning = isRunning,
+                    isLoading = false
+                )
+            }
+
+            saveActiveState(isRunning = isRunning)
+
+            if (isRunning) {
                 resumeTimerLoop()
+            }
+
+            launch {
+                processRepository.getProcesses().collect { procList ->
+                    _uiState.update { it.copy(availableProcesses = procList) }
+                }
+            }
+            launch {
+                taskRepository.getAllTasks().collect { taskList ->
+                    _uiState.update { current ->
+                        val task = taskList.firstOrNull { it.id == current.selectedTaskId }
+                        current.copy(
+                            availableTasks = taskList,
+                            selectedTaskTitle = task?.title ?: current.selectedTaskTitle
+                        )
+                    }
+                }
             }
         }
     }
@@ -177,6 +176,24 @@ class StartSessionViewModel @Inject constructor(
             StartSessionUiEvent.SubmitSession -> {
                 submitSession()
             }
+            StartSessionUiEvent.CancelSession -> {
+                cancelSession()
+            }
+        }
+    }
+
+    private fun cancelSession() {
+        timerJob?.cancel()
+        timerJob = null
+        viewModelScope.launch {
+            workSessionRepository.clearActiveSessionState()
+            _uiState.update {
+                it.copy(
+                    isTimerRunning = false,
+                    isSessionFinished = true,
+                    isSuccess = true
+                )
+            }
         }
     }
 
@@ -186,7 +203,7 @@ class StartSessionViewModel @Inject constructor(
             while (_uiState.value.isTimerRunning) {
                 val currentElapsed = accumulatedTimeMillis + (System.currentTimeMillis() - lastResumeEpochMillis)
                 _uiState.update { it.copy(elapsedTimeMillis = currentElapsed) }
-                delay(1000L)
+                delay(250L)
             }
         }
     }
@@ -266,5 +283,11 @@ class StartSessionViewModel @Inject constructor(
             workSessionRepository.clearActiveSessionState()
             _uiState.update { it.copy(isSubmitting = false, isSuccess = true) }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        timerJob?.cancel()
+        timerJob = null
     }
 }

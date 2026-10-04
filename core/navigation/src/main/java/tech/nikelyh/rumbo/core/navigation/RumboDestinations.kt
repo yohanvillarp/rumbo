@@ -32,6 +32,11 @@ object SettingsDestination : RumboNavigationDestination {
     override val destination = "settings_destination"
 }
 
+object TutorialDestination : RumboNavigationDestination {
+    override val route = "tutorial_route"
+    override val destination = "tutorial_destination"
+}
+
 // Action & Detail Destinations
 object ProcessDetailDestination : RumboNavigationDestination {
     override val route = "process_detail/{processId}"
@@ -46,8 +51,11 @@ object TaskDetailDestination : RumboNavigationDestination {
 }
 
 object CreateProcessDestination : RumboNavigationDestination {
-    override val route = "create_process"
+    override val route = "create_process?parentProcessId={parentProcessId}"
     override val destination = "create_process_destination"
+    fun createRoute(parentProcessId: String? = null): String {
+        return if (parentProcessId != null) "create_process?parentProcessId=$parentProcessId" else "create_process"
+    }
 }
 
 object EditProcessDestination : RumboNavigationDestination {
@@ -62,6 +70,12 @@ object CreateTaskDestination : RumboNavigationDestination {
     fun createRoute(processId: String? = null): String {
         return if (processId != null) "create_task?processId=$processId" else "create_task"
     }
+}
+
+object EditTaskDestination : RumboNavigationDestination {
+    override val route = "edit_task/{taskId}"
+    override val destination = "edit_task_destination"
+    fun createRoute(taskId: String) = "edit_task/$taskId"
 }
 
 object LogProgressDestination : RumboNavigationDestination {

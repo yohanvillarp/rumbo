@@ -31,7 +31,10 @@ fun RumboTopBar(
     onNavigationClick: () -> Unit = {},
     actionIcon: ImageVector? = null,
     actionIconContentDescription: String? = null,
-    onActionClick: () -> Unit = {}
+    onActionClick: () -> Unit = {},
+    secondaryActionIcon: ImageVector? = null,
+    secondaryActionContentDescription: String? = null,
+    onSecondaryActionClick: () -> Unit = {}
 ) {
     val containerColor = MaterialTheme.colorScheme.surfaceVariant
     val onContainerColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -73,6 +76,15 @@ fun RumboTopBar(
             }
         },
         actions = {
+            if (secondaryActionIcon != null) {
+                IconButton(onClick = onSecondaryActionClick) {
+                    Icon(
+                        imageVector = secondaryActionIcon,
+                        contentDescription = secondaryActionContentDescription,
+                        tint = onContainerColor
+                    )
+                }
+            }
             if (actionIcon != null) {
                 IconButton(onClick = onActionClick) {
                     Icon(

@@ -21,8 +21,8 @@ fun NavController.navigateToProcessDetail(processId: String, navOptions: NavOpti
     this.navigate(ProcessDetailDestination.createRoute(processId), navOptions)
 }
 
-fun NavController.navigateToCreateProcess(navOptions: NavOptions? = null) {
-    this.navigate(CreateProcessDestination.route, navOptions)
+fun NavController.navigateToCreateProcess(parentProcessId: String? = null, navOptions: NavOptions? = null) {
+    this.navigate(CreateProcessDestination.createRoute(parentProcessId), navOptions)
 }
 
 fun NavController.navigateToEditProcess(processId: String, navOptions: NavOptions? = null) {
@@ -31,7 +31,7 @@ fun NavController.navigateToEditProcess(processId: String, navOptions: NavOption
 
 fun NavGraphBuilder.processesScreen(
     onProcessClick: (String) -> Unit,
-    onNavigateToCreateProcess: () -> Unit,
+    onNavigateToCreateProcess: (String?) -> Unit,
     onNavigateToCreateTask: (String) -> Unit,
     onNavigateToLogProgress: (String) -> Unit,
     onNavigateToStartSession: (String, String?) -> Unit,
@@ -43,7 +43,7 @@ fun NavGraphBuilder.processesScreen(
     composable(route = ProcessesDestination.route) {
         ProcessesRoute(
             onProcessClick = onProcessClick,
-            onNavigateToCreateProcess = onNavigateToCreateProcess
+            onNavigateToCreateProcess = { onNavigateToCreateProcess(null) }
         )
     }
 
@@ -53,6 +53,8 @@ fun NavGraphBuilder.processesScreen(
             onNavigateToCreateTask = onNavigateToCreateTask,
             onNavigateToLogProgress = onNavigateToLogProgress,
             onNavigateToStartSession = onNavigateToStartSession,
+            onNavigateToCreateProcess = onNavigateToCreateProcess,
+            onNavigateToProcessDetail = onProcessClick,
             onNavigateToTask = onNavigateToTask
         )
     }

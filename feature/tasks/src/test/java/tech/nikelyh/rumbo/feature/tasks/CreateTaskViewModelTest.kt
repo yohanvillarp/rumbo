@@ -59,21 +59,54 @@ class CreateTaskViewModelTest {
     }
 
     @Test
-    fun `submitting task assigns General process if unselected and saves to repository`() = runBlocking {
+    fun `missing due date produces validation error`() {
+        viewModel.onEvent(CreateTaskUiEvent.TitleChanged("Tarea Test"))
+        viewModel.onEvent(CreateTaskUiEvent.DueDateChanged(null))
+        viewModel.onEvent(CreateTaskUiEvent.SubmitTask)
+
+        val state = viewModel.uiState.value
+        assertEquals("La fecha límite es obligatoria", state.dueDateError)
+    }
+
+    @Test
+    fun `submitting task with valid due date saves to repository`() = runBlocking {
+        val dueTime = System.currentTimeMillis() + 86400000L
         viewModel.onEvent(CreateTaskUiEvent.TitleChanged("  Configurar Gradle  "))
+        viewModel.onEvent(CreateTaskUiEvent.DueDateChanged(dueTime))
         viewModel.onEvent(CreateTaskUiEvent.CostChanged("0"))
         viewModel.onEvent(CreateTaskUiEvent.SubmitTask)
 
         val state = viewModel.uiState.value
         assertNull(state.titleError)
         assertNull(state.costError)
+        assertNull(state.dueDateError)
         assertTrue(state.isSuccess)
 
         val savedTasks = taskRepository.getAllTasks().first()
         assertEquals(1, savedTasks.size)
         val task = savedTasks.first()
         assertEquals("Configurar Gradle", task.title)
-        assertEquals("general", task.processId)
+        assertEquals(dueTime, task.dueDateEpochMillis)
         assertEquals(0.0, task.cost, 0.01)
+    }
+
+    @Test
+    fun `submitting task with default 23 59 due date saves accurate timestamp`() = runBlocking {
+        val targetDate = java.time.LocalDate.of(2026, 10, 4)
+        val endOfDayMillis = targetDate.atTime(23, 59)
+            .atZone(java.time.ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+
+        viewModel.onEvent(CreateTaskUiEvent.TitleChanged("Tarea con hora por defecto"))
+        viewModel.onEvent(CreateTaskUiEvent.DueDateChanged(endOfDayMillis))
+        viewModel.onEvent(CreateTaskUiEvent.SubmitTask)
+
+        val task = taskRepository.getAllTasks().first().first()
+        assertEquals(endOfDayMillis, task.dueDateEpochMillis)
+        val savedZdt = java.time.Instant.ofEpochMilli(task.dueDateEpochMillis!!)
+            .atZone(java.time.ZoneId.systemDefault())
+        assertEquals(23, savedZdt.hour)
+        assertEquals(59, savedZdt.minute)
     }
 }

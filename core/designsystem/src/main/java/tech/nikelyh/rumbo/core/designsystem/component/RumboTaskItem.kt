@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.Card
@@ -25,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -43,6 +46,9 @@ import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
+import java.time.format.DateTimeFormatter
+
+private val TASK_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -190,6 +196,37 @@ fun RumboTaskItem(
                                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                                     )
                                 }
+                                val dueEpoch = task.dueDateEpochMillis
+                                if (dueEpoch != null) {
+                                    val dateText = remember(dueEpoch) {
+                                        val instant = java.time.Instant.ofEpochMilli(dueEpoch)
+                                        val zone = java.time.ZoneId.systemDefault()
+                                        val zonedDateTime = instant.atZone(zone)
+                                        zonedDateTime.format(TASK_DATE_FORMATTER)
+                                    }
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f),
+                                        shape = RoundedCornerShape(4.dp)
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Event,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(11.dp),
+                                                tint = MaterialTheme.colorScheme.onTertiaryContainer
+                                            )
+                                            Spacer(modifier = Modifier.width(3.dp))
+                                            Text(
+                                                text = "Límite: $dateText",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                                            )
+                                        }
+                                    }
+                                }
                                 if (task.timeWorkedMillis > 0L) {
                                     val mins = task.timeWorkedMillis / (1000 * 60)
                                     Text(
@@ -277,15 +314,15 @@ private fun RumboTaskItemProcessColorPreview() {
             task = Task(
                 id = "t2",
                 processId = "proc-arch",
-                title = "Diseñar diagrama C4",
-                description = "Definir contenedores y componentes del sistema.",
+                title = "Planificar menú semanal",
+                description = "Definir los ingredientes y recetas para los almuerzos de la semana.",
                 status = TaskStatus.PENDING,
                 priority = Priority.HIGH,
                 createdAtEpochMillis = 1000L,
                 cost = 50.0
             ),
             processColorOrVisualId = "teal",
-            processName = "Arquitectura",
+            processName = "Hogar",
             onToggleStatus = {},
             onClick = {}
         )

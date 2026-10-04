@@ -2,4 +2,10 @@
 <resources>
 
     <style name="Theme.Rumbo" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.Rumbo.Starting" parent="Theme.Rumbo">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:statusBarColor">@color/rumbo_splash_background</item>
+        <item name="android:navigationBarColor">@color/rumbo_splash_background</item>
+    </style>
 </resources>

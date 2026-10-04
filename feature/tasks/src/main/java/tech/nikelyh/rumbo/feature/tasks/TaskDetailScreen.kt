@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -43,11 +46,15 @@ import tech.nikelyh.rumbo.core.model.TaskStatus
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlayCircle
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
+import java.time.format.DateTimeFormatter
+
+private val TASK_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
 
 @Composable
 fun TaskDetailRoute(
     onTaskDeleted: () -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateToEditTask: (String) -> Unit = {},
     onStartSession: (String, String) -> Unit = { _, _ -> },
     viewModel: TaskDetailViewModel = hiltViewModel()
 ) {
@@ -63,6 +70,11 @@ fun TaskDetailRoute(
                 viewModel.onEvent(event)
             }
         },
+        onNavigateToEditTask = {
+            if (uiState is TaskDetailUiState.Content) {
+                onNavigateToEditTask((uiState as TaskDetailUiState.Content).task.id)
+            }
+        },
         onStartSession = onStartSession,
         modifier = modifier
     )
@@ -72,6 +84,7 @@ fun TaskDetailRoute(
 internal fun TaskDetailScreen(
     uiState: TaskDetailUiState,
     onEvent: (TaskDetailUiEvent) -> Unit,
+    onNavigateToEditTask: () -> Unit = {},
     onStartSession: (String, String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
@@ -172,6 +185,30 @@ internal fun TaskDetailScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+
+                    task.dueDateEpochMillis?.let { dueMillis ->
+                        val dateText = remember(dueMillis) {
+                            val instant = java.time.Instant.ofEpochMilli(dueMillis)
+                            val zone = java.time.ZoneId.systemDefault()
+                            val zonedDateTime = instant.atZone(zone)
+                            zonedDateTime.format(TASK_DATE_FORMATTER)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Event,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.tertiary
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Fecha límite: $dateText",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -192,7 +229,7 @@ internal fun TaskDetailScreen(
 
                 RumboOutlinedButton(
                     onClick = {
-                        if (!task.isCompleted && task.timeWorkedMillis == 0L) {
+                        if (!task.isCompleted) {
                             showCompletionDialog = true
                         } else {
                             onEvent(TaskDetailUiEvent.ToggleStatus)
@@ -208,18 +245,38 @@ internal fun TaskDetailScreen(
                     Text(if (task.isCompleted) "Marcar Pendiente" else "Marcar Completada")
                 }
 
-                RumboOutlinedButton(
-                    onClick = { showDeleteDialog = true },
-                    modifier = Modifier.fillMaxWidth()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Eliminar Tarea", color = MaterialTheme.colorScheme.error)
+                    RumboOutlinedButton(
+                        onClick = onNavigateToEditTask,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Editar")
+                    }
+
+                    RumboOutlinedButton(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    }
                 }
 
                 if (showCompletionDialog) {
+                    val sessionMinutes = if (task.timeWorkedMillis > 0L) {
+                        (task.timeWorkedMillis + 59_999L) / 60_000L
+                    } else 0L
+                    val minMinutes = if (sessionMinutes > 0L) sessionMinutes else 1L
                     TaskCompletionDurationDialog(
                         taskTitle = task.title,
+                        initialMinutes = if (sessionMinutes > 0L) sessionMinutes else 0L,
+                        minMinutes = minMinutes,
                         onConfirm = { minutes ->
                             onEvent(TaskDetailUiEvent.CompleteWithDuration(minutes))
                             showCompletionDialog = false
@@ -264,15 +321,15 @@ private fun TaskDetailScreenPreviewLight() {
                 task = Task(
                     id = "t1",
                     processId = "p1",
-                    title = "Diseñar UI de TasksScreen",
-                    description = "Garantizar que pertenezca a un proceso y valide costos.",
+                    title = "Comprar insumos de cocina",
+                    description = "Verificar lista de despensa y mercado local.",
                     status = TaskStatus.PENDING,
                     priority = Priority.HIGH,
                     createdAtEpochMillis = 1000L,
-                    cost = 0.0,
+                    cost = 25.0,
                     estimatedDurationMinutes = 45
                 ),
-                processName = "Desarrollo de Rumbo"
+                processName = "Organización del Hogar"
             ),
             onEvent = {}
         )

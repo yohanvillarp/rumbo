@@ -3,7 +3,9 @@ package tech.nikelyh.rumbo.feature.progress.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import tech.nikelyh.rumbo.core.navigation.LogProgressDestination
 import tech.nikelyh.rumbo.core.navigation.ProgressDestination
 import tech.nikelyh.rumbo.core.navigation.StartSessionDestination
@@ -38,7 +40,21 @@ fun NavGraphBuilder.progressScreen(
         )
     }
 
-    composable(route = StartSessionDestination.route) {
+    composable(
+        route = StartSessionDestination.route,
+        arguments = listOf(
+            navArgument("processId") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            },
+            navArgument("taskId") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            }
+        )
+    ) {
         StartSessionRoute(
             onSessionFinished = onSessionFinished
         )

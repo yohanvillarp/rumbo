@@ -1,0 +1,21 @@
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_dark_mode">Dark Mode</string>
+    <string name="settings_theme_system">System default</string>
+    <string name="settings_theme_dark">Dark mode enabled</string>
+    <string name="settings_theme_light">Light mode enabled</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_language">Application Language</string>
+    <string name="settings_language_subtitle">Select your preferred language for Rumbo</string>
+    <string name="settings_language_system">System default</string>
+    <string name="settings_language_spanish">Español</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_reset_zone">Reset Zone</string>
+    <string name="settings_reset_description">Permanently removes all processes, tasks, work sessions, and history stored on this device.</string>
+    <string name="settings_reset_button">Reset Application</string>
+    <string name="settings_resetting">Resetting data…</string>
+    <string name="settings_reset_dialog_title">Reset Application?</string>
+    <string name="settings_reset_dialog_message">All your data (processes, tasks, history, and settings) will be permanently deleted. The app will restart with the default General process.</string>
+    <string name="settings_reset_dialog_confirm">Reset</string>
+    <string name="settings_reset_dialog_cancel">Cancel</string>
+</resources>

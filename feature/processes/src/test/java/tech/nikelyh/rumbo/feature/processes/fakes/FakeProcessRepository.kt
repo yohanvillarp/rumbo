@@ -38,6 +38,20 @@ class FakeProcessRepository : ProcessRepository {
         return true
     }
 
+    override suspend fun toggleProcessStarred(id: String): tech.nikelyh.rumbo.core.data.repository.StarProcessResult {
+        val current = processesFlow.value[id] ?: return tech.nikelyh.rumbo.core.data.repository.StarProcessResult.ProcessNotFound
+        if (current.isStarred) {
+            processesFlow.value = processesFlow.value + (id to current.copy(isStarred = false))
+            return tech.nikelyh.rumbo.core.data.repository.StarProcessResult.Success
+        }
+        val count = processesFlow.value.values.count { it.isStarred }
+        if (count >= 3) {
+            return tech.nikelyh.rumbo.core.data.repository.StarProcessResult.MaxLimitReached
+        }
+        processesFlow.value = processesFlow.value + (id to current.copy(isStarred = true))
+        return tech.nikelyh.rumbo.core.data.repository.StarProcessResult.Success
+    }
+
     override suspend fun ensureGeneralProcessExists() {
         if (!processesFlow.value.containsKey(Process.GENERAL_PROCESS_ID)) {
             val general = Process.createGeneralProcess(1000L)

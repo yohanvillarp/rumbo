@@ -14,4 +14,5 @@ sealed interface StartSessionUiEvent {
     data class ToggleSaveProgress(val save: Boolean) : StartSessionUiEvent
     data class ProgressLevelSelected(val level: ProgressLevel) : StartSessionUiEvent
     data object SubmitSession : StartSessionUiEvent
+    data object CancelSession : StartSessionUiEvent
 }

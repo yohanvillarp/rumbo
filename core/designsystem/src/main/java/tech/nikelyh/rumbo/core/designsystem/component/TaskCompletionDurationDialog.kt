@@ -25,40 +25,74 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun TaskCompletionDurationDialog(
     taskTitle: String,
+    initialMinutes: Long = 0L,
+    minMinutes: Long = 1L,
     onConfirm: (durationMinutes: Long) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var minutesText by remember { mutableStateOf("") }
-    var isError by remember { mutableStateOf(false) }
+    val effectiveMin = maxOf(1L, minMinutes)
+    val defaultText = if (initialMinutes > 0L) {
+        initialMinutes.toString()
+    } else if (minMinutes > 1L) {
+        minMinutes.toString()
+    } else {
+        ""
+    }
+    var minutesText by remember { mutableStateOf(defaultText) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Culminar Tarea") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Para culminar '$taskTitle', ingresa el tiempo real dedicado a esta tarea:",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                if (effectiveMin > 1L) {
+                    Text(
+                        text = "Esta tarea tiene $effectiveMin min calculados en sus sesiones de trabajo. Puedes aumentar el tiempo total si realizaste trabajo adicional, pero no disminuir de este mínimo.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                } else {
+                    Text(
+                        text = "Para culminar '$taskTitle', ingresa el tiempo real dedicado a esta tarea:",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
                 OutlinedTextField(
                     value = minutesText,
                     onValueChange = { input ->
                         if (input.all { it.isDigit() }) {
                             minutesText = input
-                            isError = false
+                            val parsed = input.trim().toLongOrNull()
+                            if (parsed != null && parsed < effectiveMin) {
+                                errorMessage = if (effectiveMin > 1L) {
+                                    "El tiempo no puede ser menor a los $effectiveMin min calculados en las sesiones."
+                                } else {
+                                    "Ingresa una duración en minutos mayor a 0"
+                                }
+                            } else {
+                                errorMessage = null
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Duración (minutos) *") },
-                    placeholder = { Text("Ej. 30") },
+                    label = { Text("Duración total (minutos) *") },
+                    placeholder = { Text(if (effectiveMin > 1L) effectiveMin.toString() else "Ej. 30") },
                     leadingIcon = { Icon(Icons.Default.Timer, contentDescription = null) },
                     singleLine = true,
-                    isError = isError,
+                    isError = errorMessage != null,
                     supportingText = {
-                        if (isError) {
+                        if (errorMessage != null) {
                             Text(
-                                text = "Ingresa una duración en minutos mayor a 0",
+                                text = errorMessage!!,
                                 color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        } else if (effectiveMin > 1L) {
+                            Text(
+                                text = "Mínimo registrado: $effectiveMin min",
+                                color = MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
@@ -71,15 +105,22 @@ fun TaskCompletionDurationDialog(
             }
         },
         confirmButton = {
+            val currentParsed = minutesText.trim().toLongOrNull()
+            val isValid = currentParsed != null && currentParsed >= effectiveMin
+
             TextButton(
                 onClick = {
-                    val parsed = minutesText.trim().toLongOrNull()
-                    if (parsed != null && parsed > 0L) {
-                        onConfirm(parsed)
+                    if (currentParsed != null && currentParsed >= effectiveMin) {
+                        onConfirm(currentParsed)
                     } else {
-                        isError = true
+                        errorMessage = if (effectiveMin > 1L) {
+                            "El tiempo no puede ser menor a los $effectiveMin min calculados en las sesiones."
+                        } else {
+                            "Ingresa una duración en minutos mayor a 0"
+                        }
                     }
-                }
+                },
+                enabled = isValid
             ) {
                 Text("Culminar")
             }

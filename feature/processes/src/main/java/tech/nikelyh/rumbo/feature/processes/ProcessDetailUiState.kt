@@ -17,8 +17,12 @@ sealed interface ProcessDetailUiState {
         val workSessions: List<WorkSession>,
         val totalTimeInvestedMillis: Long,
         val progressEntries: List<ProgressEntry>,
-        val weeklyGoal: WeeklyGoal?,
-        val userMessage: String? = null
+        val weeklyGoal: WeeklyGoal? = null,
+        val subProcesses: List<Process> = emptyList(),
+        val parentProcess: Process? = null,
+        val completionBlockedReason: String? = null,
+        val userMessage: String? = null,
+        val taskSortOrder: tech.nikelyh.rumbo.core.model.TaskSortOrder = tech.nikelyh.rumbo.core.model.TaskSortOrder.DUE_DATE
     ) : ProcessDetailUiState
     data class Error(val message: String) : ProcessDetailUiState
 }

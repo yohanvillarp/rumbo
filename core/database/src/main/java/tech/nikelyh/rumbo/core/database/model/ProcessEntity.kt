@@ -1,9 +1,15 @@
 package tech.nikelyh.rumbo.core.database.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "processes")
+@Entity(
+    tableName = "processes",
+    indices = [
+        Index(value = ["parentProcessId"])
+    ]
+)
 data class ProcessEntity(
     @PrimaryKey
     val id: String,
@@ -14,6 +20,7 @@ data class ProcessEntity(
     val finishedAtEpochMillis: Long?,
     val colorOrVisualId: String,
     val accumulatedDirectCost: Double,
-    val nextAction: String?,
-    val isSystemProcess: Boolean = false
+    val isStarred: Boolean = false,
+    val isSystemProcess: Boolean = false,
+    val parentProcessId: String? = null
 )

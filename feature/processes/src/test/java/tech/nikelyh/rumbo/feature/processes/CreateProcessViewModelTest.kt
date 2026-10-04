@@ -12,6 +12,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import androidx.lifecycle.SavedStateHandle
 import org.junit.Test
 import tech.nikelyh.rumbo.feature.processes.fakes.FakeProcessRepository
 
@@ -25,7 +26,7 @@ class CreateProcessViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         processRepository = FakeProcessRepository()
-        viewModel = CreateProcessViewModel(processRepository)
+        viewModel = CreateProcessViewModel(SavedStateHandle(), processRepository)
     }
 
     @After
@@ -43,26 +44,13 @@ class CreateProcessViewModelTest {
     }
 
     @Test
-    fun `negative cost produces validation error`() {
-        viewModel.onEvent(CreateProcessUiEvent.NameChanged("Mi Proceso"))
-        viewModel.onEvent(CreateProcessUiEvent.CostChanged("-10.0"))
-        viewModel.onEvent(CreateProcessUiEvent.SubmitProcess)
-
-        val state = viewModel.uiState.value
-        assertEquals("El costo inicial no puede ser negativo", state.costError)
-    }
-
-    @Test
-    fun `valid process submission saves process into repository`() = runBlocking {
+    fun `valid process submission saves process into repository with initial zero cost`() = runBlocking {
         viewModel.onEvent(CreateProcessUiEvent.NameChanged("  Aprender Android  "))
         viewModel.onEvent(CreateProcessUiEvent.DescriptionChanged("  Notas  "))
-        viewModel.onEvent(CreateProcessUiEvent.CostChanged("100.5"))
-        viewModel.onEvent(CreateProcessUiEvent.NextActionChanged("  Leer docs  "))
         viewModel.onEvent(CreateProcessUiEvent.SubmitProcess)
 
         val state = viewModel.uiState.value
         assertNull(state.nameError)
-        assertNull(state.costError)
         assertTrue(state.isSuccess)
 
         val savedProcesses = processRepository.getProcesses().first()
@@ -70,7 +58,22 @@ class CreateProcessViewModelTest {
         val process = savedProcesses.first()
         assertEquals("Aprender Android", process.name)
         assertEquals("Notas", process.description)
-        assertEquals(100.5, process.accumulatedDirectCost, 0.01)
-        assertEquals("Leer docs", process.nextAction)
+        assertEquals(0.0, process.accumulatedDirectCost, 0.01)
+    }
+
+    @Test
+    fun `selecting parent process associates subprocess`() = runBlocking {
+        viewModel.onEvent(CreateProcessUiEvent.NameChanged("Subproceso 1"))
+        viewModel.onEvent(CreateProcessUiEvent.ParentProcessSelected("parent-123"))
+        viewModel.onEvent(CreateProcessUiEvent.SubmitProcess)
+
+        val state = viewModel.uiState.value
+        assertTrue(state.isSuccess)
+
+        val savedProcesses = processRepository.getProcesses().first()
+        val process = savedProcesses.first()
+        assertEquals("Subproceso 1", process.name)
+        assertEquals("parent-123", process.parentProcessId)
+        assertTrue(process.isSubProcess)
     }
 }

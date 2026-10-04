@@ -60,14 +60,20 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `uiState presents content with active processes max 3 and continue process selection`() = runBlocking {
+    fun `uiState ignores General system process and remains Empty when no user processes or tasks exist`() = runBlocking {
+        processRepository.ensureGeneralProcessExists()
+        val state = viewModel.uiState.first()
+        assertTrue(state is HomeUiState.Empty)
+    }
+
+    @Test
+    fun `uiState presents content with active processes max 3`() = runBlocking {
         val p1 = Process(
             id = "p1",
             name = "Proceso 1",
             status = ProcessStatus.ACTIVE,
             createdAtEpochMillis = 1000L,
-            colorOrVisualId = "blue",
-            nextAction = "Siguiente paso 1"
+            colorOrVisualId = "blue"
         )
         val p2 = Process(
             id = "p2",
@@ -94,10 +100,48 @@ class HomeViewModelTest {
 
         val content = state as HomeUiState.Content
         assertEquals("Yohan", content.userName)
-        assertNotNull(content.continueProcess)
-        assertEquals("p1", content.continueProcess?.id)
         assertEquals(2, content.activeProcesses.size)
         assertEquals(1, content.todayTasks.size)
+    }
+
+    @Test
+    fun `active processes prioritize starred processes and cap at 3`() = runBlocking {
+        for (i in 1..5) {
+            processRepository.saveProcess(
+                Process(
+                    id = "p$i",
+                    name = "Proceso $i",
+                    status = ProcessStatus.ACTIVE,
+                    createdAtEpochMillis = i * 1000L,
+                    colorOrVisualId = "blue",
+                    isStarred = (i == 2)
+                )
+            )
+        }
+
+        val state = viewModel.uiState.first()
+        assertTrue(state is HomeUiState.Content)
+        val content = state as HomeUiState.Content
+        assertEquals(3, content.activeProcesses.size)
+        assertEquals("p2", content.activeProcesses[0].id)
+        assertTrue(content.activeProcesses[0].isStarred)
+    }
+
+    @Test
+    fun `toggle star warns when attempting to star 4 processes`() = runBlocking {
+        processRepository.saveProcess(Process("p1", "P1", status = ProcessStatus.ACTIVE, createdAtEpochMillis = 1000L, colorOrVisualId = "blue", isStarred = true))
+        processRepository.saveProcess(Process("p2", "P2", status = ProcessStatus.ACTIVE, createdAtEpochMillis = 2000L, colorOrVisualId = "blue", isStarred = true))
+        processRepository.saveProcess(Process("p3", "P3", status = ProcessStatus.ACTIVE, createdAtEpochMillis = 3000L, colorOrVisualId = "blue", isStarred = true))
+        processRepository.saveProcess(Process("p4", "P4", status = ProcessStatus.ACTIVE, createdAtEpochMillis = 4000L, colorOrVisualId = "blue", isStarred = false))
+
+        viewModel.onEvent(HomeUiEvent.ToggleStar("p4"))
+
+        val state = viewModel.uiState.first() as HomeUiState.Content
+        assertEquals("Solo es posible destacar hasta 3 procesos", state.userMessage)
+
+        viewModel.onEvent(HomeUiEvent.DismissUserMessage)
+        val stateAfterDismiss = viewModel.uiState.first() as HomeUiState.Content
+        org.junit.Assert.assertNull(stateAfterDismiss.userMessage)
     }
 
     @Test
@@ -139,5 +183,31 @@ class HomeViewModelTest {
         val sessions = workSessionRepository.getWorkSessionsByTaskId("t1").first()
         assertEquals(1, sessions.size)
         assertEquals(30 * 60 * 1000L, sessions.first().durationMillis)
+    }
+
+    @Test
+    fun `completing task with prior worked time only logs delta session when duration is increased`() = runBlocking {
+        val t1 = Task(
+            id = "t_delta",
+            processId = "p1",
+            title = "Tarea con Sesión Previa",
+            status = TaskStatus.PENDING,
+            createdAtEpochMillis = 1000L,
+            timeWorkedMillis = 15 * 60 * 1000L // 15 min already worked
+        )
+        taskRepository.saveTask(t1)
+
+        // User enters 25 minutes total
+        viewModel.onEvent(HomeUiEvent.CompleteTaskWithDuration(t1, 25))
+
+        val updatedTask = taskRepository.getTaskById("t_delta").first()
+        assertNotNull(updatedTask)
+        assertEquals(TaskStatus.COMPLETED, updatedTask?.status)
+        assertEquals(25 * 60 * 1000L, updatedTask?.timeWorkedMillis)
+
+        val sessions = workSessionRepository.getWorkSessionsByTaskId("t_delta").first()
+        assertEquals(1, sessions.size)
+        // Delta should be 10 minutes (25 - 15)
+        assertEquals(10 * 60 * 1000L, sessions.first().durationMillis)
     }
 }

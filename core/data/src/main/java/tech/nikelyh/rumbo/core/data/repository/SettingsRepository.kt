@@ -11,5 +11,6 @@ interface SettingsRepository {
     suspend fun setNotifications(enabled: Boolean)
     suspend fun setOnboardingCompleted(completed: Boolean)
     suspend fun setUserName(name: String)
+    suspend fun setLanguage(languageCode: String?)
     suspend fun resetApplicationData()
 }

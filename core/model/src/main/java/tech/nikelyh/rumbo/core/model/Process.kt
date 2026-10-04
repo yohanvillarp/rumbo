@@ -9,8 +9,15 @@ data class Process(
     val finishedAtEpochMillis: Long? = null,
     val colorOrVisualId: String,
     val accumulatedDirectCost: Double = 0.0,
-    val nextAction: String? = null
+    val isStarred: Boolean = false,
+    val parentProcessId: String? = null
 ) {
+    val isSubProcess: Boolean
+        get() = parentProcessId != null
+
+    val isSystem: Boolean
+        get() = id == GENERAL_PROCESS_ID
+
     val isFinished: Boolean
         get() = status == ProcessStatus.COMPLETED || status == ProcessStatus.ARCHIVED
 
@@ -20,13 +27,11 @@ data class Process(
     val isPaused: Boolean
         get() = status == ProcessStatus.PAUSED
 
+    fun toggleStarred(): Process = copy(isStarred = !isStarred)
+
     fun addDirectCost(amount: Double): Process {
         require(amount >= 0) { "Direct cost amount cannot be negative" }
         return copy(accumulatedDirectCost = accumulatedDirectCost + amount)
-    }
-
-    fun updateNextAction(action: String?): Process {
-        return copy(nextAction = action)
     }
 
     fun pause(): Process {
@@ -51,13 +56,20 @@ data class Process(
         return copy(status = ProcessStatus.ARCHIVED)
     }
 
+    fun reopen(): Process {
+        return copy(
+            status = ProcessStatus.ACTIVE,
+            finishedAtEpochMillis = null
+        )
+    }
+
     companion object {
         const val GENERAL_PROCESS_ID = "general"
 
         fun createGeneralProcess(createdAt: Long): Process = Process(
             id = GENERAL_PROCESS_ID,
             name = "General",
-            description = "Proceso del sistema para tareas generales",
+            description = "Espacio para actividades cotidianas y tareas varias",
             status = ProcessStatus.ACTIVE,
             createdAtEpochMillis = createdAt,
             colorOrVisualId = "system_default",

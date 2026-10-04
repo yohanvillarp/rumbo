@@ -33,4 +33,8 @@ class FakeProcessDao : ProcessDao {
         }
         return 0
     }
+
+    override suspend fun getStarredCount(): Int {
+        return processesFlow.value.values.count { it.isStarred }
+    }
 }

@@ -28,6 +28,8 @@ import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 
+import tech.nikelyh.rumbo.core.model.TaskSortOrder
+
 @HiltViewModel
 class ProcessDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -42,6 +44,7 @@ class ProcessDetailViewModel @Inject constructor(
     val processId: String = savedStateHandle.get<String>("processId") ?: ""
 
     private val userMessageFlow = MutableStateFlow<String?>(null)
+    private val taskSortOrderFlow = MutableStateFlow(TaskSortOrder.DUE_DATE)
 
     val uiState: StateFlow<ProcessDetailUiState> = combine(
         processRepository.getProcessById(processId),
@@ -50,7 +53,9 @@ class ProcessDetailViewModel @Inject constructor(
         workSessionRepository.getWorkSessionsByProcessId(processId),
         progressRepository.getProgressEntriesByProcessId(processId),
         weeklyGoalRepository.getWeeklyGoalsByProcessId(processId),
-        userMessageFlow
+        processRepository.getProcesses(),
+        userMessageFlow,
+        taskSortOrderFlow
     ) { flows ->
         @Suppress("UNCHECKED_CAST")
         val process = flows[0] as Process?
@@ -65,15 +70,44 @@ class ProcessDetailViewModel @Inject constructor(
         @Suppress("UNCHECKED_CAST")
         val goals = flows[5] as List<WeeklyGoal>
         @Suppress("UNCHECKED_CAST")
-        val userMsg = flows[6] as String?
+        val allProcesses = flows[6] as List<Process>
+        @Suppress("UNCHECKED_CAST")
+        val userMsg = flows[7] as String?
+        val sortOrder = flows[8] as TaskSortOrder
 
         if (process == null) {
             ProcessDetailUiState.Error("Proceso no encontrado")
         } else {
             val totalTimeInvested = sessions.sumOf { it.durationMillis }
-            val pendingTasks = tasks.filter { !it.isCompleted }
+            val rawPendingTasks = tasks.filter { !it.isCompleted }
+            val pendingTasks = when (sortOrder) {
+                TaskSortOrder.DUE_DATE -> rawPendingTasks.sortedWith(
+                    compareBy<Task> { it.dueDateEpochMillis == null }
+                        .thenBy { it.dueDateEpochMillis ?: Long.MAX_VALUE }
+                        .thenByDescending { it.priority.ordinal }
+                )
+                TaskSortOrder.RECENT -> rawPendingTasks.sortedByDescending { it.createdAtEpochMillis }
+                TaskSortOrder.PRIORITY -> rawPendingTasks.sortedWith(
+                    compareByDescending<Task> { it.priority.ordinal }
+                        .thenBy { it.dueDateEpochMillis ?: Long.MAX_VALUE }
+                )
+            }
             val completedTasks = tasks.filter { it.isCompleted }
             val currentGoal = goals.firstOrNull()
+
+            val subProcesses = allProcesses.filter { it.parentProcessId == processId }
+            val parentProcess = allProcesses.firstOrNull { it.id == process.parentProcessId }
+            val activeSubProcesses = subProcesses.filter { !it.isFinished }
+
+            val completionBlockedReason = when {
+                pendingTasks.isNotEmpty() && activeSubProcesses.isNotEmpty() ->
+                    "Para finalizar este proceso debes culminar sus ${pendingTasks.size} tareas pendientes y ${activeSubProcesses.size} subprocesos activos."
+                pendingTasks.isNotEmpty() ->
+                    "Para finalizar este proceso debes culminar sus ${pendingTasks.size} tareas pendientes."
+                activeSubProcesses.isNotEmpty() ->
+                    "Para finalizar este proceso debes culminar sus ${activeSubProcesses.size} subprocesos activos."
+                else -> null
+            }
 
             ProcessDetailUiState.Content(
                 process = process,
@@ -84,7 +118,11 @@ class ProcessDetailViewModel @Inject constructor(
                 totalTimeInvestedMillis = totalTimeInvested,
                 progressEntries = progressEntries,
                 weeklyGoal = currentGoal,
-                userMessage = userMsg
+                subProcesses = subProcesses,
+                parentProcess = parentProcess,
+                completionBlockedReason = completionBlockedReason,
+                userMessage = userMsg,
+                taskSortOrder = sortOrder
             )
         }
     }.stateIn(
@@ -94,12 +132,28 @@ class ProcessDetailViewModel @Inject constructor(
     )
 
     fun onEvent(event: ProcessDetailUiEvent) {
+        if (event is ProcessDetailUiEvent.ChangeTaskSortOrder) {
+            taskSortOrderFlow.value = event.order
+            return
+        }
+
         val currentState = uiState.value as? ProcessDetailUiState.Content ?: return
         val currentProcess = currentState.process
 
         when (event) {
+            is ProcessDetailUiEvent.ChangeTaskSortOrder -> {
+                taskSortOrderFlow.value = event.order
+            }
             ProcessDetailUiEvent.DismissUserMessage -> {
                 userMessageFlow.value = null
+            }
+            ProcessDetailUiEvent.ToggleStar -> {
+                viewModelScope.launch {
+                    val result = processRepository.toggleProcessStarred(currentProcess.id)
+                    if (result is tech.nikelyh.rumbo.core.data.repository.StarProcessResult.MaxLimitReached) {
+                        userMessageFlow.value = "Solo es posible destacar hasta 3 procesos"
+                    }
+                }
             }
             ProcessDetailUiEvent.PauseProcess -> {
                 viewModelScope.launch {
@@ -112,12 +166,21 @@ class ProcessDetailViewModel @Inject constructor(
                 }
             }
             ProcessDetailUiEvent.FinishProcess -> {
-                if (currentState.pendingTasks.isNotEmpty()) {
-                    userMessageFlow.value = "No se puede finalizar el proceso mientras existan tareas pendientes. Completa todas sus tareas asociadas primero."
+                if (currentProcess.isSystem) {
+                    userMessageFlow.value = "El proceso General permanece siempre activo para tus tareas cotidianas."
+                    return
+                }
+                if (currentState.completionBlockedReason != null) {
+                    userMessageFlow.value = currentState.completionBlockedReason
                     return
                 }
                 viewModelScope.launch {
                     processRepository.saveProcess(currentProcess.finish(System.currentTimeMillis()))
+                }
+            }
+            ProcessDetailUiEvent.ReopenProcess -> {
+                viewModelScope.launch {
+                    processRepository.saveProcess(currentProcess.reopen())
                 }
             }
             ProcessDetailUiEvent.ArchiveProcess -> {
@@ -135,19 +198,23 @@ class ProcessDetailViewModel @Inject constructor(
             }
             is ProcessDetailUiEvent.CompleteTaskWithDuration -> {
                 viewModelScope.launch {
-                    val durationMillis = event.durationMinutes * 60 * 1000L
+                    val targetTotalMillis = event.durationMinutes * 60 * 1000L
+                    val additionalMillis = maxOf(0L, targetTotalMillis - event.task.timeWorkedMillis)
                     val now = System.currentTimeMillis()
-                    val session = WorkSession(
-                        id = UUID.randomUUID().toString(),
-                        processId = event.task.processId,
-                        taskId = event.task.id,
-                        startTimeEpochMillis = now - durationMillis,
-                        endTimeEpochMillis = now,
-                        durationMillis = durationMillis,
-                        note = "Duración registrada al culminar tarea"
-                    )
-                    workSessionRepository.saveWorkSession(session)
-                    val updatedTask = event.task.addWorkedTime(durationMillis).updateStatus(tech.nikelyh.rumbo.core.model.TaskStatus.COMPLETED, finishedAt = now)
+                    if (additionalMillis > 0L) {
+                        val session = WorkSession(
+                            id = UUID.randomUUID().toString(),
+                            processId = event.task.processId,
+                            taskId = event.task.id,
+                            startTimeEpochMillis = now - additionalMillis,
+                            endTimeEpochMillis = now,
+                            durationMillis = additionalMillis,
+                            note = "Duración registrada al culminar tarea"
+                        )
+                        workSessionRepository.saveWorkSession(session)
+                    }
+                    val updatedTask = event.task.copy(timeWorkedMillis = maxOf(event.task.timeWorkedMillis, targetTotalMillis))
+                        .updateStatus(tech.nikelyh.rumbo.core.model.TaskStatus.COMPLETED, finishedAt = now)
                     taskRepository.saveTask(updatedTask)
                 }
             }

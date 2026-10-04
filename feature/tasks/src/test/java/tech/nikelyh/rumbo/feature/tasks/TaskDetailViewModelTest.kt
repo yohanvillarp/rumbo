@@ -120,6 +120,31 @@ class TaskDetailViewModelTest {
     }
 
     @Test
+    fun `completing task with prior worked time only logs delta session when duration is increased`() = runBlocking {
+        // Prepare task with 20 minutes already worked
+        val existingTask = taskRepository.getTaskById("t100").first()!!
+        taskRepository.saveTask(existingTask.copy(timeWorkedMillis = 20 * 60 * 1000L))
+
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is TaskDetailUiState.Content && (it as TaskDetailUiState.Content).task.timeWorkedMillis == 20 * 60 * 1000L }
+
+        // User increases duration to 35 minutes
+        viewModel.onEvent(TaskDetailUiEvent.CompleteWithDuration(35))
+
+        val updated = taskRepository.getTaskById("t100").first()
+        assertNotNull(updated)
+        assertEquals(TaskStatus.COMPLETED, updated?.status)
+        assertEquals(35 * 60 * 1000L, updated?.timeWorkedMillis)
+
+        val sessions = workSessionRepository.getWorkSessionsByTaskId("t100").first()
+        assertEquals(1, sessions.size)
+        // Delta should be 15 minutes (35 - 20)
+        assertEquals(15 * 60 * 1000L, sessions.first().durationMillis)
+
+        collectJob.cancel()
+    }
+
+    @Test
     fun `hasStartedSession is true when an active session for the task is running`() = runBlocking {
         val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
         viewModel.uiState.first { it is TaskDetailUiState.Content }

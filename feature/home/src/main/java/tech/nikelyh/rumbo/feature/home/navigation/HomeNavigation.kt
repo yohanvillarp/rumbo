@@ -14,6 +14,7 @@ fun NavController.navigateToHome(navOptions: NavOptions? = null) {
 fun NavGraphBuilder.homeScreen(
     onNavigateToProcess: (String) -> Unit,
     onNavigateToTask: (String) -> Unit,
+    onNavigateToProcesses: () -> Unit = {},
     onNavigateToCreateProcess: () -> Unit,
     onNavigateToCreateTask: () -> Unit,
     onNavigateToLogProgress: () -> Unit,
@@ -23,6 +24,7 @@ fun NavGraphBuilder.homeScreen(
         HomeRoute(
             onNavigateToProcess = onNavigateToProcess,
             onNavigateToTask = onNavigateToTask,
+            onNavigateToProcesses = onNavigateToProcesses,
             onNavigateToCreateProcess = onNavigateToCreateProcess,
             onNavigateToCreateTask = onNavigateToCreateTask,
             onNavigateToLogProgress = onNavigateToLogProgress,

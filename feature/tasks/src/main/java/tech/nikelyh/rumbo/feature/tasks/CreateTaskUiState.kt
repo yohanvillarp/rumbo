@@ -11,8 +11,11 @@ data class CreateTaskUiState(
     val priority: Priority = Priority.MEDIUM,
     val estimatedDurationMinutesInput: String = "",
     val costInput: String = "0",
+    val dueDateEpochMillis: Long? = null,
     val titleError: String? = null,
     val costError: String? = null,
+    val dueDateError: String? = null,
+    val processError: String? = null,
     val isSubmitting: Boolean = false,
     val isSuccess: Boolean = false
 )

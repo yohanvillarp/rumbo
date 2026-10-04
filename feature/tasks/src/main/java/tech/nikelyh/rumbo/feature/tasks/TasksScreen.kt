@@ -1,6 +1,7 @@
 package tech.nikelyh.rumbo.feature.tasks
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,9 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -40,6 +42,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDial
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Task
+import tech.nikelyh.rumbo.core.model.TaskSortOrder
 import tech.nikelyh.rumbo.core.model.TaskStatus
 
 @Composable
@@ -83,9 +86,9 @@ internal fun TasksScreen(
         }
         TasksUiState.Empty -> {
             RumboEmptyState(
-                message = "Sin tareas registradas",
-                subtitle = "Crea tu primera tarea para dar seguimiento a tus actividades.",
-                icon = Icons.Default.Assignment,
+                message = "Sin tareas por ahora",
+                subtitle = "Agrega una tarea para saber exactamente qué hacer hoy o en los próximos días.",
+                icon = Icons.AutoMirrored.Filled.Assignment,
                 actionLabel = "Crear Tarea",
                 onActionClick = onCreateTaskClick,
                 modifier = modifier
@@ -117,13 +120,6 @@ private fun TasksContent(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        RumboSectionHeader(
-            title = "Tareas",
-            subtitle = "Pendientes, hoy y completadas"
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
         // Search Bar
         OutlinedTextField(
             value = uiState.searchQuery,
@@ -136,27 +132,27 @@ private fun TasksContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Filter Tabs
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            FilterChip(
-                selected = uiState.selectedFilter == TaskFilter.PENDING,
-                onClick = { onEvent(TasksUiEvent.FilterChanged(TaskFilter.PENDING)) },
-                label = { Text("Pendientes") }
-            )
-            FilterChip(
-                selected = uiState.selectedFilter == TaskFilter.TODAY,
-                onClick = { onEvent(TasksUiEvent.FilterChanged(TaskFilter.TODAY)) },
-                label = { Text("Hoy") }
-            )
-            FilterChip(
-                selected = uiState.selectedFilter == TaskFilter.COMPLETED,
-                onClick = { onEvent(TasksUiEvent.FilterChanged(TaskFilter.COMPLETED)) },
-                label = { Text("Completadas") }
-            )
-        }
+        // Status Filter Row (Pending, Today, Overdue, Completed, All)
+        TaskStatusFilterRow(
+            selectedFilter = uiState.selectedFilter,
+            onFilterSelected = { filter -> onEvent(TasksUiEvent.FilterChanged(filter)) }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Secondary Criteria Filter Row (Sorting, Priority, Process filter)
+        TaskSecondaryFilterRow(
+            taskSortOrder = uiState.taskSortOrder,
+            onSortOrderSelected = { order -> onEvent(TasksUiEvent.SortOrderChanged(order)) },
+            selectedPriority = uiState.selectedPriority,
+            onPriorityToggle = {
+                val nextPriority = if (uiState.selectedPriority == Priority.HIGH) null else Priority.HIGH
+                onEvent(TasksUiEvent.PriorityFilterChanged(nextPriority))
+            },
+            availableProcesses = uiState.availableProcesses,
+            selectedProcessId = uiState.selectedProcessId,
+            onProcessSelected = { processId -> onEvent(TasksUiEvent.ProcessFilterChanged(processId)) }
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -164,7 +160,7 @@ private fun TasksContent(
         if (uiState.tasks.isEmpty()) {
             RumboEmptyState(
                 message = "No hay tareas en este filtro",
-                icon = Icons.Default.Assignment,
+                icon = Icons.AutoMirrored.Filled.Assignment,
                 modifier = Modifier.weight(1f)
             )
         } else {
@@ -181,7 +177,7 @@ private fun TasksContent(
                         processColorOrVisualId = taskProcess?.colorOrVisualId,
                         processName = taskProcess?.name,
                         onToggleStatus = { task ->
-                            if (!task.isCompleted && task.timeWorkedMillis == 0L) {
+                            if (!task.isCompleted) {
                                 taskToCompleteWithDuration = task
                             } else {
                                 onEvent(TasksUiEvent.ToggleTaskStatus(task))
@@ -195,10 +191,17 @@ private fun TasksContent(
         }
 
         if (taskToCompleteWithDuration != null) {
+            val task = taskToCompleteWithDuration!!
+            val sessionMinutes = if (task.timeWorkedMillis > 0L) {
+                (task.timeWorkedMillis + 59_999L) / 60_000L
+            } else 0L
+            val minMinutes = if (sessionMinutes > 0L) sessionMinutes else 1L
             TaskCompletionDurationDialog(
-                taskTitle = taskToCompleteWithDuration!!.title,
+                taskTitle = task.title,
+                initialMinutes = if (sessionMinutes > 0L) sessionMinutes else 0L,
+                minMinutes = minMinutes,
                 onConfirm = { minutes ->
-                    onEvent(TasksUiEvent.CompleteTaskWithDuration(taskToCompleteWithDuration!!, minutes))
+                    onEvent(TasksUiEvent.CompleteTaskWithDuration(task, minutes))
                     taskToCompleteWithDuration = null
                 },
                 onDismiss = { taskToCompleteWithDuration = null }
@@ -214,6 +217,120 @@ private fun TasksContent(
             Icon(Icons.Default.Add, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text("Nueva Tarea")
+        }
+    }
+}
+
+/**
+ * Renders horizontally scrollable filter chips for task completion status and deadlines.
+ *
+ * @param selectedFilter Currently active [TaskFilter].
+ * @param onFilterSelected Callback invoked when a status filter chip is clicked.
+ * @param modifier Optional [Modifier] for layout adjustments.
+ */
+@Composable
+private fun TaskStatusFilterRow(
+    selectedFilter: TaskFilter,
+    onFilterSelected: (TaskFilter) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+    ) {
+        FilterChip(
+            selected = selectedFilter == TaskFilter.PENDING,
+            onClick = { onFilterSelected(TaskFilter.PENDING) },
+            label = { Text("Pendientes") }
+        )
+        FilterChip(
+            selected = selectedFilter == TaskFilter.TODAY,
+            onClick = { onFilterSelected(TaskFilter.TODAY) },
+            label = { Text("Para hoy") }
+        )
+        FilterChip(
+            selected = selectedFilter == TaskFilter.OVERDUE,
+            onClick = { onFilterSelected(TaskFilter.OVERDUE) },
+            label = { Text("Vencidas") }
+        )
+        FilterChip(
+            selected = selectedFilter == TaskFilter.COMPLETED,
+            onClick = { onFilterSelected(TaskFilter.COMPLETED) },
+            label = { Text("Completadas") }
+        )
+        FilterChip(
+            selected = selectedFilter == TaskFilter.ALL,
+            onClick = { onFilterSelected(TaskFilter.ALL) },
+            label = { Text("Todas") }
+        )
+    }
+}
+
+/**
+ * Renders horizontally scrollable filter chips for task sorting criteria, priority filtering,
+ * and contextual parent process selection.
+ *
+ * @param taskSortOrder Current [TaskSortOrder] applied to the list.
+ * @param onSortOrderSelected Callback invoked when a sort order chip is selected.
+ * @param selectedPriority Active [Priority] filter, or null if unfiltered.
+ * @param onPriorityToggle Callback invoked to toggle high-priority filtering.
+ * @param availableProcesses List of available processes for contextual filtering.
+ * @param selectedProcessId Currently selected process ID filter, or null if all processes are included.
+ * @param onProcessSelected Callback invoked with the selected process ID or null to reset.
+ * @param modifier Optional [Modifier] for layout adjustments.
+ */
+@Composable
+private fun TaskSecondaryFilterRow(
+    taskSortOrder: TaskSortOrder,
+    onSortOrderSelected: (TaskSortOrder) -> Unit,
+    selectedPriority: Priority?,
+    onPriorityToggle: () -> Unit,
+    availableProcesses: List<tech.nikelyh.rumbo.core.model.Process>,
+    selectedProcessId: String?,
+    onProcessSelected: (String?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+    ) {
+        FilterChip(
+            selected = taskSortOrder == TaskSortOrder.DUE_DATE,
+            onClick = { onSortOrderSelected(TaskSortOrder.DUE_DATE) },
+            label = { Text("Próximas a vencer") }
+        )
+        FilterChip(
+            selected = taskSortOrder == TaskSortOrder.RECENT,
+            onClick = { onSortOrderSelected(TaskSortOrder.RECENT) },
+            label = { Text("Más recientes") }
+        )
+        FilterChip(
+            selected = taskSortOrder == TaskSortOrder.PRIORITY,
+            onClick = { onSortOrderSelected(TaskSortOrder.PRIORITY) },
+            label = { Text("Mayor prioridad") }
+        )
+
+        FilterChip(
+            selected = selectedPriority == Priority.HIGH,
+            onClick = onPriorityToggle,
+            label = { Text("Solo Alta") }
+        )
+
+        availableProcesses.filter { it.id != "general" }.forEach { proc ->
+            FilterChip(
+                selected = selectedProcessId == proc.id,
+                onClick = {
+                    val nextProc = if (selectedProcessId == proc.id) null else proc.id
+                    onProcessSelected(nextProc)
+                },
+                label = { Text(proc.name) }
+            )
         }
     }
 }

@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Pause
@@ -80,6 +81,17 @@ internal fun StartSessionScreen(
     modifier: Modifier = Modifier
 ) {
     var manualMinutesText by remember { mutableStateOf("") }
+    var showCancelConfirmDialog by remember { mutableStateOf(false) }
+
+    if (uiState.isLoading) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            androidx.compose.material3.CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+        }
+        return
+    }
 
     if (!uiState.isSessionFinished) {
         // Immersive Fullscreen Timer Mode
@@ -94,66 +106,64 @@ internal fun StartSessionScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Header: Task and Process details (calm and focused)
+                // Header: Task and Process details (stable layout, never swaps positions)
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(top = 24.dp)
                 ) {
                     val process = uiState.availableProcesses.firstOrNull { it.id == uiState.selectedProcessId }
                     val processName = process?.name ?: "General"
+                    val titleText = if (uiState.selectedTaskTitle.isNotBlank()) uiState.selectedTaskTitle else "Sesión de Trabajo"
 
-                    if (uiState.selectedTaskTitle.isNotBlank()) {
-                        Text(
-                            text = uiState.selectedTaskTitle,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = processName,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    } else {
-                        Text(
-                            text = processName,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Sesión de Trabajo",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
+                    Text(
+                        text = titleText,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = processName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.secondary,
+                        textAlign = TextAlign.Center
+                    )
                 }
 
-                // Center: Big, Serene Fullscreen Timer Counter
+                // Center: Big, Serene Fullscreen Timer Counter with Tabular Numbers (tnum)
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(
-                        text = formatMillis(uiState.elapsedTimeMillis),
-                        style = MaterialTheme.typography.displayLarge.copy(
-                            fontSize = 68.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = (-1.5).sp
-                        ),
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.Center
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = formatMillis(uiState.elapsedTimeMillis),
+                            style = MaterialTheme.typography.displayLarge.copy(
+                                fontSize = 64.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFeatureSettings = "tnum"
+                            ),
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center
+                        )
+                    }
 
-                    Text(
-                        text = if (uiState.isTimerRunning) "Sesión en curso" else "Sesión en pausa",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (uiState.isTimerRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (uiState.isTimerRunning) "Sesión en curso" else "Sesión en pausa",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (uiState.isTimerRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                        )
+                    }
                 }
 
                 // Bottom: Action Controls
@@ -189,12 +199,26 @@ internal fun StartSessionScreen(
                         Text(if (uiState.isTimerRunning) "Pausar" else "Continuar")
                     }
 
-                    TextButton(
-                        onClick = { onEvent(StartSessionUiEvent.ForgotTimerClicked) }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Olvidé detenerlo", color = MaterialTheme.colorScheme.secondary)
+                        TextButton(
+                            onClick = { onEvent(StartSessionUiEvent.ForgotTimerClicked) }
+                        ) {
+                            Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Olvidé detenerlo", color = MaterialTheme.colorScheme.secondary)
+                        }
+
+                        TextButton(
+                            onClick = { showCancelConfirmDialog = true }
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Cancelar Sesión", color = MaterialTheme.colorScheme.error)
+                        }
                     }
                 }
             }
@@ -228,7 +252,9 @@ internal fun StartSessionScreen(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = formatMillis(uiState.elapsedTimeMillis),
-                        style = MaterialTheme.typography.displayMedium,
+                        style = MaterialTheme.typography.displayMedium.copy(
+                            fontFeatureSettings = "tnum"
+                        ),
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -292,7 +318,39 @@ internal fun StartSessionScreen(
             ) {
                 Text("Guardar Sesión")
             }
+
+            TextButton(
+                onClick = { showCancelConfirmDialog = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("Descartar Sesión", color = MaterialTheme.colorScheme.error)
+            }
         }
+    }
+
+    if (showCancelConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showCancelConfirmDialog = false },
+            title = { Text("¿Cancelar sesión?") },
+            text = { Text("Se descartará el tiempo transcurrido en esta sesión y no se guardará ningún registro.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showCancelConfirmDialog = false
+                        onEvent(StartSessionUiEvent.CancelSession)
+                    }
+                ) {
+                    Text("Sí, cancelar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCancelConfirmDialog = false }) {
+                    Text("Volver")
+                }
+            }
+        )
     }
 
     // Dialog for "Olvidé detenerlo"
@@ -346,7 +404,11 @@ private fun formatMillis(millis: Long): String {
 private fun StartSessionScreenPreviewLight() {
     RumboTheme(darkTheme = false) {
         StartSessionScreen(
-            uiState = StartSessionUiState(elapsedTimeMillis = 3600000L + 120000L),
+            uiState = StartSessionUiState(
+                isLoading = false,
+                elapsedTimeMillis = 3600000L + 120000L,
+                selectedTaskTitle = "Organizar documentos del hogar"
+            ),
             onEvent = {}
         )
     }

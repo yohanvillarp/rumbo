@@ -11,6 +11,9 @@ import kotlinx.coroutines.launch
 import tech.nikelyh.rumbo.core.data.repository.SettingsRepository
 import javax.inject.Inject
 
+/**
+ * ViewModel managing the user onboarding journey, name entry, and initial language selection.
+ */
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository
@@ -18,6 +21,14 @@ class OnboardingViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            settingsRepository.userSettings.collect { settings ->
+                _uiState.update { it.copy(selectedLanguageCode = settings.languageCode) }
+            }
+        }
+    }
 
     fun onEvent(event: OnboardingUiEvent) {
         when (event) {
@@ -27,6 +38,11 @@ class OnboardingViewModel @Inject constructor(
                         name = event.name,
                         nameError = if (current.nameError != null) validateName(event.name) else null
                     )
+                }
+            }
+            is OnboardingUiEvent.ChangeLanguage -> {
+                viewModelScope.launch {
+                    settingsRepository.setLanguage(event.language.code)
                 }
             }
             OnboardingUiEvent.SubmitName -> {
