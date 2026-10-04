@@ -58,6 +58,9 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
+import java.time.format.DateTimeFormatter
+
+private val TASK_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
 
 @Composable
 fun CreateTaskRoute(
@@ -104,8 +107,7 @@ internal fun CreateTaskScreen(
             val instant = java.time.Instant.ofEpochMilli(dueMillis)
             val zone = java.time.ZoneId.systemDefault()
             val zonedDateTime = instant.atZone(zone)
-            val formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
-            zonedDateTime.format(formatter)
+            zonedDateTime.format(TASK_DATE_FORMATTER)
         } else ""
     }
 

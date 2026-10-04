@@ -1,9 +1,16 @@
 package tech.nikelyh.rumbo.core.database.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "work_sessions")
+@Entity(
+    tableName = "work_sessions",
+    indices = [
+        Index(value = ["processId"]),
+        Index(value = ["taskId"])
+    ]
+)
 data class WorkSessionEntity(
     @PrimaryKey
     val id: String,

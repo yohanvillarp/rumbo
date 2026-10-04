@@ -45,6 +45,9 @@ import tech.nikelyh.rumbo.core.model.TaskStatus
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlayCircle
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
+import java.time.format.DateTimeFormatter
+
+private val TASK_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
 
 @Composable
 fun TaskDetailRoute(
@@ -180,8 +183,7 @@ internal fun TaskDetailScreen(
                             val instant = java.time.Instant.ofEpochMilli(dueMillis)
                             val zone = java.time.ZoneId.systemDefault()
                             val zonedDateTime = instant.atZone(zone)
-                            val formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
-                            zonedDateTime.format(formatter)
+                            zonedDateTime.format(TASK_DATE_FORMATTER)
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {

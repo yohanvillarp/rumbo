@@ -46,6 +46,9 @@ import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
+import java.time.format.DateTimeFormatter
+
+private val TASK_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -199,8 +202,7 @@ fun RumboTaskItem(
                                         val instant = java.time.Instant.ofEpochMilli(dueEpoch)
                                         val zone = java.time.ZoneId.systemDefault()
                                         val zonedDateTime = instant.atZone(zone)
-                                        val formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
-                                        zonedDateTime.format(formatter)
+                                        zonedDateTime.format(TASK_DATE_FORMATTER)
                                     }
                                     Surface(
                                         color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f),

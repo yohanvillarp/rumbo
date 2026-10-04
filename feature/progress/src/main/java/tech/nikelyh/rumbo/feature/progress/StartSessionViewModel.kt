@@ -286,4 +286,10 @@ class StartSessionViewModel @Inject constructor(
             _uiState.update { it.copy(isSubmitting = false, isSuccess = true) }
         }
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        timerJob?.cancel()
+        timerJob = null
+    }
 }

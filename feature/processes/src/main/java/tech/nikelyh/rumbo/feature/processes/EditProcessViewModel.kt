@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tech.nikelyh.rumbo.core.data.repository.ProcessRepository
@@ -28,20 +29,21 @@ class EditProcessViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            processRepository.getProcessById(processId).collect { process ->
-                if (process != null) {
-                    originalProcess = process
-                    _uiState.update { current ->
-                        current.copy(
-                            name = process.name,
-                            description = process.description ?: "",
-                            colorOrVisualId = process.colorOrVisualId,
-                            costInput = process.accumulatedDirectCost.toString(),
-                            nextAction = process.nextAction ?: "",
-                            isLoading = false
-                        )
-                    }
+            val process = processRepository.getProcessById(processId).firstOrNull()
+            if (process != null) {
+                originalProcess = process
+                _uiState.update { current ->
+                    current.copy(
+                        name = process.name,
+                        description = process.description ?: "",
+                        colorOrVisualId = process.colorOrVisualId,
+                        costInput = process.accumulatedDirectCost.toString(),
+                        nextAction = process.nextAction ?: "",
+                        isLoading = false
+                    )
                 }
+            } else {
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
