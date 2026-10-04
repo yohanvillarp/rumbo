@@ -1,7 +1,9 @@
 package tech.nikelyh.rumbo.feature.processes
 
 import tech.nikelyh.rumbo.core.model.Process
+import tech.nikelyh.rumbo.core.model.ProcessSortOrder
 import tech.nikelyh.rumbo.core.model.ProcessStatus
+import tech.nikelyh.rumbo.core.model.ProcessTypeFilter
 
 sealed interface ProcessesUiState {
     data object Loading : ProcessesUiState
@@ -10,6 +12,8 @@ sealed interface ProcessesUiState {
         val pausedProcesses: List<Process>,
         val completedProcesses: List<Process> = emptyList(),
         val selectedFilter: ProcessStatus = ProcessStatus.ACTIVE,
+        val selectedTypeFilter: ProcessTypeFilter = ProcessTypeFilter.ALL,
+        val sortOrder: ProcessSortOrder = ProcessSortOrder.RECENT,
         val searchQuery: String = ""
     ) : ProcessesUiState
     data object Empty : ProcessesUiState

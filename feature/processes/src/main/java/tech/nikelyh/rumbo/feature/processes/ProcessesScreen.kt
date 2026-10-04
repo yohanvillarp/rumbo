@@ -1,6 +1,7 @@
 package tech.nikelyh.rumbo.feature.processes
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
@@ -35,7 +37,9 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboProcessCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Process
+import tech.nikelyh.rumbo.core.model.ProcessSortOrder
 import tech.nikelyh.rumbo.core.model.ProcessStatus
+import tech.nikelyh.rumbo.core.model.ProcessTypeFilter
 
 @Composable
 fun ProcessesRoute(
@@ -135,7 +139,10 @@ private fun ProcessesContent(
         // Filter Chips (ACTIVE vs PAUSED vs COMPLETED)
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
         ) {
             FilterChip(
                 selected = uiState.selectedFilter == ProcessStatus.ACTIVE,
@@ -151,6 +158,48 @@ private fun ProcessesContent(
                 selected = uiState.selectedFilter == ProcessStatus.COMPLETED,
                 onClick = { onEvent(ProcessesUiEvent.FilterChanged(ProcessStatus.COMPLETED)) },
                 label = { Text("Completados (${uiState.completedProcesses.size})") }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Secondary Filters: Type (Principales, Subprocesos) & Sorting criteria
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+        ) {
+            FilterChip(
+                selected = uiState.selectedTypeFilter == ProcessTypeFilter.ALL,
+                onClick = { onEvent(ProcessesUiEvent.TypeFilterChanged(ProcessTypeFilter.ALL)) },
+                label = { Text("Todos") }
+            )
+            FilterChip(
+                selected = uiState.selectedTypeFilter == ProcessTypeFilter.MAIN,
+                onClick = { onEvent(ProcessesUiEvent.TypeFilterChanged(ProcessTypeFilter.MAIN)) },
+                label = { Text("Principales") }
+            )
+            FilterChip(
+                selected = uiState.selectedTypeFilter == ProcessTypeFilter.SUBPROCESS,
+                onClick = { onEvent(ProcessesUiEvent.TypeFilterChanged(ProcessTypeFilter.SUBPROCESS)) },
+                label = { Text("Subprocesos") }
+            )
+            FilterChip(
+                selected = uiState.sortOrder == ProcessSortOrder.RECENT,
+                onClick = { onEvent(ProcessesUiEvent.SortOrderChanged(ProcessSortOrder.RECENT)) },
+                label = { Text("Más recientes") }
+            )
+            FilterChip(
+                selected = uiState.sortOrder == ProcessSortOrder.NAME,
+                onClick = { onEvent(ProcessesUiEvent.SortOrderChanged(ProcessSortOrder.NAME)) },
+                label = { Text("Alfabético (A-Z)") }
+            )
+            FilterChip(
+                selected = uiState.sortOrder == ProcessSortOrder.ACCUMULATED_COST,
+                onClick = { onEvent(ProcessesUiEvent.SortOrderChanged(ProcessSortOrder.ACCUMULATED_COST)) },
+                label = { Text("Mayor inversión") }
             )
         }
 

@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -63,6 +64,7 @@ import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.model.ProcessStatus
 import tech.nikelyh.rumbo.core.model.Task
+import tech.nikelyh.rumbo.core.model.TaskSortOrder
 import tech.nikelyh.rumbo.core.model.TaskStatus
 import tech.nikelyh.rumbo.core.model.WeeklyGoal
 
@@ -487,6 +489,31 @@ private fun ProcessDetailContent(
         // Section: Pending Tasks
         item {
             RumboSectionHeader(title = "Tareas Pendientes")
+        }
+
+        if (uiState.pendingTasks.isNotEmpty()) {
+            item {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilterChip(
+                        selected = uiState.taskSortOrder == TaskSortOrder.DUE_DATE,
+                        onClick = { onEvent(ProcessDetailUiEvent.ChangeTaskSortOrder(TaskSortOrder.DUE_DATE)) },
+                        label = { Text("Próximas a vencer") }
+                    )
+                    FilterChip(
+                        selected = uiState.taskSortOrder == TaskSortOrder.RECENT,
+                        onClick = { onEvent(ProcessDetailUiEvent.ChangeTaskSortOrder(TaskSortOrder.RECENT)) },
+                        label = { Text("Más recientes") }
+                    )
+                    FilterChip(
+                        selected = uiState.taskSortOrder == TaskSortOrder.PRIORITY,
+                        onClick = { onEvent(ProcessDetailUiEvent.ChangeTaskSortOrder(TaskSortOrder.PRIORITY)) },
+                        label = { Text("Mayor prioridad") }
+                    )
+                }
+            }
         }
 
         if (uiState.pendingTasks.isEmpty()) {

@@ -17,4 +17,5 @@ sealed interface ProcessDetailUiEvent {
     data class CompleteWeeklyGoal(val goalId: String) : ProcessDetailUiEvent
     data class CarryOverWeeklyGoal(val goalId: String) : ProcessDetailUiEvent
     data class DiscardWeeklyGoal(val goalId: String) : ProcessDetailUiEvent
+    data class ChangeTaskSortOrder(val order: tech.nikelyh.rumbo.core.model.TaskSortOrder) : ProcessDetailUiEvent
 }

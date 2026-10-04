@@ -21,7 +21,8 @@ sealed interface ProcessDetailUiState {
         val subProcesses: List<Process> = emptyList(),
         val parentProcess: Process? = null,
         val completionBlockedReason: String? = null,
-        val userMessage: String? = null
+        val userMessage: String? = null,
+        val taskSortOrder: tech.nikelyh.rumbo.core.model.TaskSortOrder = tech.nikelyh.rumbo.core.model.TaskSortOrder.DUE_DATE
     ) : ProcessDetailUiState
     data class Error(val message: String) : ProcessDetailUiState
 }

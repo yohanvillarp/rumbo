@@ -13,7 +13,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import tech.nikelyh.rumbo.core.model.Process
+import tech.nikelyh.rumbo.core.model.ProcessSortOrder
 import tech.nikelyh.rumbo.core.model.ProcessStatus
+import tech.nikelyh.rumbo.core.model.ProcessTypeFilter
 import tech.nikelyh.rumbo.feature.processes.fakes.FakeProcessRepository
 
 class ProcessesViewModelTest {
@@ -76,4 +78,51 @@ class ProcessesViewModelTest {
         assertEquals("p2", content.pausedProcesses.first().id)
         assertEquals("p3", content.completedProcesses.first().id)
     }
+
+    @Test
+    fun `filtering by type separates main and subprocesses`() = runBlocking {
+        val mainProcess = Process(id = "p_main", name = "Principal", status = ProcessStatus.ACTIVE, createdAtEpochMillis = 1000L, colorOrVisualId = "teal")
+        val subProcess = Process(id = "p_sub", name = "Subproceso", parentProcessId = "p_main", status = ProcessStatus.ACTIVE, createdAtEpochMillis = 2000L, colorOrVisualId = "blue")
+
+        processRepository.saveProcess(mainProcess)
+        processRepository.saveProcess(subProcess)
+
+        // Filter MAIN only
+        viewModel.onEvent(ProcessesUiEvent.TypeFilterChanged(ProcessTypeFilter.MAIN))
+        val mainState = viewModel.uiState.first { (it as? ProcessesUiState.Content)?.selectedTypeFilter == ProcessTypeFilter.MAIN }
+        val mainContent = mainState as ProcessesUiState.Content
+        assertEquals(1, mainContent.activeProcesses.size)
+        assertEquals("p_main", mainContent.activeProcesses.first().id)
+
+        // Filter SUBPROCESS only
+        viewModel.onEvent(ProcessesUiEvent.TypeFilterChanged(ProcessTypeFilter.SUBPROCESS))
+        val subState = viewModel.uiState.first { (it as? ProcessesUiState.Content)?.selectedTypeFilter == ProcessTypeFilter.SUBPROCESS }
+        val subContent = subState as ProcessesUiState.Content
+        assertEquals(1, subContent.activeProcesses.size)
+        assertEquals("p_sub", subContent.activeProcesses.first().id)
+    }
+
+    @Test
+    fun `sorting processes by name and accumulated cost`() = runBlocking {
+        val pBeta = Process(id = "p_beta", name = "Beta", status = ProcessStatus.ACTIVE, accumulatedDirectCost = 100.0, createdAtEpochMillis = 1000L, colorOrVisualId = "teal")
+        val pAlpha = Process(id = "p_alpha", name = "Alpha", status = ProcessStatus.ACTIVE, accumulatedDirectCost = 500.0, createdAtEpochMillis = 2000L, colorOrVisualId = "blue")
+
+        processRepository.saveProcess(pBeta)
+        processRepository.saveProcess(pAlpha)
+
+        // Sort by NAME (A-Z)
+        viewModel.onEvent(ProcessesUiEvent.SortOrderChanged(ProcessSortOrder.NAME))
+        val nameState = viewModel.uiState.first { (it as? ProcessesUiState.Content)?.sortOrder == ProcessSortOrder.NAME }
+        val nameProcesses = (nameState as ProcessesUiState.Content).activeProcesses
+        assertEquals("p_alpha", nameProcesses[0].id)
+        assertEquals("p_beta", nameProcesses[1].id)
+
+        // Sort by ACCUMULATED_COST descending
+        viewModel.onEvent(ProcessesUiEvent.SortOrderChanged(ProcessSortOrder.ACCUMULATED_COST))
+        val costState = viewModel.uiState.first { (it as? ProcessesUiState.Content)?.sortOrder == ProcessSortOrder.ACCUMULATED_COST }
+        val costProcesses = (costState as ProcessesUiState.Content).activeProcesses
+        assertEquals("p_alpha", costProcesses[0].id)
+        assertEquals("p_beta", costProcesses[1].id)
+    }
 }
+

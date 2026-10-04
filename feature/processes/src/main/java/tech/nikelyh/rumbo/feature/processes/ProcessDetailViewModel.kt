@@ -28,6 +28,8 @@ import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 
+import tech.nikelyh.rumbo.core.model.TaskSortOrder
+
 @HiltViewModel
 class ProcessDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -42,6 +44,7 @@ class ProcessDetailViewModel @Inject constructor(
     val processId: String = savedStateHandle.get<String>("processId") ?: ""
 
     private val userMessageFlow = MutableStateFlow<String?>(null)
+    private val taskSortOrderFlow = MutableStateFlow(TaskSortOrder.DUE_DATE)
 
     val uiState: StateFlow<ProcessDetailUiState> = combine(
         processRepository.getProcessById(processId),
@@ -51,7 +54,8 @@ class ProcessDetailViewModel @Inject constructor(
         progressRepository.getProgressEntriesByProcessId(processId),
         weeklyGoalRepository.getWeeklyGoalsByProcessId(processId),
         processRepository.getProcesses(),
-        userMessageFlow
+        userMessageFlow,
+        taskSortOrderFlow
     ) { flows ->
         @Suppress("UNCHECKED_CAST")
         val process = flows[0] as Process?
@@ -69,12 +73,25 @@ class ProcessDetailViewModel @Inject constructor(
         val allProcesses = flows[6] as List<Process>
         @Suppress("UNCHECKED_CAST")
         val userMsg = flows[7] as String?
+        val sortOrder = flows[8] as TaskSortOrder
 
         if (process == null) {
             ProcessDetailUiState.Error("Proceso no encontrado")
         } else {
             val totalTimeInvested = sessions.sumOf { it.durationMillis }
-            val pendingTasks = tasks.filter { !it.isCompleted }
+            val rawPendingTasks = tasks.filter { !it.isCompleted }
+            val pendingTasks = when (sortOrder) {
+                TaskSortOrder.DUE_DATE -> rawPendingTasks.sortedWith(
+                    compareBy<Task> { it.dueDateEpochMillis == null }
+                        .thenBy { it.dueDateEpochMillis ?: Long.MAX_VALUE }
+                        .thenByDescending { it.priority.ordinal }
+                )
+                TaskSortOrder.RECENT -> rawPendingTasks.sortedByDescending { it.createdAtEpochMillis }
+                TaskSortOrder.PRIORITY -> rawPendingTasks.sortedWith(
+                    compareByDescending<Task> { it.priority.ordinal }
+                        .thenBy { it.dueDateEpochMillis ?: Long.MAX_VALUE }
+                )
+            }
             val completedTasks = tasks.filter { it.isCompleted }
             val currentGoal = goals.firstOrNull()
 
@@ -104,7 +121,8 @@ class ProcessDetailViewModel @Inject constructor(
                 subProcesses = subProcesses,
                 parentProcess = parentProcess,
                 completionBlockedReason = completionBlockedReason,
-                userMessage = userMsg
+                userMessage = userMsg,
+                taskSortOrder = sortOrder
             )
         }
     }.stateIn(
@@ -114,10 +132,18 @@ class ProcessDetailViewModel @Inject constructor(
     )
 
     fun onEvent(event: ProcessDetailUiEvent) {
+        if (event is ProcessDetailUiEvent.ChangeTaskSortOrder) {
+            taskSortOrderFlow.value = event.order
+            return
+        }
+
         val currentState = uiState.value as? ProcessDetailUiState.Content ?: return
         val currentProcess = currentState.process
 
         when (event) {
+            is ProcessDetailUiEvent.ChangeTaskSortOrder -> {
+                taskSortOrderFlow.value = event.order
+            }
             ProcessDetailUiEvent.DismissUserMessage -> {
                 userMessageFlow.value = null
             }

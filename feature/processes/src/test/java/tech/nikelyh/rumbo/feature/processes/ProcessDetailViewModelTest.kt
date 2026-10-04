@@ -252,5 +252,35 @@ class ProcessDetailViewModelTest {
 
         collectJob.cancel()
     }
+
+    @Test
+    fun `sorting pending tasks by due date, recent, and priority orders correctly`() = runBlocking {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is ProcessDetailUiState.Content }
+
+        val t1 = Task(id = "t1", processId = "p100", title = "T1", status = TaskStatus.PENDING, priority = Priority.LOW, createdAtEpochMillis = 1000L, dueDateEpochMillis = 5000L)
+        val t2 = Task(id = "t2", processId = "p100", title = "T2", status = TaskStatus.PENDING, priority = Priority.HIGH, createdAtEpochMillis = 2000L, dueDateEpochMillis = 3000L)
+        val t3 = Task(id = "t3", processId = "p100", title = "T3", status = TaskStatus.PENDING, priority = Priority.MEDIUM, createdAtEpochMillis = 3000L, dueDateEpochMillis = null)
+
+        taskRepository.saveTask(t1)
+        taskRepository.saveTask(t2)
+        taskRepository.saveTask(t3)
+
+        // Default: DUE_DATE (t2 [3000L] -> t1 [5000L] -> t3 [null])
+        var state = viewModel.uiState.value as ProcessDetailUiState.Content
+        assertEquals(listOf("t2", "t1", "t3"), state.pendingTasks.map { it.id })
+
+        // Sort by RECENT (t3 [3000L] -> t2 [2000L] -> t1 [1000L])
+        viewModel.onEvent(ProcessDetailUiEvent.ChangeTaskSortOrder(tech.nikelyh.rumbo.core.model.TaskSortOrder.RECENT))
+        state = viewModel.uiState.value as ProcessDetailUiState.Content
+        assertEquals(listOf("t3", "t2", "t1"), state.pendingTasks.map { it.id })
+
+        // Sort by PRIORITY (t2 [HIGH] -> t3 [MEDIUM] -> t1 [LOW])
+        viewModel.onEvent(ProcessDetailUiEvent.ChangeTaskSortOrder(tech.nikelyh.rumbo.core.model.TaskSortOrder.PRIORITY))
+        state = viewModel.uiState.value as ProcessDetailUiState.Content
+        assertEquals(listOf("t2", "t3", "t1"), state.pendingTasks.map { it.id })
+
+        collectJob.cancel()
+    }
 }
 
