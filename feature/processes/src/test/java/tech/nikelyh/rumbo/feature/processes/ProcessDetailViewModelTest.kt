@@ -18,8 +18,11 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.model.ProcessStatus
+import tech.nikelyh.rumbo.core.model.Task
+import tech.nikelyh.rumbo.core.model.TaskStatus
 import tech.nikelyh.rumbo.feature.processes.fakes.FakeMilestoneRepository
 import tech.nikelyh.rumbo.feature.processes.fakes.FakeProcessRepository
 import tech.nikelyh.rumbo.feature.processes.fakes.FakeProgressRepository
@@ -139,6 +142,100 @@ class ProcessDetailViewModelTest {
     fun `finishing process on explicit user action updates status to COMPLETED`() = runBlocking {
         val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
         viewModel.uiState.first { it is ProcessDetailUiState.Content }
+
+        viewModel.onEvent(ProcessDetailUiEvent.FinishProcess)
+
+        val updatedProcess = processRepository.getProcessById("p100").first()
+        assertNotNull(updatedProcess)
+        assertEquals(ProcessStatus.COMPLETED, updatedProcess?.status)
+        assertNotNull(updatedProcess?.finishedAtEpochMillis)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `finishing process is blocked when pending tasks exist`() = runBlocking {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is ProcessDetailUiState.Content }
+
+        taskRepository.saveTask(
+            Task(
+                id = "t1",
+                processId = "p100",
+                title = "Tarea pendiente",
+                status = TaskStatus.PENDING,
+                priority = Priority.MEDIUM,
+                createdAtEpochMillis = 1000L
+            )
+        )
+
+        viewModel.onEvent(ProcessDetailUiEvent.FinishProcess)
+
+        val process = processRepository.getProcessById("p100").first()
+        assertEquals(ProcessStatus.ACTIVE, process?.status)
+
+        val state = viewModel.uiState.value as ProcessDetailUiState.Content
+        assertNotNull(state.userMessage)
+        assertTrue(state.userMessage!!.contains("tareas pendientes"))
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `finishing process is blocked when active subprocesses exist`() = runBlocking {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is ProcessDetailUiState.Content }
+
+        processRepository.saveProcess(
+            Process(
+                id = "sub-1",
+                name = "Subproceso activo",
+                parentProcessId = "p100",
+                status = ProcessStatus.ACTIVE,
+                createdAtEpochMillis = 1000L,
+                colorOrVisualId = "blue"
+            )
+        )
+
+        viewModel.onEvent(ProcessDetailUiEvent.FinishProcess)
+
+        val process = processRepository.getProcessById("p100").first()
+        assertEquals(ProcessStatus.ACTIVE, process?.status)
+
+        val state = viewModel.uiState.value as ProcessDetailUiState.Content
+        assertNotNull(state.userMessage)
+        assertTrue(state.userMessage!!.contains("subprocesos activos"))
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `finishing process succeeds when all tasks and subprocesses are completed`() = runBlocking {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is ProcessDetailUiState.Content }
+
+        taskRepository.saveTask(
+            Task(
+                id = "t1",
+                processId = "p100",
+                title = "Tarea completada",
+                status = TaskStatus.COMPLETED,
+                priority = Priority.MEDIUM,
+                createdAtEpochMillis = 1000L,
+                finishedAtEpochMillis = 2000L
+            )
+        )
+        processRepository.saveProcess(
+            Process(
+                id = "sub-1",
+                name = "Subproceso completado",
+                parentProcessId = "p100",
+                status = ProcessStatus.COMPLETED,
+                createdAtEpochMillis = 1000L,
+                colorOrVisualId = "blue",
+                finishedAtEpochMillis = 2000L
+            )
+        )
 
         viewModel.onEvent(ProcessDetailUiEvent.FinishProcess)
 

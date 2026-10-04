@@ -46,8 +46,11 @@ object TaskDetailDestination : RumboNavigationDestination {
 }
 
 object CreateProcessDestination : RumboNavigationDestination {
-    override val route = "create_process"
+    override val route = "create_process?parentProcessId={parentProcessId}"
     override val destination = "create_process_destination"
+    fun createRoute(parentProcessId: String? = null): String {
+        return if (parentProcessId != null) "create_process?parentProcessId=$parentProcessId" else "create_process"
+    }
 }
 
 object EditProcessDestination : RumboNavigationDestination {

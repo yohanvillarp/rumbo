@@ -246,8 +246,8 @@ fun RumboApp(
                                 onProcessClick = { processId ->
                                     navController.navigateToProcessDetail(processId)
                                 },
-                                onNavigateToCreateProcess = {
-                                    navController.navigateToCreateProcess()
+                                onNavigateToCreateProcess = { parentProcessId ->
+                                    navController.navigateToCreateProcess(parentProcessId)
                                 },
                                 onNavigateToCreateTask = { processId ->
                                     navController.navigateToCreateTask(processId)

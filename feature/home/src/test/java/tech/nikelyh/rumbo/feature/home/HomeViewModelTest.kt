@@ -60,6 +60,13 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `uiState ignores General system process and remains Empty when no user processes or tasks exist`() = runBlocking {
+        processRepository.ensureGeneralProcessExists()
+        val state = viewModel.uiState.first()
+        assertTrue(state is HomeUiState.Empty)
+    }
+
+    @Test
     fun `uiState presents content with active processes max 3 and continue process selection`() = runBlocking {
         val p1 = Process(
             id = "p1",

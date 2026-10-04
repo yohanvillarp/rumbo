@@ -26,21 +26,21 @@ class ProcessesViewModel @Inject constructor(
         searchQuery,
         selectedFilter
     ) { processes, query, filter ->
-        // Exclude system General process from user process list
-        val userProcesses = processes.filter { it.id != Process.GENERAL_PROCESS_ID }
-
-        val active = userProcesses.filter { it.status == ProcessStatus.ACTIVE }
-        val paused = userProcesses.filter { it.status == ProcessStatus.PAUSED }
+        val active = processes.filter { it.status == ProcessStatus.ACTIVE }
+        val paused = processes.filter { it.status == ProcessStatus.PAUSED }
+        val completed = processes.filter { it.status == ProcessStatus.COMPLETED || it.status == ProcessStatus.ARCHIVED }
 
         val filteredActive = filterByQuery(active, query)
         val filteredPaused = filterByQuery(paused, query)
+        val filteredCompleted = filterByQuery(completed, query)
 
-        if (userProcesses.isEmpty()) {
+        if (processes.isEmpty()) {
             ProcessesUiState.Empty
         } else {
             ProcessesUiState.Content(
                 activeProcesses = filteredActive,
                 pausedProcesses = filteredPaused,
+                completedProcesses = filteredCompleted,
                 selectedFilter = filter,
                 searchQuery = query
             )

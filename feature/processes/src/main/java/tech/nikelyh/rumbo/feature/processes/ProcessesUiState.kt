@@ -8,6 +8,7 @@ sealed interface ProcessesUiState {
     data class Content(
         val activeProcesses: List<Process>,
         val pausedProcesses: List<Process>,
+        val completedProcesses: List<Process> = emptyList(),
         val selectedFilter: ProcessStatus = ProcessStatus.ACTIVE,
         val searchQuery: String = ""
     ) : ProcessesUiState

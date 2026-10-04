@@ -18,11 +18,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -30,6 +35,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +53,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.theme.ProcessColors
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
+import tech.nikelyh.rumbo.core.model.Process
 
 @Composable
 fun CreateProcessRoute(
@@ -67,12 +76,17 @@ fun CreateProcessRoute(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CreateProcessScreen(
     uiState: CreateProcessUiState,
     onEvent: (CreateProcessUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var parentDropdownExpanded by remember { mutableStateOf(false) }
+    val selectedParent = uiState.availableParents.firstOrNull { it.id == uiState.parentProcessId }
+    val selectedParentLabel = selectedParent?.name ?: "Ninguno (Proceso Principal)"
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -124,6 +138,48 @@ internal fun CreateProcessScreen(
                 imeAction = ImeAction.Next
             )
         )
+
+        // Proceso Padre (opcional para jerarquía de subprocesos)
+        ExposedDropdownMenuBox(
+            expanded = parentDropdownExpanded,
+            onExpandedChange = { parentDropdownExpanded = !parentDropdownExpanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = selectedParentLabel,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Proceso Padre (opcional)") },
+                leadingIcon = { Icon(Icons.Default.AccountTree, contentDescription = null) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentDropdownExpanded) },
+                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = parentDropdownExpanded,
+                onDismissRequest = { parentDropdownExpanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Ninguno (Proceso Principal)") },
+                    onClick = {
+                        onEvent(CreateProcessUiEvent.ParentProcessSelected(null))
+                        parentDropdownExpanded = false
+                    }
+                )
+                uiState.availableParents.forEach { parent ->
+                    DropdownMenuItem(
+                        text = { Text(parent.name) },
+                        onClick = {
+                            onEvent(CreateProcessUiEvent.ParentProcessSelected(parent.id))
+                            parentDropdownExpanded = false
+                        }
+                    )
+                }
+            }
+        }
 
         // Circular Color Picker (No English text labels!)
         Text(

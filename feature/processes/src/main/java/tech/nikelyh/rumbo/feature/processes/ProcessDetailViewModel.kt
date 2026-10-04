@@ -50,6 +50,7 @@ class ProcessDetailViewModel @Inject constructor(
         workSessionRepository.getWorkSessionsByProcessId(processId),
         progressRepository.getProgressEntriesByProcessId(processId),
         weeklyGoalRepository.getWeeklyGoalsByProcessId(processId),
+        processRepository.getProcesses(),
         userMessageFlow
     ) { flows ->
         @Suppress("UNCHECKED_CAST")
@@ -65,7 +66,9 @@ class ProcessDetailViewModel @Inject constructor(
         @Suppress("UNCHECKED_CAST")
         val goals = flows[5] as List<WeeklyGoal>
         @Suppress("UNCHECKED_CAST")
-        val userMsg = flows[6] as String?
+        val allProcesses = flows[6] as List<Process>
+        @Suppress("UNCHECKED_CAST")
+        val userMsg = flows[7] as String?
 
         if (process == null) {
             ProcessDetailUiState.Error("Proceso no encontrado")
@@ -74,6 +77,20 @@ class ProcessDetailViewModel @Inject constructor(
             val pendingTasks = tasks.filter { !it.isCompleted }
             val completedTasks = tasks.filter { it.isCompleted }
             val currentGoal = goals.firstOrNull()
+
+            val subProcesses = allProcesses.filter { it.parentProcessId == processId }
+            val parentProcess = allProcesses.firstOrNull { it.id == process.parentProcessId }
+            val activeSubProcesses = subProcesses.filter { !it.isFinished }
+
+            val completionBlockedReason = when {
+                pendingTasks.isNotEmpty() && activeSubProcesses.isNotEmpty() ->
+                    "Para finalizar este proceso debes culminar sus ${pendingTasks.size} tareas pendientes y ${activeSubProcesses.size} subprocesos activos."
+                pendingTasks.isNotEmpty() ->
+                    "Para finalizar este proceso debes culminar sus ${pendingTasks.size} tareas pendientes."
+                activeSubProcesses.isNotEmpty() ->
+                    "Para finalizar este proceso debes culminar sus ${activeSubProcesses.size} subprocesos activos."
+                else -> null
+            }
 
             ProcessDetailUiState.Content(
                 process = process,
@@ -84,6 +101,9 @@ class ProcessDetailViewModel @Inject constructor(
                 totalTimeInvestedMillis = totalTimeInvested,
                 progressEntries = progressEntries,
                 weeklyGoal = currentGoal,
+                subProcesses = subProcesses,
+                parentProcess = parentProcess,
+                completionBlockedReason = completionBlockedReason,
                 userMessage = userMsg
             )
         }
@@ -112,8 +132,12 @@ class ProcessDetailViewModel @Inject constructor(
                 }
             }
             ProcessDetailUiEvent.FinishProcess -> {
-                if (currentState.pendingTasks.isNotEmpty()) {
-                    userMessageFlow.value = "No se puede finalizar el proceso mientras existan tareas pendientes. Completa todas sus tareas asociadas primero."
+                if (currentProcess.isSystem) {
+                    userMessageFlow.value = "El proceso base del sistema no puede ser finalizado."
+                    return
+                }
+                if (currentState.completionBlockedReason != null) {
+                    userMessageFlow.value = currentState.completionBlockedReason
                     return
                 }
                 viewModelScope.launch {

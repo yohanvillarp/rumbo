@@ -12,6 +12,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import androidx.lifecycle.SavedStateHandle
 import org.junit.Test
 import tech.nikelyh.rumbo.feature.processes.fakes.FakeProcessRepository
 
@@ -25,7 +26,7 @@ class CreateProcessViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         processRepository = FakeProcessRepository()
-        viewModel = CreateProcessViewModel(processRepository)
+        viewModel = CreateProcessViewModel(SavedStateHandle(), processRepository)
     }
 
     @After
@@ -72,5 +73,21 @@ class CreateProcessViewModelTest {
         assertEquals("Notas", process.description)
         assertEquals(100.5, process.accumulatedDirectCost, 0.01)
         assertEquals("Leer docs", process.nextAction)
+    }
+
+    @Test
+    fun `selecting parent process associates subprocess`() = runBlocking {
+        viewModel.onEvent(CreateProcessUiEvent.NameChanged("Subproceso 1"))
+        viewModel.onEvent(CreateProcessUiEvent.ParentProcessSelected("parent-123"))
+        viewModel.onEvent(CreateProcessUiEvent.SubmitProcess)
+
+        val state = viewModel.uiState.value
+        assertTrue(state.isSuccess)
+
+        val savedProcesses = processRepository.getProcesses().first()
+        val process = savedProcesses.first()
+        assertEquals("Subproceso 1", process.name)
+        assertEquals("parent-123", process.parentProcessId)
+        assertTrue(process.isSubProcess)
     }
 }

@@ -84,6 +84,9 @@ class EditProcessViewModel @Inject constructor(
                 }
 
                 val target = originalProcess ?: return
+                if (target.isSystem || target.id == Process.GENERAL_PROCESS_ID) {
+                    return
+                }
                 val trimmedName = current.name.trim()
                 val trimmedDesc = current.description.trim().ifBlank { null }
                 val trimmedNextAction = current.nextAction.trim().ifBlank { null }

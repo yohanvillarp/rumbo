@@ -12,6 +12,7 @@ import tech.nikelyh.rumbo.core.data.repository.ProcessRepository
 import tech.nikelyh.rumbo.core.data.repository.SettingsRepository
 import tech.nikelyh.rumbo.core.data.repository.TaskRepository
 import tech.nikelyh.rumbo.core.data.repository.WorkSessionRepository
+import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.model.TaskStatus
 import tech.nikelyh.rumbo.core.model.WorkSession
 import java.time.LocalTime
@@ -41,13 +42,14 @@ class HomeViewModel @Inject constructor(
         val greetingPrefix = getGreetingForHour(hour)
         val fullGreeting = "$greetingPrefix, $name"
 
-        val activeProcesses = processes.filter { it.isActive }
+        val nonGeneralProcesses = processes.filter { it.id != Process.GENERAL_PROCESS_ID }
+        val activeProcesses = nonGeneralProcesses.filter { it.isActive }
         val featuredProcess = activeProcesses.firstOrNull { !it.nextAction.isNullOrBlank() }
             ?: activeProcesses.firstOrNull()
 
         val pendingTasks = tasks.filter { !it.isCompleted }
 
-        if (processes.isEmpty() && tasks.isEmpty()) {
+        if (nonGeneralProcesses.isEmpty() && tasks.isEmpty()) {
             HomeUiState.Empty
         } else {
             HomeUiState.Content(

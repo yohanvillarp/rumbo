@@ -1,5 +1,6 @@
 package tech.nikelyh.rumbo.feature.processes
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,17 +9,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Redo
+import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddTask
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.TrendingUp
@@ -28,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -43,6 +49,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboCard
+import tech.nikelyh.rumbo.core.designsystem.component.RumboProcessCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboEmptyState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
@@ -64,6 +71,8 @@ fun ProcessDetailRoute(
     onNavigateToCreateTask: (String) -> Unit,
     onNavigateToStartSession: (String, String?) -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateToCreateProcess: (String?) -> Unit = {},
+    onNavigateToProcessDetail: (String) -> Unit = {},
     onNavigateToLogProgress: ((String) -> Unit)? = null,
     onNavigateToTask: (String) -> Unit = {},
     viewModel: ProcessDetailViewModel = hiltViewModel()
@@ -76,6 +85,8 @@ fun ProcessDetailRoute(
         onNavigateToEditProcess = { onNavigateToEditProcess(viewModel.processId) },
         onNavigateToCreateTask = { onNavigateToCreateTask(viewModel.processId) },
         onNavigateToStartSession = { taskId -> onNavigateToStartSession(viewModel.processId, taskId) },
+        onNavigateToCreateProcess = onNavigateToCreateProcess,
+        onNavigateToProcessDetail = onNavigateToProcessDetail,
         onNavigateToTask = onNavigateToTask,
         modifier = modifier
     )
@@ -88,8 +99,10 @@ internal fun ProcessDetailScreen(
     onNavigateToEditProcess: () -> Unit,
     onNavigateToCreateTask: () -> Unit,
     onNavigateToStartSession: (String?) -> Unit,
-    onNavigateToTask: (String) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNavigateToCreateProcess: (String?) -> Unit = {},
+    onNavigateToProcessDetail: (String) -> Unit = {},
+    onNavigateToTask: (String) -> Unit = {}
 ) {
     when (uiState) {
         ProcessDetailUiState.Loading -> {
@@ -105,6 +118,8 @@ internal fun ProcessDetailScreen(
                 onNavigateToEditProcess = onNavigateToEditProcess,
                 onNavigateToCreateTask = onNavigateToCreateTask,
                 onNavigateToStartSession = onNavigateToStartSession,
+                onNavigateToCreateProcess = onNavigateToCreateProcess,
+                onNavigateToProcessDetail = onNavigateToProcessDetail,
                 onNavigateToTask = onNavigateToTask,
                 modifier = modifier
             )
@@ -119,6 +134,8 @@ private fun ProcessDetailContent(
     onNavigateToEditProcess: () -> Unit,
     onNavigateToCreateTask: () -> Unit,
     onNavigateToStartSession: (String?) -> Unit,
+    onNavigateToCreateProcess: (String?) -> Unit,
+    onNavigateToProcessDetail: (String) -> Unit,
     onNavigateToTask: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -187,6 +204,59 @@ private fun ProcessDetailContent(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+
+                if (uiState.parentProcess != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Surface(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.clickable { onNavigateToProcessDetail(uiState.parentProcess.id) }
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.AccountTree,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Subproceso de: ${uiState.parentProcess.name}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
+                }
+
+                if (process.isSystem) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Info,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Proceso del sistema para tareas generales (no editable ni eliminable)",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -280,39 +350,91 @@ private fun ProcessDetailContent(
         // Primary Actions
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                RumboButton(
-                    onClick = onNavigateToCreateTask,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.AddTask, contentDescription = null)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Nueva Tarea")
+                if (!process.isFinished) {
+                    RumboButton(
+                        onClick = onNavigateToCreateTask,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.AddTask, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Nueva Tarea")
+                    }
+                } else {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Este proceso ha sido completado. No admite nuevas tareas.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    RumboOutlinedButton(
-                        onClick = onNavigateToEditProcess,
-                        modifier = Modifier.weight(1f)
+                if (!process.isSystem) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(Icons.Default.Edit, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Editar")
-                    }
-
-                    if (process.isActive || process.status == ProcessStatus.PAUSED) {
-                        OutlinedButton(
-                            onClick = { onEvent(ProcessDetailUiEvent.FinishProcess) },
+                        RumboOutlinedButton(
+                            onClick = onNavigateToEditProcess,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Icon(Icons.Default.CheckCircle, contentDescription = null)
+                            Icon(Icons.Default.Edit, contentDescription = null)
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Finalizar")
+                            Text("Editar")
+                        }
+
+                        if (process.isActive || process.status == ProcessStatus.PAUSED) {
+                            OutlinedButton(
+                                onClick = { onEvent(ProcessDetailUiEvent.FinishProcess) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(Icons.Default.CheckCircle, contentDescription = null)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Finalizar")
+                            }
                         }
                     }
                 }
+            }
+        }
+
+        // Section: Subprocesses
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RumboSectionHeader(title = "Subprocesos (${uiState.subProcesses.size})")
+                if (!process.isFinished && !process.isSystem) {
+                    TextButton(onClick = { onNavigateToCreateProcess(process.id) }) {
+                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Nuevo Subproceso")
+                    }
+                }
+            }
+        }
+
+        if (uiState.subProcesses.isEmpty()) {
+            item {
+                Text(
+                    text = "Sin subprocesos creados.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+            }
+        } else {
+            items(uiState.subProcesses, key = { it.id }) { subProcess ->
+                RumboProcessCard(
+                    process = subProcess,
+                    onClick = { onNavigateToProcessDetail(subProcess.id) }
+                )
             }
         }
 
@@ -407,7 +529,7 @@ private fun ProcessDetailContent(
     if (uiState.userMessage != null) {
         AlertDialog(
             onDismissRequest = { onEvent(ProcessDetailUiEvent.DismissUserMessage) },
-            title = { Text("Tareas Pendientes Existentes") },
+            title = { Text("No se puede finalizar el proceso") },
             text = { Text(uiState.userMessage) },
             confirmButton = {
                 TextButton(onClick = { onEvent(ProcessDetailUiEvent.DismissUserMessage) }) {

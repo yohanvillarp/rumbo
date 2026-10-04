@@ -18,6 +18,9 @@ sealed interface ProcessDetailUiState {
         val totalTimeInvestedMillis: Long,
         val progressEntries: List<ProgressEntry>,
         val weeklyGoal: WeeklyGoal?,
+        val subProcesses: List<Process> = emptyList(),
+        val parentProcess: Process? = null,
+        val completionBlockedReason: String? = null,
         val userMessage: String? = null
     ) : ProcessDetailUiState
     data class Error(val message: String) : ProcessDetailUiState

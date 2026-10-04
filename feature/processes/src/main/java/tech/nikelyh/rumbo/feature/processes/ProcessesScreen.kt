@@ -132,7 +132,7 @@ private fun ProcessesContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Filter Chips (ACTIVE vs PAUSED)
+        // Filter Chips (ACTIVE vs PAUSED vs COMPLETED)
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -147,20 +147,30 @@ private fun ProcessesContent(
                 onClick = { onEvent(ProcessesUiEvent.FilterChanged(ProcessStatus.PAUSED)) },
                 label = { Text("Pausados (${uiState.pausedProcesses.size})") }
             )
+            FilterChip(
+                selected = uiState.selectedFilter == ProcessStatus.COMPLETED,
+                onClick = { onEvent(ProcessesUiEvent.FilterChanged(ProcessStatus.COMPLETED)) },
+                label = { Text("Completados (${uiState.completedProcesses.size})") }
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Process List
-        val displayList = if (uiState.selectedFilter == ProcessStatus.ACTIVE) {
-            uiState.activeProcesses
-        } else {
-            uiState.pausedProcesses
+        val displayList = when (uiState.selectedFilter) {
+            ProcessStatus.ACTIVE -> uiState.activeProcesses
+            ProcessStatus.PAUSED -> uiState.pausedProcesses
+            ProcessStatus.COMPLETED, ProcessStatus.ARCHIVED -> uiState.completedProcesses
         }
 
         if (displayList.isEmpty()) {
+            val emptyMessage = when (uiState.selectedFilter) {
+                ProcessStatus.ACTIVE -> "Sin procesos activos"
+                ProcessStatus.PAUSED -> "Sin procesos pausados"
+                else -> "Sin procesos completados"
+            }
             RumboEmptyState(
-                message = if (uiState.selectedFilter == ProcessStatus.ACTIVE) "Sin procesos activos" else "Sin procesos pausados",
+                message = emptyMessage,
                 subtitle = "Usa el botón inferior para crear un nuevo proceso.",
                 mascotState = MascotState.RESTING,
                 modifier = Modifier.weight(1f)

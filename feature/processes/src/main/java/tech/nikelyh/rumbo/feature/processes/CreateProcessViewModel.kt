@@ -1,5 +1,6 @@
 package tech.nikelyh.rumbo.feature.processes
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,11 +16,23 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CreateProcessViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val processRepository: ProcessRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(CreateProcessUiState())
+    private val initialParentId: String? = savedStateHandle.get<String>("parentProcessId")
+
+    private val _uiState = MutableStateFlow(CreateProcessUiState(parentProcessId = initialParentId))
     val uiState: StateFlow<CreateProcessUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            processRepository.getProcesses().collect { processes ->
+                val activeParents = processes.filter { !it.isFinished && it.id != Process.GENERAL_PROCESS_ID }
+                _uiState.update { it.copy(availableParents = activeParents) }
+            }
+        }
+    }
 
     fun onEvent(event: CreateProcessUiEvent) {
         when (event) {
@@ -48,6 +61,9 @@ class CreateProcessViewModel @Inject constructor(
             is CreateProcessUiEvent.NextActionChanged -> {
                 _uiState.update { it.copy(nextAction = event.nextAction) }
             }
+            is CreateProcessUiEvent.ParentProcessSelected -> {
+                _uiState.update { it.copy(parentProcessId = event.parentId) }
+            }
             CreateProcessUiEvent.SubmitProcess -> {
                 val current = _uiState.value
                 val nameErr = validateName(current.name)
@@ -70,7 +86,8 @@ class CreateProcessViewModel @Inject constructor(
                     createdAtEpochMillis = System.currentTimeMillis(),
                     colorOrVisualId = current.colorOrVisualId,
                     accumulatedDirectCost = costDouble,
-                    nextAction = trimmedNextAction
+                    nextAction = trimmedNextAction,
+                    parentProcessId = current.parentProcessId
                 )
 
                 viewModelScope.launch {
