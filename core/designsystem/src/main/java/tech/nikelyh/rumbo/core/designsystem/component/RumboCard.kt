@@ -153,15 +153,6 @@ fun RumboProcessCard(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-
-                process.nextAction?.let { action ->
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Siguiente: $action",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
             }
         }
     }
@@ -179,8 +170,7 @@ private fun RumboProcessCardPreviewLight() {
                 status = ProcessStatus.ACTIVE,
                 createdAtEpochMillis = 1000L,
                 colorOrVisualId = "teal",
-                accumulatedDirectCost = 150.0,
-                nextAction = "Hacer inventario de despensa"
+                accumulatedDirectCost = 150.0
             ),
             onClick = {}
         )

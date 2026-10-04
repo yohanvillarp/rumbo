@@ -191,15 +191,6 @@ private fun ProcessDetailContent(
                     )
                 }
 
-                process.nextAction?.let { action ->
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Siguiente paso: $action",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
-
                 Spacer(modifier = Modifier.height(12.dp))
 
                 val timeHours = uiState.totalTimeInvestedMillis / (1000 * 60 * 60)
@@ -664,8 +655,7 @@ private fun ProcessDetailScreenPreviewLight() {
                     status = ProcessStatus.ACTIVE,
                     createdAtEpochMillis = 1000L,
                     colorOrVisualId = "teal",
-                    accumulatedDirectCost = 250.0,
-                    nextAction = "Escribir pruebas unitarias"
+                    accumulatedDirectCost = 250.0
                 ),
                 pendingTasks = listOf(
                     Task(

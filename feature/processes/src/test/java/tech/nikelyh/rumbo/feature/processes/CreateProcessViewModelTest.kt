@@ -58,7 +58,6 @@ class CreateProcessViewModelTest {
         viewModel.onEvent(CreateProcessUiEvent.NameChanged("  Aprender Android  "))
         viewModel.onEvent(CreateProcessUiEvent.DescriptionChanged("  Notas  "))
         viewModel.onEvent(CreateProcessUiEvent.CostChanged("100.5"))
-        viewModel.onEvent(CreateProcessUiEvent.NextActionChanged("  Leer docs  "))
         viewModel.onEvent(CreateProcessUiEvent.SubmitProcess)
 
         val state = viewModel.uiState.value
@@ -72,7 +71,6 @@ class CreateProcessViewModelTest {
         assertEquals("Aprender Android", process.name)
         assertEquals("Notas", process.description)
         assertEquals(100.5, process.accumulatedDirectCost, 0.01)
-        assertEquals("Leer docs", process.nextAction)
     }
 
     @Test

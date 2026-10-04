@@ -5,7 +5,6 @@ sealed interface CreateProcessUiEvent {
     data class DescriptionChanged(val description: String) : CreateProcessUiEvent
     data class ColorChanged(val colorOrVisualId: String) : CreateProcessUiEvent
     data class CostChanged(val cost: String) : CreateProcessUiEvent
-    data class NextActionChanged(val nextAction: String) : CreateProcessUiEvent
     data class ParentProcessSelected(val parentId: String?) : CreateProcessUiEvent
     data object SubmitProcess : CreateProcessUiEvent
 }

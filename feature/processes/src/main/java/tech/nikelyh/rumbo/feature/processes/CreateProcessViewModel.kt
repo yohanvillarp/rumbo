@@ -58,9 +58,6 @@ class CreateProcessViewModel @Inject constructor(
                     )
                 }
             }
-            is CreateProcessUiEvent.NextActionChanged -> {
-                _uiState.update { it.copy(nextAction = event.nextAction) }
-            }
             is CreateProcessUiEvent.ParentProcessSelected -> {
                 _uiState.update { it.copy(parentProcessId = event.parentId) }
             }
@@ -76,7 +73,6 @@ class CreateProcessViewModel @Inject constructor(
 
                 val trimmedName = current.name.trim()
                 val trimmedDesc = current.description.trim().ifBlank { null }
-                val trimmedNextAction = current.nextAction.trim().ifBlank { null }
                 val costDouble = current.costInput.trim().toDoubleOrNull() ?: 0.0
 
                 val newProcess = Process(
@@ -86,7 +82,6 @@ class CreateProcessViewModel @Inject constructor(
                     createdAtEpochMillis = System.currentTimeMillis(),
                     colorOrVisualId = current.colorOrVisualId,
                     accumulatedDirectCost = costDouble,
-                    nextAction = trimmedNextAction,
                     parentProcessId = current.parentProcessId
                 )
 

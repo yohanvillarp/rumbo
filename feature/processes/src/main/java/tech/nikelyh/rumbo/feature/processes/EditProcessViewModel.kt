@@ -38,7 +38,6 @@ class EditProcessViewModel @Inject constructor(
                         description = process.description ?: "",
                         colorOrVisualId = process.colorOrVisualId,
                         costInput = process.accumulatedDirectCost.toString(),
-                        nextAction = process.nextAction ?: "",
                         isLoading = false
                     )
                 }
@@ -72,9 +71,6 @@ class EditProcessViewModel @Inject constructor(
                     )
                 }
             }
-            is EditProcessUiEvent.NextActionChanged -> {
-                _uiState.update { it.copy(nextAction = event.nextAction) }
-            }
             EditProcessUiEvent.SubmitProcess -> {
                 val current = _uiState.value
                 val nameErr = validateName(current.name)
@@ -91,15 +87,13 @@ class EditProcessViewModel @Inject constructor(
                 }
                 val trimmedName = current.name.trim()
                 val trimmedDesc = current.description.trim().ifBlank { null }
-                val trimmedNextAction = current.nextAction.trim().ifBlank { null }
                 val costDouble = current.costInput.trim().toDoubleOrNull() ?: 0.0
 
                 val updatedProcess = target.copy(
                     name = trimmedName,
                     description = trimmedDesc,
                     colorOrVisualId = current.colorOrVisualId,
-                    accumulatedDirectCost = costDouble,
-                    nextAction = trimmedNextAction
+                    accumulatedDirectCost = costDouble
                 )
 
                 viewModelScope.launch {

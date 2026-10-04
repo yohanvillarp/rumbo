@@ -9,7 +9,6 @@ data class Process(
     val finishedAtEpochMillis: Long? = null,
     val colorOrVisualId: String,
     val accumulatedDirectCost: Double = 0.0,
-    val nextAction: String? = null,
     val parentProcessId: String? = null
 ) {
     val isSubProcess: Boolean
@@ -30,10 +29,6 @@ data class Process(
     fun addDirectCost(amount: Double): Process {
         require(amount >= 0) { "Direct cost amount cannot be negative" }
         return copy(accumulatedDirectCost = accumulatedDirectCost + amount)
-    }
-
-    fun updateNextAction(action: String?): Process {
-        return copy(nextAction = action)
     }
 
     fun pause(): Process {

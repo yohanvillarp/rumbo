@@ -183,14 +183,6 @@ private fun HomeContent(
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    process.nextAction?.let { action ->
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Siguiente acción: $action",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
                     Spacer(modifier = Modifier.height(12.dp))
                     RumboButton(
                         onClick = { onEvent(HomeUiEvent.OnProcessClick(process.id)) },
@@ -202,7 +194,7 @@ private fun HomeContent(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (!process.nextAction.isNullOrBlank()) "Reanudar Actividad" else "Reanudar Proceso",
+                            text = "Reanudar Proceso",
                             style = MaterialTheme.typography.titleMedium
                         )
                     }
@@ -308,8 +300,7 @@ private fun HomeScreenPreviewLight() {
                     status = ProcessStatus.ACTIVE,
                     createdAtEpochMillis = 1000L,
                     colorOrVisualId = "teal",
-                    accumulatedDirectCost = 150.0,
-                    nextAction = "Hacer inventario de despensa"
+                    accumulatedDirectCost = 150.0
                 ),
                 activeProcesses = listOf(
                     Process(
@@ -319,8 +310,7 @@ private fun HomeScreenPreviewLight() {
                         status = ProcessStatus.ACTIVE,
                         createdAtEpochMillis = 1000L,
                         colorOrVisualId = "teal",
-                        accumulatedDirectCost = 150.0,
-                        nextAction = "Hacer inventario de despensa"
+                        accumulatedDirectCost = 150.0
                     )
                 ),
                 todayTasks = listOf(

@@ -22,7 +22,6 @@ class ProcessTest {
         assertFalse(process.isPaused)
         assertFalse(process.isFinished)
         assertEquals(0.0, process.accumulatedDirectCost, 0.001)
-        assertNull(process.nextAction)
     }
 
     @Test

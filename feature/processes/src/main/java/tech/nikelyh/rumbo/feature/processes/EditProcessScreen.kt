@@ -189,21 +189,6 @@ internal fun EditProcessScreen(
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
-                imeAction = ImeAction.Next
-            )
-        )
-
-        // Next Action
-        OutlinedTextField(
-            value = uiState.nextAction,
-            onValueChange = { onEvent(EditProcessUiEvent.NextActionChanged(it)) },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Primer paso a realizar (opcional)") },
-            placeholder = { Text("Ej. Revisar opciones y armar lista") },
-            leadingIcon = { Icon(Icons.Default.PlayArrow, contentDescription = null) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences,
                 imeAction = ImeAction.Done
             )
         )

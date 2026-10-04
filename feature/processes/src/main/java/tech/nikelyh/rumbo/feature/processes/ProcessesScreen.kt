@@ -319,8 +319,7 @@ private fun ProcessesScreenPreviewLight() {
                         description = "Renovación del jardín y siembra de plantas ornamentales.",
                         status = ProcessStatus.ACTIVE,
                         createdAtEpochMillis = 1000L,
-                        colorOrVisualId = "teal",
-                        nextAction = "Comprar tierra y macetas"
+                        colorOrVisualId = "teal"
                     )
                 ),
                 pausedProcesses = emptyList()

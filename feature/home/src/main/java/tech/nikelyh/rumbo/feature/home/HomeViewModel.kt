@@ -44,8 +44,7 @@ class HomeViewModel @Inject constructor(
 
         val nonGeneralProcesses = processes.filter { it.id != Process.GENERAL_PROCESS_ID }
         val activeProcesses = nonGeneralProcesses.filter { it.isActive }
-        val featuredProcess = activeProcesses.firstOrNull { !it.nextAction.isNullOrBlank() }
-            ?: activeProcesses.firstOrNull()
+        val featuredProcess = activeProcesses.firstOrNull()
 
         val pendingTasks = tasks.filter { !it.isCompleted }
 

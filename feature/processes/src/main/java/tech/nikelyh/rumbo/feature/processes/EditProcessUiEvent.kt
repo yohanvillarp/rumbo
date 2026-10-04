@@ -5,6 +5,5 @@ sealed interface EditProcessUiEvent {
     data class DescriptionChanged(val description: String) : EditProcessUiEvent
     data class ColorChanged(val colorOrVisualId: String) : EditProcessUiEvent
     data class CostChanged(val cost: String) : EditProcessUiEvent
-    data class NextActionChanged(val nextAction: String) : EditProcessUiEvent
     data object SubmitProcess : EditProcessUiEvent
 }

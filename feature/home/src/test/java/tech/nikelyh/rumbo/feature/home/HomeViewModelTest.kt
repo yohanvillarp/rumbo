@@ -73,8 +73,7 @@ class HomeViewModelTest {
             name = "Proceso 1",
             status = ProcessStatus.ACTIVE,
             createdAtEpochMillis = 1000L,
-            colorOrVisualId = "blue",
-            nextAction = "Siguiente paso 1"
+            colorOrVisualId = "blue"
         )
         val p2 = Process(
             id = "p2",

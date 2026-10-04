@@ -6,7 +6,6 @@ data class EditProcessUiState(
     val description: String = "",
     val colorOrVisualId: String = "teal",
     val costInput: String = "0",
-    val nextAction: String = "",
     val nameError: String? = null,
     val costError: String? = null,
     val isLoading: Boolean = true,
