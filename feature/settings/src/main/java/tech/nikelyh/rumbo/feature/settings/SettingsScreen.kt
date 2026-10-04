@@ -44,14 +44,14 @@ import tech.nikelyh.rumbo.core.model.UserSettings
 @Composable
 fun SettingsRoute(
     modifier: Modifier = Modifier,
+    onResetCompleted: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
 
     LaunchedEffect(viewModel) {
         viewModel.resetCompleted.collect {
-            context.findActivity()?.recreate()
+            onResetCompleted()
         }
     }
 

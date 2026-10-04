@@ -256,7 +256,13 @@ fun RumboApp(
                                     navController.popBackStack()
                                 }
                             )
-                            settingsScreen()
+                            settingsScreen(
+                                onResetCompleted = {
+                                    navController.navigate(OnboardingDestination.route) {
+                                        popUpTo(0) { inclusive = true }
+                                    }
+                                }
+                            )
                         }
                     }
                 }
