@@ -2,46 +2,49 @@ package tech.nikelyh.rumbo.core.designsystem.component
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import tech.nikelyh.rumbo.core.designsystem.theme.ProcessColors
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RumboTaskItem(
     task: Task,
@@ -78,9 +81,15 @@ fun RumboTaskItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(IntrinsicSize.Min)
                 .drawBehind {
                     if (processColor != null) {
+                        // 0. Left Process Color Accent Strip
+                        drawRect(
+                            color = processColor,
+                            topLeft = Offset(0f, 0f),
+                            size = Size(5.dp.toPx(), size.height)
+                        )
+
                         // 1. Soft radial gradient wash in top-right corner
                         val centerPoint = Offset(size.width * 0.95f, size.height * 0.25f)
                         drawCircle(
@@ -120,21 +129,10 @@ fun RumboTaskItem(
                 },
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Process Color Accent Left Strip
-            if (processColor != null) {
-                Box(
-                    modifier = Modifier
-                        .width(5.dp)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
-                        .background(processColor)
-                )
-            }
-
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(16.dp)
+                    .padding(start = if (processColor != null) 18.dp else 14.dp, end = 12.dp, top = 12.dp, bottom = 12.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -150,40 +148,55 @@ fun RumboTaskItem(
                             onCheckedChange = { onToggleStatus(task) }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = task.title,
                                 style = MaterialTheme.typography.titleMedium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
                                 textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                                 color = if (task.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Spacer(modifier = Modifier.height(4.dp))
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalArrangement = Arrangement.Center
                             ) {
                                 if (processName != null && !isGeneral) {
+                                    Surface(
+                                        color = (processColor ?: MaterialTheme.colorScheme.primary).copy(alpha = 0.12f),
+                                        shape = RoundedCornerShape(4.dp)
+                                    ) {
+                                        Text(
+                                            text = processName,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = processColor ?: MaterialTheme.colorScheme.primary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                                .widthIn(max = 140.dp)
+                                        )
+                                    }
+                                }
+                                Surface(
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = RoundedCornerShape(4.dp)
+                                ) {
                                     Text(
-                                        text = processName,
+                                        text = "Prioridad: $prioritySpanish",
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = processColor ?: MaterialTheme.colorScheme.primary
-                                    )
-                                    Text(
-                                        text = "•",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                        color = if (processColor != null) processColor.copy(alpha = 0.9f) else MaterialTheme.colorScheme.secondary,
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                                     )
                                 }
-                                Text(
-                                    text = "Prioridad: $prioritySpanish",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (processColor != null) processColor.copy(alpha = 0.9f) else MaterialTheme.colorScheme.secondary
-                                )
                                 if (task.timeWorkedMillis > 0L) {
                                     val mins = task.timeWorkedMillis / (1000 * 60)
                                     Text(
-                                        text = "•  Tiempo: ${mins}m",
+                                        text = "•  ${mins}m",
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.align(Alignment.CenterVertically)
                                     )
                                 }
                             }
@@ -204,12 +217,13 @@ fun RumboTaskItem(
                         }
 
                         if (!task.isCompleted && onStartSession != null) {
+                            val isTaskStarted = task.timeWorkedMillis > 0L || task.status == TaskStatus.IN_PROGRESS
                             IconButton(
                                 onClick = { onStartSession(task) }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.PlayArrow,
-                                    contentDescription = "Iniciar Sesión",
+                                    imageVector = if (isTaskStarted) Icons.Default.PlayCircle else Icons.Default.PlayArrow,
+                                    contentDescription = if (isTaskStarted) "Continuar Sesión" else "Iniciar Sesión",
                                     tint = processColor ?: MaterialTheme.colorScheme.primary
                                 )
                             }

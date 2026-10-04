@@ -5,31 +5,80 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Minimalist Wolf Head Path (Clean geometric polygon) -->
+    <!-- Outer Navigational Ring -->
     <path
-        android:pathData="M 32,28 L 43,46 L 54,78 L 65,46 L 76,28 L 54,39 Z"
-        android:strokeWidth="3.5"
-        android:strokeColor="#80D5DC"
-        android:fillColor="#00000000"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
+        android:pathData="M 54,54 m -34,0 a 34,34 0 1,0 68,0 a 34,34 0 1,0 -68,0"
+        android:strokeWidth="1.8"
+        android:strokeColor="#60A5FA"
+        android:fillColor="#00000000" />
 
-    <!-- Serene Eyes -->
+    <!-- Inner Secondary Ring -->
     <path
-        android:pathData="M 40,51 L 46,51"
-        android:strokeWidth="3.5"
-        android:strokeColor="#80D5DC"
+        android:pathData="M 54,54 m -29,0 a 29,29 0 1,0 58,0 a 29,29 0 1,0 -58,0"
+        android:strokeWidth="1.0"
+        android:strokeColor="#4460A5FA"
+        android:fillColor="#00000000" />
+
+    <!-- Cardinal Ticks (N, S, W, E) -->
+    <path
+        android:pathData="M 54,16 L 54,22"
+        android:strokeWidth="2.0"
+        android:strokeColor="#60A5FA"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M 54,86 L 54,92"
+        android:strokeWidth="2.0"
+        android:strokeColor="#60A5FA"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M 16,54 L 22,54"
+        android:strokeWidth="2.0"
+        android:strokeColor="#60A5FA"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M 86,54 L 92,54"
+        android:strokeWidth="2.0"
+        android:strokeColor="#60A5FA"
         android:strokeLineCap="round" />
 
+    <!-- Faceted Compass Star - North -->
     <path
-        android:pathData="M 62,51 L 68,51"
-        android:strokeWidth="3.5"
-        android:strokeColor="#80D5DC"
-        android:strokeLineCap="round" />
+        android:pathData="M 54,54 L 45,45 L 54,22 Z"
+        android:fillColor="#60A5FA" />
+    <path
+        android:pathData="M 54,54 L 54,22 L 63,45 Z"
+        android:fillColor="#2563EB" />
 
-    <!-- Explorer Compass Emblem / Nose Point -->
+    <!-- Faceted Compass Star - East -->
     <path
-        android:pathData="M 54,70 m -3.5,0 a 3.5,3.5 0 1,0 7,0 a 3.5,3.5 0 1,0 -7,0"
-        android:fillColor="#80D5DC" />
+        android:pathData="M 54,54 L 63,45 L 80,54 Z"
+        android:fillColor="#3B82F6" />
+    <path
+        android:pathData="M 54,54 L 80,54 L 63,63 Z"
+        android:fillColor="#1D4ED8" />
+
+    <!-- Faceted Compass Star - South -->
+    <path
+        android:pathData="M 54,54 L 63,63 L 54,78 Z"
+        android:fillColor="#3B82F6" />
+    <path
+        android:pathData="M 54,54 L 54,78 L 45,63 Z"
+        android:fillColor="#1E40AF" />
+
+    <!-- Faceted Compass Star - West -->
+    <path
+        android:pathData="M 54,54 L 45,63 L 28,54 Z"
+        android:fillColor="#60A5FA" />
+    <path
+        android:pathData="M 54,54 L 28,54 L 45,45 Z"
+        android:fillColor="#1D4ED8" />
+
+    <!-- Center Luminous Core Pivot -->
+    <path
+        android:pathData="M 54,54 m -5,0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0"
+        android:fillColor="#FFFFFF" />
+    <path
+        android:pathData="M 54,54 m -3,0 a 3,3 0 1,0 6,0 a 3,3 0 1,0 -6,0"
+        android:fillColor="#1A56DB" />
 
 </vector>

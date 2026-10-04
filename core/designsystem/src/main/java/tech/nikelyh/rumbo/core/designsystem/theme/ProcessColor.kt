@@ -24,7 +24,7 @@ object ProcessColors {
             "purple" -> Purple
             "amber" -> Amber
             "emerald" -> Emerald
-            else -> Teal
+            else -> Blue
         }
     }
 }
