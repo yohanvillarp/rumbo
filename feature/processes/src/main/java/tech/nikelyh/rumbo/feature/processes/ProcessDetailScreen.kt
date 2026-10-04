@@ -29,12 +29,17 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -173,13 +178,32 @@ private fun ProcessDetailContent(
                     Text(
                         text = process.name,
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
                     )
-                    Text(
-                        text = processStatusSpanish,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = processStatusSpanish,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        if (!process.isSystem) {
+                            IconButton(onClick = { onEvent(ProcessDetailUiEvent.ToggleStar) }) {
+                                Icon(
+                                    imageVector = if (process.isStarred) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                                    contentDescription = if (process.isStarred) {
+                                        stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_action_unstar)
+                                    } else {
+                                        stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_action_star)
+                                    },
+                                    tint = if (process.isStarred) Color(0xFFFFB300) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
+                            }
+                        }
+                    }
                 }
 
                 process.description?.let { desc ->

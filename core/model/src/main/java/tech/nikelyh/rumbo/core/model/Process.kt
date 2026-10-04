@@ -9,6 +9,7 @@ data class Process(
     val finishedAtEpochMillis: Long? = null,
     val colorOrVisualId: String,
     val accumulatedDirectCost: Double = 0.0,
+    val isStarred: Boolean = false,
     val parentProcessId: String? = null
 ) {
     val isSubProcess: Boolean
@@ -25,6 +26,8 @@ data class Process(
 
     val isPaused: Boolean
         get() = status == ProcessStatus.PAUSED
+
+    fun toggleStarred(): Process = copy(isStarred = !isStarred)
 
     fun addDirectCost(amount: Double): Process {
         require(amount >= 0) { "Direct cost amount cannot be negative" }

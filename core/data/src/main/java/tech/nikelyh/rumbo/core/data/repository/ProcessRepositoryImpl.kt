@@ -51,6 +51,20 @@ class ProcessRepositoryImpl @Inject constructor(
         return true
     }
 
+    override suspend fun toggleProcessStarred(id: String): StarProcessResult {
+        val currentEntity = processDao.getProcessByIdSync(id) ?: return StarProcessResult.ProcessNotFound
+        if (currentEntity.isStarred) {
+            processDao.insertOrUpdate(currentEntity.copy(isStarred = false))
+            return StarProcessResult.Success
+        }
+        val starredCount = processDao.getStarredCount()
+        if (starredCount >= 3) {
+            return StarProcessResult.MaxLimitReached
+        }
+        processDao.insertOrUpdate(currentEntity.copy(isStarred = true))
+        return StarProcessResult.Success
+    }
+
     override suspend fun ensureGeneralProcessExists() {
         val existing = processDao.getProcessByIdSync(Process.GENERAL_PROCESS_ID)
         if (existing == null) {

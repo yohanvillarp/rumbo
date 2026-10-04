@@ -20,4 +20,8 @@
     <string name="language_system_default">Predeterminado del sistema</string>
     <string name="language_spanish">Español</string>
     <string name="language_english">English</string>
+    <string name="process_action_star">Destacar proceso</string>
+    <string name="process_action_unstar">Quitar de destacados</string>
+    <string name="processes_star_limit_warning">Solo es posible destacar hasta 3 procesos</string>
+    <string name="home_view_all_processes">Ver todos los procesos</string>
 </resources>

@@ -17,7 +17,8 @@ sealed interface ProcessesUiState {
         val selectedFilter: ProcessStatus = ProcessStatus.ACTIVE,
         val selectedTypeFilter: ProcessTypeFilter = ProcessTypeFilter.ALL,
         val sortOrder: ProcessSortOrder = ProcessSortOrder.RECENT,
-        val searchQuery: String = ""
+        val searchQuery: String = "",
+        val userMessage: String? = null
     ) : ProcessesUiState
     data object Empty : ProcessesUiState
     data class Error(val message: String) : ProcessesUiState

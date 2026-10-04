@@ -22,6 +22,9 @@ interface ProcessDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdate(process: ProcessEntity)
 
+    @Query("SELECT COUNT(*) FROM processes WHERE isStarred = 1")
+    suspend fun getStarredCount(): Int
+
     @Query("DELETE FROM processes WHERE id = :id AND isSystemProcess = 0")
     suspend fun deleteById(id: String): Int
 }

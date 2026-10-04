@@ -13,4 +13,6 @@ sealed interface ProcessesUiEvent {
     data class TypeFilterChanged(val typeFilter: ProcessTypeFilter) : ProcessesUiEvent
     data class SortOrderChanged(val sortOrder: ProcessSortOrder) : ProcessesUiEvent
     data class OnProcessSelected(val processId: String) : ProcessesUiEvent
+    data class ToggleStar(val processId: String) : ProcessesUiEvent
+    data object DismissUserMessage : ProcessesUiEvent
 }

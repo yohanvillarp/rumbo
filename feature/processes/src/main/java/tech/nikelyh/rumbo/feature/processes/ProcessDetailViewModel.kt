@@ -147,6 +147,14 @@ class ProcessDetailViewModel @Inject constructor(
             ProcessDetailUiEvent.DismissUserMessage -> {
                 userMessageFlow.value = null
             }
+            ProcessDetailUiEvent.ToggleStar -> {
+                viewModelScope.launch {
+                    val result = processRepository.toggleProcessStarred(currentProcess.id)
+                    if (result is tech.nikelyh.rumbo.core.data.repository.StarProcessResult.MaxLimitReached) {
+                        userMessageFlow.value = "Solo es posible destacar hasta 3 procesos"
+                    }
+                }
+            }
             ProcessDetailUiEvent.PauseProcess -> {
                 viewModelScope.launch {
                     processRepository.saveProcess(currentProcess.pause())

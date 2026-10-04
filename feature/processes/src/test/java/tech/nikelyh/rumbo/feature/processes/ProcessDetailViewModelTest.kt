@@ -282,5 +282,42 @@ class ProcessDetailViewModelTest {
 
         collectJob.cancel()
     }
+
+    @Test
+    fun `toggling star toggles starred status and warns on 4th star`() = runBlocking {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is ProcessDetailUiState.Content }
+
+        // Star the testProcess (first starred process)
+        viewModel.onEvent(ProcessDetailUiEvent.ToggleStar)
+        val pStarred = processRepository.getProcessById("p100").first()
+        assertTrue(pStarred?.isStarred == true)
+
+        // Now add 2 more starred processes to reach 3 total
+        processRepository.saveProcess(Process("p2", "P2", status = ProcessStatus.ACTIVE, createdAtEpochMillis = 2000L, colorOrVisualId = "blue", isStarred = true))
+        processRepository.saveProcess(Process("p3", "P3", status = ProcessStatus.ACTIVE, createdAtEpochMillis = 3000L, colorOrVisualId = "blue", isStarred = true))
+
+        // Create a 4th unstarred process and set as target
+        processRepository.saveProcess(Process("p4", "P4", status = ProcessStatus.ACTIVE, createdAtEpochMillis = 4000L, colorOrVisualId = "blue", isStarred = false))
+        val vm4 = ProcessDetailViewModel(
+            SavedStateHandle(mapOf("processId" to "p4")),
+            processRepository,
+            taskRepository,
+            milestoneRepository,
+            weeklyGoalRepository,
+            workSessionRepository,
+            progressRepository
+        )
+        val vm4Job = launch(testDispatcher) { vm4.uiState.collect {} }
+        vm4.uiState.first { it is ProcessDetailUiState.Content }
+
+        vm4.onEvent(ProcessDetailUiEvent.ToggleStar)
+        val state4 = vm4.uiState.first { (it as? ProcessDetailUiState.Content)?.userMessage != null }
+        val content4 = state4 as ProcessDetailUiState.Content
+        assertEquals("Solo es posible destacar hasta 3 procesos", content4.userMessage)
+
+        vm4Job.cancel()
+        collectJob.cancel()
+    }
 }
 

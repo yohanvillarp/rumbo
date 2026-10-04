@@ -8,6 +8,8 @@ sealed interface HomeUiEvent {
     data class OnTaskClick(val taskId: String) : HomeUiEvent
     data class OnToggleTaskStatus(val task: Task) : HomeUiEvent
     data class CompleteTaskWithDuration(val task: Task, val durationMinutes: Long) : HomeUiEvent
+    data class ToggleStar(val processId: String) : HomeUiEvent
+    data object DismissUserMessage : HomeUiEvent
     data object OnCreateTaskClick : HomeUiEvent
     data object OnCreateProcessClick : HomeUiEvent
     data object OnLogProgressClick : HomeUiEvent

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import tech.nikelyh.rumbo.core.data.repository.ProcessRepository
 import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.model.ProcessSortOrder
@@ -17,20 +18,22 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProcessesViewModel @Inject constructor(
-    processRepository: ProcessRepository
+    private val processRepository: ProcessRepository
 ) : ViewModel() {
 
     private val searchQuery = MutableStateFlow("")
     private val selectedFilter = MutableStateFlow(ProcessStatus.ACTIVE)
     private val selectedTypeFilter = MutableStateFlow(ProcessTypeFilter.ALL)
     private val sortOrder = MutableStateFlow(ProcessSortOrder.RECENT)
+    private val userMessage = MutableStateFlow<String?>(null)
 
     val uiState: StateFlow<ProcessesUiState> = combine(
         processRepository.getProcesses(),
         searchQuery,
         selectedFilter,
         selectedTypeFilter,
-        sortOrder
+        sortOrder,
+        userMessage
     ) { flows ->
         @Suppress("UNCHECKED_CAST")
         val processes = flows[0] as List<Process>
@@ -38,6 +41,7 @@ class ProcessesViewModel @Inject constructor(
         val filter = flows[2] as ProcessStatus
         val typeFilter = flows[3] as ProcessTypeFilter
         val order = flows[4] as ProcessSortOrder
+        val msg = flows[5] as String?
 
         val active = processes.filter { it.status == ProcessStatus.ACTIVE }
         val paused = processes.filter { it.status == ProcessStatus.PAUSED }
@@ -58,14 +62,17 @@ class ProcessesViewModel @Inject constructor(
             return when (order) {
                 ProcessSortOrder.RECENT -> queryFiltered.sortedWith(
                     compareByDescending<Process> { it.isSystem }
+                        .thenByDescending { it.isStarred }
                         .thenByDescending { it.createdAtEpochMillis }
                 )
                 ProcessSortOrder.NAME -> queryFiltered.sortedWith(
                     compareByDescending<Process> { it.isSystem }
+                        .thenByDescending { it.isStarred }
                         .thenBy { it.name.lowercase() }
                 )
                 ProcessSortOrder.ACCUMULATED_COST -> queryFiltered.sortedWith(
                     compareByDescending<Process> { it.isSystem }
+                        .thenByDescending { it.isStarred }
                         .thenByDescending { it.accumulatedDirectCost }
                 )
             }
@@ -81,7 +88,8 @@ class ProcessesViewModel @Inject constructor(
                 selectedFilter = filter,
                 selectedTypeFilter = typeFilter,
                 sortOrder = order,
-                searchQuery = query
+                searchQuery = query,
+                userMessage = msg
             )
         }
     }.stateIn(
@@ -96,6 +104,15 @@ class ProcessesViewModel @Inject constructor(
             is ProcessesUiEvent.FilterChanged -> selectedFilter.value = event.status
             is ProcessesUiEvent.TypeFilterChanged -> selectedTypeFilter.value = event.typeFilter
             is ProcessesUiEvent.SortOrderChanged -> sortOrder.value = event.sortOrder
+            is ProcessesUiEvent.ToggleStar -> {
+                viewModelScope.launch {
+                    val result = processRepository.toggleProcessStarred(event.processId)
+                    if (result is tech.nikelyh.rumbo.core.data.repository.StarProcessResult.MaxLimitReached) {
+                        userMessage.value = "Solo es posible destacar hasta 3 procesos"
+                    }
+                }
+            }
+            ProcessesUiEvent.DismissUserMessage -> userMessage.value = null
             else -> { /* Navigation handled at Screen route level */ }
         }
     }

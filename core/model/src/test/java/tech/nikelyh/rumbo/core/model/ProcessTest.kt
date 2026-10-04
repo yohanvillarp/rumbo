@@ -22,6 +22,11 @@ class ProcessTest {
         assertFalse(process.isPaused)
         assertFalse(process.isFinished)
         assertEquals(0.0, process.accumulatedDirectCost, 0.001)
+        assertFalse(process.isStarred)
+
+        val starred = process.toggleStarred()
+        assertTrue(starred.isStarred)
+        assertFalse(starred.toggleStarred().isStarred)
     }
 
     @Test

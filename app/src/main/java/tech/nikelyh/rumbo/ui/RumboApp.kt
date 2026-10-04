@@ -250,6 +250,9 @@ fun RumboApp(
                                 onNavigateToTask = { taskId ->
                                     navController.navigateToTaskDetail(taskId)
                                 },
+                                onNavigateToProcesses = {
+                                    navController.navigateToProcesses()
+                                },
                                 onNavigateToCreateProcess = {
                                     navController.navigateToCreateProcess()
                                 },
