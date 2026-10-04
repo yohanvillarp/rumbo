@@ -17,7 +17,7 @@ sealed interface ProcessDetailUiState {
         val workSessions: List<WorkSession>,
         val totalTimeInvestedMillis: Long,
         val progressEntries: List<ProgressEntry>,
-        val weeklyGoal: WeeklyGoal?,
+        val weeklyGoal: WeeklyGoal? = null,
         val subProcesses: List<Process> = emptyList(),
         val parentProcess: Process? = null,
         val completionBlockedReason: String? = null,

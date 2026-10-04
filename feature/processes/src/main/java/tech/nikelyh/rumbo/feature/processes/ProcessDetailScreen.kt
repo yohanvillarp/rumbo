@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddTask
@@ -66,7 +65,6 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
-import tech.nikelyh.rumbo.core.model.GoalStatus
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.model.ProcessStatus
@@ -150,8 +148,6 @@ private fun ProcessDetailContent(
     modifier: Modifier = Modifier
 ) {
     val process = uiState.process
-    var showWeeklyGoalDialog by remember { mutableStateOf(false) }
-    var weeklyGoalInput by remember { mutableStateOf("") }
     var taskToCompleteWithDuration by remember { mutableStateOf<Task?>(null) }
 
     LazyColumn(
@@ -356,93 +352,6 @@ private fun ProcessDetailContent(
             }
         }
 
-        // Section: Weekly Goal
-        item {
-            RumboSectionHeader(title = "Objetivo Semanal")
-            val goal = uiState.weeklyGoal
-
-            if (goal != null) {
-                val goalStatusSpanish = when (goal.status) {
-                    GoalStatus.PENDING -> "Pendiente"
-                    GoalStatus.IN_PROGRESS -> "En progreso"
-                    GoalStatus.ACHIEVED -> "Alcanzado"
-                    GoalStatus.CANCELLED -> "Cancelado"
-                }
-
-                RumboCard(modifier = Modifier.fillMaxWidth()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = goal.description,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "Semana: ${goal.weekIdentifier}  •  Estado: $goalStatusSpanish",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            RumboButton(
-                                onClick = { onEvent(ProcessDetailUiEvent.CompleteWeeklyGoal(goal.id)) },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(Icons.Default.CheckCircle, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Completar")
-                            }
-                            RumboOutlinedButton(
-                                onClick = { onEvent(ProcessDetailUiEvent.CarryOverWeeklyGoal(goal.id)) },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Mover")
-                            }
-                        }
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            TextButton(
-                                onClick = {
-                                    weeklyGoalInput = goal.description
-                                    showWeeklyGoalDialog = true
-                                }
-                            ) {
-                                Icon(Icons.Default.Edit, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Editar")
-                            }
-                            TextButton(
-                                onClick = { onEvent(ProcessDetailUiEvent.DiscardWeeklyGoal(goal.id)) }
-                            ) {
-                                Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Descartar", color = MaterialTheme.colorScheme.error)
-                            }
-                        }
-                    }
-                }
-            } else {
-                RumboOutlinedButton(
-                    onClick = {
-                        weeklyGoalInput = ""
-                        showWeeklyGoalDialog = true
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Definir Objetivo Semanal")
-                }
-            }
-        }
-
         // Section: Subprocesses (shown when sub-processes exist)
         if (uiState.subProcesses.isNotEmpty()) {
             item {
@@ -575,40 +484,6 @@ private fun ProcessDetailContent(
         )
     }
 
-    if (showWeeklyGoalDialog) {
-        AlertDialog(
-            onDismissRequest = { showWeeklyGoalDialog = false },
-            title = { Text("Objetivo Semanal") },
-            text = {
-                OutlinedTextField(
-                    value = weeklyGoalInput,
-                    onValueChange = { weeklyGoalInput = it },
-                    label = { Text("Descripción del objetivo") },
-                    placeholder = { Text("Ej. Avanzar con las actividades prioritarias") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        if (weeklyGoalInput.isNotBlank()) {
-                            onEvent(ProcessDetailUiEvent.SaveWeeklyGoal(weeklyGoalInput.trim()))
-                            showWeeklyGoalDialog = false
-                        }
-                    }
-                ) {
-                    Text("Guardar")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showWeeklyGoalDialog = false }) {
-                    Text("Cancelar")
-                }
-            }
-        )
-    }
-
     if (taskToCompleteWithDuration != null) {
         val task = taskToCompleteWithDuration!!
         val sessionMinutes = if (task.timeWorkedMillis > 0L) {
@@ -695,13 +570,7 @@ private fun ProcessDetailScreenPreviewLight() {
                 milestones = emptyList(),
                 workSessions = emptyList(),
                 totalTimeInvestedMillis = 3600000L * 3,
-                progressEntries = emptyList(),
-                weeklyGoal = WeeklyGoal(
-                    id = "g1",
-                    processId = "p1",
-                    weekIdentifier = "2026-W40",
-                    description = "Completar las tareas clave de la semana"
-                )
+                progressEntries = emptyList()
             ),
             onEvent = {},
             onNavigateToEditProcess = {},
