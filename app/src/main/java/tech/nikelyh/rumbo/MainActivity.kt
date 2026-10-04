@@ -16,6 +16,7 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_Rumbo)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {

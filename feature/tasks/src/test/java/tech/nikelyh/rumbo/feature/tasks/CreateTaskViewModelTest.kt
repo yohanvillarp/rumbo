@@ -89,4 +89,24 @@ class CreateTaskViewModelTest {
         assertEquals(dueTime, task.dueDateEpochMillis)
         assertEquals(0.0, task.cost, 0.01)
     }
+
+    @Test
+    fun `submitting task with default 23 59 due date saves accurate timestamp`() = runBlocking {
+        val targetDate = java.time.LocalDate.of(2026, 10, 4)
+        val endOfDayMillis = targetDate.atTime(23, 59)
+            .atZone(java.time.ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+
+        viewModel.onEvent(CreateTaskUiEvent.TitleChanged("Tarea con hora por defecto"))
+        viewModel.onEvent(CreateTaskUiEvent.DueDateChanged(endOfDayMillis))
+        viewModel.onEvent(CreateTaskUiEvent.SubmitTask)
+
+        val task = taskRepository.getAllTasks().first().first()
+        assertEquals(endOfDayMillis, task.dueDateEpochMillis)
+        val savedZdt = java.time.Instant.ofEpochMilli(task.dueDateEpochMillis!!)
+            .atZone(java.time.ZoneId.systemDefault())
+        assertEquals(23, savedZdt.hour)
+        assertEquals(59, savedZdt.minute)
+    }
 }

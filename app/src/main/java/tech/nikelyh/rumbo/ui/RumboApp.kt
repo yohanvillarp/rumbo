@@ -100,14 +100,18 @@ fun RumboApp(
     val isSystemDark = isSystemInDarkTheme()
     val darkTheme = isDarkMode ?: isSystemDark
 
-    val startDestination = if (hasCompletedOnboarding == false) {
-        OnboardingDestination.route
-    } else {
-        HomeDestination.route
+    val isSessionRunning = hasCompletedOnboarding == true && activeSession != null && activeSession.isRunning
+
+    val startDestination = when {
+        hasCompletedOnboarding == false -> OnboardingDestination.route
+        isSessionRunning -> StartSessionDestination.route
+        else -> HomeDestination.route
     }
 
-    LaunchedEffect(activeSession?.isRunning) {
-        if (hasCompletedOnboarding == true && activeSession != null && activeSession.isRunning) {
+    var isSplashFinished by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isSplashFinished, activeSession?.isRunning) {
+        if (isSplashFinished && hasCompletedOnboarding == true && activeSession != null && activeSession.isRunning) {
             val currentRoute = navController.currentBackStackEntry?.destination?.route
             if (currentRoute?.startsWith("start_session") != true) {
                 navController.navigateToStartSession(
@@ -117,8 +121,6 @@ fun RumboApp(
             }
         }
     }
-
-    var isSplashFinished by remember { mutableStateOf(false) }
 
     LaunchedEffect(hasCompletedOnboarding) {
         if (hasCompletedOnboarding != null) {

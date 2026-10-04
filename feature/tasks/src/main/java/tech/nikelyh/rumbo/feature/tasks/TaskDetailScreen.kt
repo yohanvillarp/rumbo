@@ -179,9 +179,9 @@ internal fun TaskDetailScreen(
                         val dateText = remember(dueMillis) {
                             val instant = java.time.Instant.ofEpochMilli(dueMillis)
                             val zone = java.time.ZoneId.systemDefault()
-                            val localDate = instant.atZone(zone).toLocalDate()
-                            val formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                            localDate.format(formatter)
+                            val zonedDateTime = instant.atZone(zone)
+                            val formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
+                            zonedDateTime.format(formatter)
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {

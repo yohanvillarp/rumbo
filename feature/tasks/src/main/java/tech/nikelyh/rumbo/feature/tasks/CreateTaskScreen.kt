@@ -1,6 +1,7 @@
 package tech.nikelyh.rumbo.feature.tasks
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +20,9 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -33,13 +36,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -83,6 +89,7 @@ internal fun CreateTaskScreen(
 ) {
     var processDropdownExpanded by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = uiState.dueDateEpochMillis ?: System.currentTimeMillis()
     )
@@ -96,9 +103,9 @@ internal fun CreateTaskScreen(
         if (dueMillis != null) {
             val instant = java.time.Instant.ofEpochMilli(dueMillis)
             val zone = java.time.ZoneId.systemDefault()
-            val localDate = instant.atZone(zone).toLocalDate()
-            val formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
-            localDate.format(formatter)
+            val zonedDateTime = instant.atZone(zone)
+            val formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
+            zonedDateTime.format(formatter)
         } else ""
     }
 
@@ -203,7 +210,7 @@ internal fun CreateTaskScreen(
             }
         }
 
-        // Fecha de Caducidad (Solicitud requerida)
+        // Fecha de Caducidad (Solicitud requerida con hora, por defecto 11:59 PM)
         OutlinedTextField(
             value = dueDateFormatted,
             onValueChange = {},
@@ -211,12 +218,19 @@ internal fun CreateTaskScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { showDatePicker = true },
-            label = { Text("Fecha de Caducidad *") },
-            placeholder = { Text("Toca para elegir fecha de caducidad") },
+            label = { Text("Fecha y Hora de Caducidad *") },
+            placeholder = { Text("Toca para elegir fecha (por defecto 11:59 PM)") },
             leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
             trailingIcon = {
-                IconButton(onClick = { showDatePicker = true }) {
-                    Icon(Icons.Default.CalendarToday, contentDescription = "Elegir fecha")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.CalendarToday, contentDescription = "Elegir fecha")
+                    }
+                    if (uiState.dueDateEpochMillis != null) {
+                        IconButton(onClick = { showTimePicker = true }) {
+                            Icon(Icons.Default.Schedule, contentDescription = "Elegir hora")
+                        }
+                    }
                 }
             },
             isError = uiState.dueDateError != null,
@@ -237,7 +251,24 @@ internal fun CreateTaskScreen(
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            onEvent(CreateTaskUiEvent.DueDateChanged(datePickerState.selectedDateMillis))
+                            val selectedUtc = datePickerState.selectedDateMillis
+                            if (selectedUtc != null) {
+                                val utcDate = java.time.Instant.ofEpochMilli(selectedUtc)
+                                    .atZone(java.time.ZoneOffset.UTC)
+                                    .toLocalDate()
+                                val existingZdt = uiState.dueDateEpochMillis?.let {
+                                    java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault())
+                                }
+                                val hour = existingZdt?.hour ?: 23
+                                val minute = existingZdt?.minute ?: 59
+
+                                val combinedMillis = utcDate.atTime(hour, minute)
+                                    .atZone(java.time.ZoneId.systemDefault())
+                                    .toInstant()
+                                    .toEpochMilli()
+
+                                onEvent(CreateTaskUiEvent.DueDateChanged(combinedMillis))
+                            }
                             showDatePicker = false
                         }
                     ) {
@@ -252,6 +283,47 @@ internal fun CreateTaskScreen(
             ) {
                 DatePicker(state = datePickerState)
             }
+        }
+
+        if (showTimePicker && uiState.dueDateEpochMillis != null) {
+            val currentZdt = java.time.Instant.ofEpochMilli(uiState.dueDateEpochMillis)
+                .atZone(java.time.ZoneId.systemDefault())
+            val timePickerState = rememberTimePickerState(
+                initialHour = currentZdt.hour,
+                initialMinute = currentZdt.minute,
+                is24Hour = false
+            )
+
+            AlertDialog(
+                onDismissRequest = { showTimePicker = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val updatedZdt = currentZdt.toLocalDate()
+                                .atTime(timePickerState.hour, timePickerState.minute)
+                                .atZone(java.time.ZoneId.systemDefault())
+                            onEvent(CreateTaskUiEvent.DueDateChanged(updatedZdt.toInstant().toEpochMilli()))
+                            showTimePicker = false
+                        }
+                    ) {
+                        Text("Aceptar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showTimePicker = false }) {
+                        Text("Cancelar")
+                    }
+                },
+                title = { Text("Hora de vencimiento") },
+                text = {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        TimePicker(state = timePickerState)
+                    }
+                }
+            )
         }
 
         // Priority Selection (In Spanish)
