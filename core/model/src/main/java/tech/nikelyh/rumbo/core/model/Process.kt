@@ -58,6 +58,13 @@ data class Process(
         return copy(status = ProcessStatus.ARCHIVED)
     }
 
+    fun reopen(): Process {
+        return copy(
+            status = ProcessStatus.ACTIVE,
+            finishedAtEpochMillis = null
+        )
+    }
+
     companion object {
         const val GENERAL_PROCESS_ID = "general"
 

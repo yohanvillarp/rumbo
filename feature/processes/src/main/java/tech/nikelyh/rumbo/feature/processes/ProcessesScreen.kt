@@ -213,12 +213,12 @@ private fun ProcessesScreenPreviewLight() {
                 activeProcesses = listOf(
                     Process(
                         id = "p1",
-                        name = "Desarrollo de Rumbo",
-                        description = "Aplicación Android con arquitectura modular.",
+                        name = "Proyecto Jardinería",
+                        description = "Renovación del jardín y siembra de plantas ornamentales.",
                         status = ProcessStatus.ACTIVE,
                         createdAtEpochMillis = 1000L,
                         colorOrVisualId = "teal",
-                        nextAction = "Implementar :feature:processes"
+                        nextAction = "Comprar tierra y macetas"
                     )
                 ),
                 pausedProcesses = emptyList()

@@ -244,6 +244,13 @@ class ProcessDetailViewModelTest {
         assertEquals(ProcessStatus.COMPLETED, updatedProcess?.status)
         assertNotNull(updatedProcess?.finishedAtEpochMillis)
 
+        viewModel.onEvent(ProcessDetailUiEvent.ReopenProcess)
+        val reopenedProcess = processRepository.getProcessById("p100").first()
+        assertNotNull(reopenedProcess)
+        assertEquals(ProcessStatus.ACTIVE, reopenedProcess?.status)
+        assertNull(reopenedProcess?.finishedAtEpochMillis)
+
         collectJob.cancel()
     }
 }
+

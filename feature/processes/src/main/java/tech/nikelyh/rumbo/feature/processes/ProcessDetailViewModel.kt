@@ -133,7 +133,7 @@ class ProcessDetailViewModel @Inject constructor(
             }
             ProcessDetailUiEvent.FinishProcess -> {
                 if (currentProcess.isSystem) {
-                    userMessageFlow.value = "El proceso base del sistema no puede ser finalizado."
+                    userMessageFlow.value = "El proceso General permanece siempre activo para tus tareas cotidianas."
                     return
                 }
                 if (currentState.completionBlockedReason != null) {
@@ -142,6 +142,11 @@ class ProcessDetailViewModel @Inject constructor(
                 }
                 viewModelScope.launch {
                     processRepository.saveProcess(currentProcess.finish(System.currentTimeMillis()))
+                }
+            }
+            ProcessDetailUiEvent.ReopenProcess -> {
+                viewModelScope.launch {
+                    processRepository.saveProcess(currentProcess.reopen())
                 }
             }
             ProcessDetailUiEvent.ArchiveProcess -> {

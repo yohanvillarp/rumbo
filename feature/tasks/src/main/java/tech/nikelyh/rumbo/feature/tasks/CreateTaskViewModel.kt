@@ -86,7 +86,7 @@ class CreateTaskViewModel @Inject constructor(
                 val titleErr = validateTitle(current.title)
                 val costErr = validateCost(current.costInput)
                 val dueDateErr = if (current.dueDateEpochMillis == null) {
-                    "La fecha de caducidad es obligatoria"
+                    "La fecha límite es obligatoria"
                 } else null
 
                 val selectedProc = current.availableProcesses.firstOrNull { it.id == current.selectedProcessId }

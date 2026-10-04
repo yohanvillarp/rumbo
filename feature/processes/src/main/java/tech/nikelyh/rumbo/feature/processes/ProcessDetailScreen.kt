@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
@@ -250,7 +251,7 @@ private fun ProcessDetailContent(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Espacio base para tareas generales (no editable ni eliminable)",
+                                text = "Espacio para tus tareas y actividades cotidianas",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
@@ -290,11 +291,20 @@ private fun ProcessDetailContent(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "Este proceso ha sido completado. No admite nuevas tareas.",
+                            text = "Este proceso ha sido completado.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(12.dp)
                         )
+                    }
+
+                    RumboButton(
+                        onClick = { onEvent(ProcessDetailUiEvent.ReopenProcess) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Reabrir Proceso")
                     }
                 }
 

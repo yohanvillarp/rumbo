@@ -296,32 +296,32 @@ private fun HomeScreenPreviewLight() {
                 userName = "Yohan",
                 continueProcess = Process(
                     id = "p1",
-                    name = "Aprender Arquitectura Modular",
-                    description = "Diseñar e implementar capas claras y desacopladas.",
+                    name = "Organización del Hogar",
+                    description = "Planificar limpieza profunda y compras del mes.",
                     status = ProcessStatus.ACTIVE,
                     createdAtEpochMillis = 1000L,
                     colorOrVisualId = "teal",
                     accumulatedDirectCost = 150.0,
-                    nextAction = "Implementar vista Home"
+                    nextAction = "Hacer inventario de despensa"
                 ),
                 activeProcesses = listOf(
                     Process(
                         id = "p1",
-                        name = "Aprender Arquitectura Modular",
-                        description = "Diseñar e implementar capas claras y desacopladas.",
+                        name = "Organización del Hogar",
+                        description = "Planificar limpieza profunda y compras del mes.",
                         status = ProcessStatus.ACTIVE,
                         createdAtEpochMillis = 1000L,
                         colorOrVisualId = "teal",
                         accumulatedDirectCost = 150.0,
-                        nextAction = "Implementar vista Home"
+                        nextAction = "Hacer inventario de despensa"
                     )
                 ),
                 todayTasks = listOf(
                     Task(
                         id = "t1",
                         processId = "p1",
-                        title = "Diseñar tarjetas del Design System",
-                        description = "Crear RumboProcessCard y RumboTaskItem",
+                        title = "Comprar frutas y verduras",
+                        description = "Ir al mercado central por la mañana",
                         status = TaskStatus.PENDING,
                         priority = Priority.HIGH,
                         createdAtEpochMillis = 1000L,

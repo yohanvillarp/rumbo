@@ -115,20 +115,7 @@ fun RumboProcessCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f)
                     )
-                    if (process.isSystem) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = RoundedCornerShape(4.dp),
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
-                            Text(
-                                text = "Sistema",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
-                    } else if (process.isSubProcess) {
+                    if (process.isSubProcess) {
                         Surface(
                             color = MaterialTheme.colorScheme.secondaryContainer,
                             shape = RoundedCornerShape(4.dp),
@@ -187,13 +174,13 @@ private fun RumboProcessCardPreviewLight() {
         RumboProcessCard(
             process = Process(
                 id = "p1",
-                name = "Aprender Arquitectura Modular",
-                description = "Diseñar e implementar capas claras y desacopladas.",
+                name = "Organización del Hogar",
+                description = "Planificar limpieza profunda y compras del mes.",
                 status = ProcessStatus.ACTIVE,
                 createdAtEpochMillis = 1000L,
                 colorOrVisualId = "teal",
                 accumulatedDirectCost = 150.0,
-                nextAction = "Escribir pruebas unitarias"
+                nextAction = "Hacer inventario de despensa"
             ),
             onClick = {}
         )

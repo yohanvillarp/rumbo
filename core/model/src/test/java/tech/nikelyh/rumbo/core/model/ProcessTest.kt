@@ -77,6 +77,12 @@ class ProcessTest {
         val archived = finished.archive()
         assertEquals(ProcessStatus.ARCHIVED, archived.status)
         assertTrue(archived.isFinished)
+
+        val reopened = finished.reopen()
+        assertEquals(ProcessStatus.ACTIVE, reopened.status)
+        assertTrue(reopened.isActive)
+        assertFalse(reopened.isFinished)
+        assertNull(reopened.finishedAtEpochMillis)
     }
 
     @Test

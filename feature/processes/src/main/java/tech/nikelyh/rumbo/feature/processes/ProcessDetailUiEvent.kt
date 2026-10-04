@@ -7,6 +7,7 @@ sealed interface ProcessDetailUiEvent {
     data object PauseProcess : ProcessDetailUiEvent
     data object ResumeProcess : ProcessDetailUiEvent
     data object FinishProcess : ProcessDetailUiEvent
+    data object ReopenProcess : ProcessDetailUiEvent
     data object ArchiveProcess : ProcessDetailUiEvent
     data object DismissUserMessage : ProcessDetailUiEvent
     data class ToggleTaskStatus(val task: Task) : ProcessDetailUiEvent

@@ -65,7 +65,7 @@ class CreateTaskViewModelTest {
         viewModel.onEvent(CreateTaskUiEvent.SubmitTask)
 
         val state = viewModel.uiState.value
-        assertEquals("La fecha de caducidad es obligatoria", state.dueDateError)
+        assertEquals("La fecha límite es obligatoria", state.dueDateError)
     }
 
     @Test

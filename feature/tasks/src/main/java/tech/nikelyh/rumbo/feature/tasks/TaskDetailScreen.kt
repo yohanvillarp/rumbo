@@ -195,7 +195,7 @@ internal fun TaskDetailScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Fecha de caducidad: $dateText",
+                                text = "Fecha límite: $dateText",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.tertiary
                             )

@@ -220,7 +220,7 @@ fun RumboTaskItem(
                                             )
                                             Spacer(modifier = Modifier.width(3.dp))
                                             Text(
-                                                text = "Vence: $dateText",
+                                                text = "Límite: $dateText",
                                                 style = MaterialTheme.typography.labelSmall,
                                                 color = MaterialTheme.colorScheme.onTertiaryContainer
                                             )
@@ -314,15 +314,15 @@ private fun RumboTaskItemProcessColorPreview() {
             task = Task(
                 id = "t2",
                 processId = "proc-arch",
-                title = "Diseñar diagrama C4",
-                description = "Definir contenedores y componentes del sistema.",
+                title = "Planificar menú semanal",
+                description = "Definir los ingredientes y recetas para los almuerzos de la semana.",
                 status = TaskStatus.PENDING,
                 priority = Priority.HIGH,
                 createdAtEpochMillis = 1000L,
                 cost = 50.0
             ),
             processColorOrVisualId = "teal",
-            processName = "Arquitectura",
+            processName = "Hogar",
             onToggleStatus = {},
             onClick = {}
         )

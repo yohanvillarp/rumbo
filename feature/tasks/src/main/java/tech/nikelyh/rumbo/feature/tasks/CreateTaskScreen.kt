@@ -212,7 +212,7 @@ internal fun CreateTaskScreen(
             }
         }
 
-        // Fecha de Caducidad (Solicitud requerida con hora, por defecto 11:59 PM)
+        // Fecha Límite (Solicitud requerida con hora configurable)
         OutlinedTextField(
             value = dueDateFormatted,
             onValueChange = {},
@@ -220,8 +220,8 @@ internal fun CreateTaskScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { showDatePicker = true },
-            label = { Text("Fecha y Hora de Caducidad *") },
-            placeholder = { Text("Toca para elegir fecha (por defecto 11:59 PM)") },
+            label = { Text("Fecha límite *") },
+            placeholder = { Text("Toca para elegir fecha") },
             leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
             trailingIcon = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -272,6 +272,7 @@ internal fun CreateTaskScreen(
                                 onEvent(CreateTaskUiEvent.DueDateChanged(combinedMillis))
                             }
                             showDatePicker = false
+                            showTimePicker = true
                         }
                     ) {
                         Text("Aceptar")
@@ -316,7 +317,7 @@ internal fun CreateTaskScreen(
                         Text("Cancelar")
                     }
                 },
-                title = { Text("Hora de vencimiento") },
+                title = { Text("Hora límite") },
                 text = {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
