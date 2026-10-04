@@ -38,35 +38,40 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
+import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.theme.ProcessColors
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 
 @Composable
-fun CreateProcessRoute(
-    onProcessCreated: () -> Unit,
+fun EditProcessRoute(
+    onProcessEdited: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: CreateProcessViewModel = hiltViewModel()
+    viewModel: EditProcessViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
-            onProcessCreated()
+            onProcessEdited()
         }
     }
 
-    CreateProcessScreen(
-        uiState = uiState,
-        onEvent = viewModel::onEvent,
-        modifier = modifier
-    )
+    if (uiState.isLoading) {
+        RumboLoadingState(isLoading = true, modifier = modifier)
+    } else {
+        EditProcessScreen(
+            uiState = uiState,
+            onEvent = viewModel::onEvent,
+            modifier = modifier
+        )
+    }
 }
 
 @Composable
-internal fun CreateProcessScreen(
-    uiState: CreateProcessUiState,
-    onEvent: (CreateProcessUiEvent) -> Unit,
+internal fun EditProcessScreen(
+    uiState: EditProcessUiState,
+    onEvent: (EditProcessUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -77,14 +82,14 @@ internal fun CreateProcessScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         RumboSectionHeader(
-            title = "Nuevo Proceso",
-            subtitle = "Define el nombre, costos e hito inicial de tu proceso."
+            title = "Editar Proceso",
+            subtitle = "Actualiza el nombre, costo directo o siguiente acción."
         )
 
         // Name
         OutlinedTextField(
             value = uiState.name,
-            onValueChange = { onEvent(CreateProcessUiEvent.NameChanged(it)) },
+            onValueChange = { onEvent(EditProcessUiEvent.NameChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Nombre del proceso *") },
             placeholder = { Text("Ej. Aprender Jetpack Compose") },
@@ -105,7 +110,7 @@ internal fun CreateProcessScreen(
         // Description
         OutlinedTextField(
             value = uiState.description,
-            onValueChange = { onEvent(CreateProcessUiEvent.DescriptionChanged(it)) },
+            onValueChange = { onEvent(EditProcessUiEvent.DescriptionChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Descripción (opcional)") },
             placeholder = { Text("Objetivos y contexto general del proceso") },
@@ -136,7 +141,7 @@ internal fun CreateProcessScreen(
                             color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
                             shape = CircleShape
                         )
-                        .clickable { onEvent(CreateProcessUiEvent.ColorChanged(colorKey)) },
+                        .clickable { onEvent(EditProcessUiEvent.ColorChanged(colorKey)) },
                     contentAlignment = Alignment.Center
                 ) {
                     if (isSelected) {
@@ -154,7 +159,7 @@ internal fun CreateProcessScreen(
         // Initial Cost
         OutlinedTextField(
             value = uiState.costInput,
-            onValueChange = { onEvent(CreateProcessUiEvent.CostChanged(it)) },
+            onValueChange = { onEvent(EditProcessUiEvent.CostChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Costo Inicial Directo ($)") },
             placeholder = { Text("0.0") },
@@ -175,7 +180,7 @@ internal fun CreateProcessScreen(
         // Next Action
         OutlinedTextField(
             value = uiState.nextAction,
-            onValueChange = { onEvent(CreateProcessUiEvent.NextActionChanged(it)) },
+            onValueChange = { onEvent(EditProcessUiEvent.NextActionChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Siguiente Acción (opcional)") },
             placeholder = { Text("Ej. Comprar libro de referencia") },
@@ -186,21 +191,21 @@ internal fun CreateProcessScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         RumboButton(
-            onClick = { onEvent(CreateProcessUiEvent.SubmitProcess) },
+            onClick = { onEvent(EditProcessUiEvent.SubmitProcess) },
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isSubmitting
         ) {
-            Text("Guardar Proceso")
+            Text("Guardar Cambios")
         }
     }
 }
 
-@Preview(name = "Create Process Light", showBackground = true)
+@Preview(name = "Edit Process Light", showBackground = true)
 @Composable
-private fun CreateProcessScreenPreviewLight() {
+private fun EditProcessScreenPreviewLight() {
     RumboTheme(darkTheme = false) {
-        CreateProcessScreen(
-            uiState = CreateProcessUiState(),
+        EditProcessScreen(
+            uiState = EditProcessUiState(name = "Desarrollo de Rumbo"),
             onEvent = {}
         )
     }

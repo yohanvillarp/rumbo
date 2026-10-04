@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Info
@@ -21,7 +23,9 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
@@ -30,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import tech.nikelyh.rumbo.core.designsystem.component.RumboCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboEmptyState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
@@ -88,20 +93,33 @@ private fun ProgressContent(
     onEvent: (ProgressUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(initialPage = uiState.selectedTab.ordinal) {
+        AnalyticsTab.entries.size
+    }
+
+    LaunchedEffect(pagerState.currentPage) {
+        onEvent(ProgressUiEvent.TabSelected(AnalyticsTab.entries[pagerState.currentPage]))
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Tab Selector (Process Analytics vs Task Analytics)
+        // Tab Selector (Swipeable & Clickable)
         TabRow(
-            selectedTabIndex = uiState.selectedTab.ordinal,
+            selectedTabIndex = pagerState.currentPage,
             modifier = Modifier.fillMaxWidth()
         ) {
-            AnalyticsTab.entries.forEach { tab ->
+            AnalyticsTab.entries.forEachIndexed { index, tab ->
                 Tab(
-                    selected = uiState.selectedTab == tab,
-                    onClick = { onEvent(ProgressUiEvent.TabSelected(tab)) },
+                    selected = pagerState.currentPage == index,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
                     text = { Text(tab.label) }
                 )
             }
@@ -125,12 +143,18 @@ private fun ProgressContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        when (uiState.selectedTab) {
-            AnalyticsTab.PROCESS_ANALYTICS -> {
-                ProcessAnalyticsView(data = uiState.processAnalytics)
-            }
-            AnalyticsTab.TASK_ANALYTICS -> {
-                TaskAnalyticsView(data = uiState.taskAnalytics)
+        // Horizontal Pager for Swipeable Tabs
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            when (AnalyticsTab.entries[page]) {
+                AnalyticsTab.PROCESS_ANALYTICS -> {
+                    ProcessAnalyticsView(data = uiState.processAnalytics)
+                }
+                AnalyticsTab.TASK_ANALYTICS -> {
+                    TaskAnalyticsView(data = uiState.taskAnalytics)
+                }
             }
         }
     }

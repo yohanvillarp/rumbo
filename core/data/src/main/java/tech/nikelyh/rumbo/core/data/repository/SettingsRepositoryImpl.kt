@@ -2,12 +2,14 @@ package tech.nikelyh.rumbo.core.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import tech.nikelyh.rumbo.core.data.datasource.RumboPreferencesDataSource
+import tech.nikelyh.rumbo.core.database.RumboDatabase
 import tech.nikelyh.rumbo.core.model.UserProfile
 import tech.nikelyh.rumbo.core.model.UserSettings
 import javax.inject.Inject
 
 class SettingsRepositoryImpl @Inject constructor(
-    private val preferencesDataSource: RumboPreferencesDataSource
+    private val preferencesDataSource: RumboPreferencesDataSource,
+    private val rumboDatabase: RumboDatabase
 ) : SettingsRepository {
 
     override val userSettings: Flow<UserSettings> = preferencesDataSource.userSettings
@@ -28,5 +30,10 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setUserName(name: String) {
         preferencesDataSource.setUserName(name)
+    }
+
+    override suspend fun resetApplicationData() {
+        rumboDatabase.clearAllTables()
+        preferencesDataSource.clearAllData()
     }
 }

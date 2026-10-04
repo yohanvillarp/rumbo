@@ -5,9 +5,11 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import tech.nikelyh.rumbo.core.navigation.CreateProcessDestination
+import tech.nikelyh.rumbo.core.navigation.EditProcessDestination
 import tech.nikelyh.rumbo.core.navigation.ProcessDetailDestination
 import tech.nikelyh.rumbo.core.navigation.ProcessesDestination
 import tech.nikelyh.rumbo.feature.processes.CreateProcessRoute
+import tech.nikelyh.rumbo.feature.processes.EditProcessRoute
 import tech.nikelyh.rumbo.feature.processes.ProcessDetailRoute
 import tech.nikelyh.rumbo.feature.processes.ProcessesRoute
 
@@ -23,6 +25,10 @@ fun NavController.navigateToCreateProcess(navOptions: NavOptions? = null) {
     this.navigate(CreateProcessDestination.route, navOptions)
 }
 
+fun NavController.navigateToEditProcess(processId: String, navOptions: NavOptions? = null) {
+    this.navigate(EditProcessDestination.createRoute(processId), navOptions)
+}
+
 fun NavGraphBuilder.processesScreen(
     onProcessClick: (String) -> Unit,
     onNavigateToCreateProcess: () -> Unit,
@@ -30,7 +36,9 @@ fun NavGraphBuilder.processesScreen(
     onNavigateToLogProgress: (String) -> Unit,
     onNavigateToStartSession: (String) -> Unit,
     onNavigateToEditProcess: (String) -> Unit,
-    onProcessCreated: () -> Unit
+    onNavigateToTask: (String) -> Unit,
+    onProcessCreated: () -> Unit,
+    onProcessEdited: () -> Unit
 ) {
     composable(route = ProcessesDestination.route) {
         ProcessesRoute(
@@ -44,13 +52,20 @@ fun NavGraphBuilder.processesScreen(
             onNavigateToEditProcess = onNavigateToEditProcess,
             onNavigateToCreateTask = onNavigateToCreateTask,
             onNavigateToLogProgress = onNavigateToLogProgress,
-            onNavigateToStartSession = onNavigateToStartSession
+            onNavigateToStartSession = onNavigateToStartSession,
+            onNavigateToTask = onNavigateToTask
         )
     }
 
     composable(route = CreateProcessDestination.route) {
         CreateProcessRoute(
             onProcessCreated = onProcessCreated
+        )
+    }
+
+    composable(route = EditProcessDestination.route) {
+        EditProcessRoute(
+            onProcessEdited = onProcessEdited
         )
     }
 }

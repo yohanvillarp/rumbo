@@ -63,6 +63,7 @@ fun ProcessDetailRoute(
     onNavigateToLogProgress: (String) -> Unit,
     onNavigateToStartSession: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateToTask: (String) -> Unit = {},
     viewModel: ProcessDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -74,6 +75,7 @@ fun ProcessDetailRoute(
         onNavigateToCreateTask = { onNavigateToCreateTask(viewModel.processId) },
         onNavigateToLogProgress = { onNavigateToLogProgress(viewModel.processId) },
         onNavigateToStartSession = { onNavigateToStartSession(viewModel.processId) },
+        onNavigateToTask = onNavigateToTask,
         modifier = modifier
     )
 }
@@ -86,6 +88,7 @@ internal fun ProcessDetailScreen(
     onNavigateToCreateTask: () -> Unit,
     onNavigateToLogProgress: () -> Unit,
     onNavigateToStartSession: () -> Unit,
+    onNavigateToTask: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     when (uiState) {
@@ -103,6 +106,7 @@ internal fun ProcessDetailScreen(
                 onNavigateToCreateTask = onNavigateToCreateTask,
                 onNavigateToLogProgress = onNavigateToLogProgress,
                 onNavigateToStartSession = onNavigateToStartSession,
+                onNavigateToTask = onNavigateToTask,
                 modifier = modifier
             )
         }
@@ -117,6 +121,7 @@ private fun ProcessDetailContent(
     onNavigateToCreateTask: () -> Unit,
     onNavigateToLogProgress: () -> Unit,
     onNavigateToStartSession: () -> Unit,
+    onNavigateToTask: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val process = uiState.process
@@ -384,7 +389,7 @@ private fun ProcessDetailContent(
 
         // Section: Pending Tasks
         item {
-            RumboSectionHeader(title = "Tareas del Proceso")
+            RumboSectionHeader(title = "Tareas Pendientes")
         }
 
         if (uiState.pendingTasks.isEmpty()) {
@@ -400,10 +405,38 @@ private fun ProcessDetailContent(
                 RumboTaskItem(
                     task = taskItem,
                     onToggleStatus = { onEvent(ProcessDetailUiEvent.ToggleTaskStatus(it)) },
-                    onClick = {}
+                    onClick = { onNavigateToTask(taskItem.id) }
                 )
             }
         }
+
+        // Section: Completed Tasks (Preserved & Visible)
+        if (uiState.completedTasks.isNotEmpty()) {
+            item {
+                RumboSectionHeader(title = "Tareas Completadas")
+            }
+
+            items(uiState.completedTasks, key = { it.id }) { taskItem ->
+                RumboTaskItem(
+                    task = taskItem,
+                    onToggleStatus = { onEvent(ProcessDetailUiEvent.ToggleTaskStatus(it)) },
+                    onClick = { onNavigateToTask(taskItem.id) }
+                )
+            }
+        }
+    }
+
+    if (uiState.userMessage != null) {
+        AlertDialog(
+            onDismissRequest = { onEvent(ProcessDetailUiEvent.DismissUserMessage) },
+            title = { Text("Tareas Pendientes Existentes") },
+            text = { Text(uiState.userMessage) },
+            confirmButton = {
+                TextButton(onClick = { onEvent(ProcessDetailUiEvent.DismissUserMessage) }) {
+                    Text("Entendido")
+                }
+            }
+        )
     }
 
     if (showWeeklyGoalDialog) {
@@ -467,6 +500,7 @@ private fun ProcessDetailScreenPreviewLight() {
                         createdAtEpochMillis = 1000L
                     )
                 ),
+                completedTasks = emptyList(),
                 milestones = emptyList(),
                 workSessions = emptyList(),
                 totalTimeInvestedMillis = 3600000L * 3,

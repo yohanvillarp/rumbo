@@ -28,4 +28,9 @@ class FakeSettingsRepository : SettingsRepository {
     override suspend fun setUserName(name: String) {
         profileFlow.value = UserProfile(id = "user_me", name = name, createdAtEpochMillis = 1000L)
     }
+
+    override suspend fun resetApplicationData() {
+        settingsFlow.value = UserSettings()
+        profileFlow.value = null
+    }
 }

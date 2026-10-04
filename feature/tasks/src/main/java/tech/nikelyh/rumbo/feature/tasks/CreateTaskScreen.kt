@@ -104,7 +104,7 @@ internal fun CreateTaskScreen(
             maxLines = 3
         )
 
-        // Process Selection
+        // Process Selection (Defaulting to General)
         Text(
             text = "Proceso Asignado",
             style = MaterialTheme.typography.labelSmall,
@@ -117,9 +117,9 @@ internal fun CreateTaskScreen(
             FilterChip(
                 selected = uiState.selectedProcessId == "general",
                 onClick = { onEvent(CreateTaskUiEvent.ProcessSelected("general")) },
-                label = { Text("General (Sin proceso)") }
+                label = { Text("General (Proceso por defecto)") }
             )
-            uiState.availableProcesses.filter { it.id != "general" }.take(3).forEach { process ->
+            uiState.availableProcesses.filter { it.id != "general" }.take(2).forEach { process ->
                 FilterChip(
                     selected = uiState.selectedProcessId == process.id,
                     onClick = { onEvent(CreateTaskUiEvent.ProcessSelected(process.id)) },
@@ -128,7 +128,7 @@ internal fun CreateTaskScreen(
             }
         }
 
-        // Priority Selection
+        // Priority Selection (In Spanish)
         Text(
             text = "Prioridad",
             style = MaterialTheme.typography.labelSmall,
@@ -139,10 +139,15 @@ internal fun CreateTaskScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Priority.entries.forEach { priority ->
+                val SpanishLabel = when (priority) {
+                    Priority.LOW -> "Baja"
+                    Priority.MEDIUM -> "Media"
+                    Priority.HIGH -> "Alta"
+                }
                 FilterChip(
                     selected = uiState.priority == priority,
                     onClick = { onEvent(CreateTaskUiEvent.PriorityChanged(priority)) },
-                    label = { Text(priority.name) }
+                    label = { Text(SpanishLabel) }
                 )
             }
         }

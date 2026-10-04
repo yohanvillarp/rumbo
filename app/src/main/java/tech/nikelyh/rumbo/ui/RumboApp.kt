@@ -40,6 +40,7 @@ import tech.nikelyh.rumbo.core.designsystem.theme.RumboAnimationTokens
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.navigation.CreateProcessDestination
 import tech.nikelyh.rumbo.core.navigation.CreateTaskDestination
+import tech.nikelyh.rumbo.core.navigation.EditProcessDestination
 import tech.nikelyh.rumbo.core.navigation.HomeDestination
 import tech.nikelyh.rumbo.core.navigation.LogProgressDestination
 import tech.nikelyh.rumbo.core.navigation.OnboardingDestination
@@ -54,6 +55,7 @@ import tech.nikelyh.rumbo.feature.home.navigation.homeScreen
 import tech.nikelyh.rumbo.feature.home.navigation.navigateToHome
 import tech.nikelyh.rumbo.feature.onboarding.navigation.onboardingScreen
 import tech.nikelyh.rumbo.feature.processes.navigation.navigateToCreateProcess
+import tech.nikelyh.rumbo.feature.processes.navigation.navigateToEditProcess
 import tech.nikelyh.rumbo.feature.processes.navigation.navigateToProcessDetail
 import tech.nikelyh.rumbo.feature.processes.navigation.navigateToProcesses
 import tech.nikelyh.rumbo.feature.processes.navigation.processesScreen
@@ -113,6 +115,7 @@ fun RumboApp(
                                     ProgressDestination.route -> "Progreso"
                                     SettingsDestination.route -> "Configuración"
                                     CreateProcessDestination.route -> "Nuevo Proceso"
+                                    EditProcessDestination.route -> "Editar Proceso"
                                     CreateTaskDestination.route -> "Nueva Tarea"
                                     ProcessDetailDestination.route -> "Detalle de Proceso"
                                     TaskDetailDestination.route -> "Detalle de Tarea"
@@ -210,8 +213,16 @@ fun RumboApp(
                                 onNavigateToStartSession = { processId ->
                                     navController.navigateToStartSession(processId)
                                 },
-                                onNavigateToEditProcess = { /* edit modal / flow */ },
+                                onNavigateToEditProcess = { processId ->
+                                    navController.navigateToEditProcess(processId)
+                                },
+                                onNavigateToTask = { taskId ->
+                                    navController.navigateToTaskDetail(taskId)
+                                },
                                 onProcessCreated = {
+                                    navController.popBackStack()
+                                },
+                                onProcessEdited = {
                                     navController.popBackStack()
                                 }
                             )

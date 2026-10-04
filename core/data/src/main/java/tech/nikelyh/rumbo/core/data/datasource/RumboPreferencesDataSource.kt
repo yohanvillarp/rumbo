@@ -73,4 +73,10 @@ class RumboPreferencesDataSource @Inject constructor(
             }
         }
     }
+
+    suspend fun clearAllData() {
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
 }

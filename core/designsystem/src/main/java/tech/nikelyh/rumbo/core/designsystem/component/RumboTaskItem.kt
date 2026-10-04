@@ -31,6 +31,12 @@ fun RumboTaskItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val prioritySpanish = when (task.priority) {
+        Priority.LOW -> "Baja"
+        Priority.MEDIUM -> "Media"
+        Priority.HIGH -> "Alta"
+    }
+
     RumboCard(
         modifier = modifier
             .fillMaxWidth()
@@ -59,7 +65,7 @@ fun RumboTaskItem(
                         color = if (task.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "Proceso: ${task.processId}  •  Prioridad: ${task.priority.name}",
+                        text = "Prioridad: $prioritySpanish",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.secondary
                     )

@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -40,13 +41,16 @@ class ProcessDetailViewModel @Inject constructor(
 
     val processId: String = savedStateHandle.get<String>("processId") ?: ""
 
+    private val userMessageFlow = MutableStateFlow<String?>(null)
+
     val uiState: StateFlow<ProcessDetailUiState> = combine(
         processRepository.getProcessById(processId),
         taskRepository.getTasksByProcessId(processId),
         milestoneRepository.getMilestonesByProcessId(processId),
         workSessionRepository.getWorkSessionsByProcessId(processId),
         progressRepository.getProgressEntriesByProcessId(processId),
-        weeklyGoalRepository.getWeeklyGoalsByProcessId(processId)
+        weeklyGoalRepository.getWeeklyGoalsByProcessId(processId),
+        userMessageFlow
     ) { flows ->
         @Suppress("UNCHECKED_CAST")
         val process = flows[0] as Process?
@@ -60,22 +64,27 @@ class ProcessDetailViewModel @Inject constructor(
         val progressEntries = flows[4] as List<ProgressEntry>
         @Suppress("UNCHECKED_CAST")
         val goals = flows[5] as List<WeeklyGoal>
+        @Suppress("UNCHECKED_CAST")
+        val userMsg = flows[6] as String?
 
         if (process == null) {
             ProcessDetailUiState.Error("Proceso no encontrado")
         } else {
             val totalTimeInvested = sessions.sumOf { it.durationMillis }
             val pendingTasks = tasks.filter { !it.isCompleted }
+            val completedTasks = tasks.filter { it.isCompleted }
             val currentGoal = goals.firstOrNull()
 
             ProcessDetailUiState.Content(
                 process = process,
                 pendingTasks = pendingTasks,
+                completedTasks = completedTasks,
                 milestones = milestones,
                 workSessions = sessions,
                 totalTimeInvestedMillis = totalTimeInvested,
                 progressEntries = progressEntries,
-                weeklyGoal = currentGoal
+                weeklyGoal = currentGoal,
+                userMessage = userMsg
             )
         }
     }.stateIn(
@@ -89,6 +98,9 @@ class ProcessDetailViewModel @Inject constructor(
         val currentProcess = currentState.process
 
         when (event) {
+            ProcessDetailUiEvent.DismissUserMessage -> {
+                userMessageFlow.value = null
+            }
             ProcessDetailUiEvent.PauseProcess -> {
                 viewModelScope.launch {
                     processRepository.saveProcess(currentProcess.pause())
@@ -100,6 +112,10 @@ class ProcessDetailViewModel @Inject constructor(
                 }
             }
             ProcessDetailUiEvent.FinishProcess -> {
+                if (currentState.pendingTasks.isNotEmpty()) {
+                    userMessageFlow.value = "No se puede finalizar el proceso mientras existan tareas pendientes. Completa todas sus tareas asociadas primero."
+                    return
+                }
                 viewModelScope.launch {
                     processRepository.saveProcess(currentProcess.finish(System.currentTimeMillis()))
                 }

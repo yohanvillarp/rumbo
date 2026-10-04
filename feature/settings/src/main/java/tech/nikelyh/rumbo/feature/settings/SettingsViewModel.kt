@@ -36,6 +36,11 @@ class SettingsViewModel @Inject constructor(
                     settingsRepository.setNotifications(event.enabled)
                 }
             }
+            SettingsUiEvent.ResetApplicationData -> {
+                viewModelScope.launch {
+                    settingsRepository.resetApplicationData()
+                }
+            }
         }
     }
 }

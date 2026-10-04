@@ -12,11 +12,13 @@ sealed interface ProcessDetailUiState {
     data class Content(
         val process: Process,
         val pendingTasks: List<Task>,
+        val completedTasks: List<Task>,
         val milestones: List<Milestone>,
         val workSessions: List<WorkSession>,
         val totalTimeInvestedMillis: Long,
         val progressEntries: List<ProgressEntry>,
-        val weeklyGoal: WeeklyGoal?
+        val weeklyGoal: WeeklyGoal?,
+        val userMessage: String? = null
     ) : ProcessDetailUiState
     data class Error(val message: String) : ProcessDetailUiState
 }
