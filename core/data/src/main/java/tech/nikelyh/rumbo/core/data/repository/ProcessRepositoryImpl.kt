@@ -23,6 +23,12 @@ class ProcessRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveProcess(process: Process) {
+        if (process.id == Process.GENERAL_PROCESS_ID) {
+            val existing = processDao.getProcessByIdSync(Process.GENERAL_PROCESS_ID)
+            if (existing != null) {
+                return // General process cannot be edited
+            }
+        }
         processDao.insertOrUpdate(process.asEntity())
     }
 

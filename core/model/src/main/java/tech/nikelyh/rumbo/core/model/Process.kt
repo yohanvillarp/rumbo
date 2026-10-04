@@ -9,8 +9,15 @@ data class Process(
     val finishedAtEpochMillis: Long? = null,
     val colorOrVisualId: String,
     val accumulatedDirectCost: Double = 0.0,
-    val nextAction: String? = null
+    val nextAction: String? = null,
+    val parentProcessId: String? = null
 ) {
+    val isSubProcess: Boolean
+        get() = parentProcessId != null
+
+    val isSystem: Boolean
+        get() = id == GENERAL_PROCESS_ID
+
     val isFinished: Boolean
         get() = status == ProcessStatus.COMPLETED || status == ProcessStatus.ARCHIVED
 

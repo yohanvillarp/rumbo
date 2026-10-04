@@ -36,7 +36,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
+import androidx.compose.animation.Crossfade
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
+import tech.nikelyh.rumbo.core.designsystem.component.RumboSplashScreen
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTopBar
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboAnimationTokens
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
@@ -115,11 +120,25 @@ fun RumboApp(
         }
     }
 
+    var isSplashFinished by remember { mutableStateOf(false) }
+
+    LaunchedEffect(hasCompletedOnboarding) {
+        if (hasCompletedOnboarding != null) {
+            kotlinx.coroutines.delay(800)
+            isSplashFinished = true
+        }
+    }
+
     RumboTheme(darkTheme = darkTheme) {
-        if (hasCompletedOnboarding == null) {
-            RumboLoadingState(isLoading = true)
-        } else {
-            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        Crossfade(
+            targetState = (hasCompletedOnboarding != null && isSplashFinished),
+            animationSpec = tween(durationMillis = 400),
+            label = "SplashCrossfade"
+        ) { isReady ->
+            if (!isReady) {
+                RumboSplashScreen()
+            } else {
+                BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                 val isCompact = this.maxWidth < 600.dp
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -296,6 +315,7 @@ fun RumboApp(
             }
         }
     }
+}
 }
 
 private fun navigateToTopLevelDestination(

@@ -25,13 +25,14 @@ object DatabaseModule {
             context,
             RumboDatabase::class.java,
             "rumbo-database"
-        ).addCallback(object : RoomDatabase.Callback() {
+        ).fallbackToDestructiveMigration(dropAllTables = true)
+        .addCallback(object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
                 val now = System.currentTimeMillis()
                 db.execSQL(
-                    "INSERT OR REPLACE INTO processes (id, name, description, statusName, createdAtEpochMillis, finishedAtEpochMillis, colorOrVisualId, accumulatedDirectCost, nextAction, isSystemProcess) " +
-                    "VALUES ('general', 'General', 'Proceso del sistema para tareas generales', 'ACTIVE', $now, NULL, 'system_default', 0.0, NULL, 1)"
+                    "INSERT OR REPLACE INTO processes (id, name, description, statusName, createdAtEpochMillis, finishedAtEpochMillis, colorOrVisualId, accumulatedDirectCost, nextAction, isSystemProcess, parentProcessId) " +
+                    "VALUES ('general', 'General', 'Proceso del sistema para tareas generales', 'ACTIVE', $now, NULL, 'system_default', 0.0, NULL, 1, NULL)"
                 )
             }
         }).build()

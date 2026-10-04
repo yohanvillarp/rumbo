@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.Card
@@ -25,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -189,6 +192,38 @@ fun RumboTaskItem(
                                         color = if (processColor != null) processColor.copy(alpha = 0.9f) else MaterialTheme.colorScheme.secondary,
                                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                                     )
+                                }
+                                val dueEpoch = task.dueDateEpochMillis
+                                if (dueEpoch != null) {
+                                    val dateText = remember(dueEpoch) {
+                                        val instant = java.time.Instant.ofEpochMilli(dueEpoch)
+                                        val zone = java.time.ZoneId.systemDefault()
+                                        val localDate = instant.atZone(zone).toLocalDate()
+                                        val formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                                        localDate.format(formatter)
+                                    }
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f),
+                                        shape = RoundedCornerShape(4.dp)
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Event,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(11.dp),
+                                                tint = MaterialTheme.colorScheme.onTertiaryContainer
+                                            )
+                                            Spacer(modifier = Modifier.width(3.dp))
+                                            Text(
+                                                text = "Vence: $dateText",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                                            )
+                                        }
+                                    }
                                 }
                                 if (task.timeWorkedMillis > 0L) {
                                     val mins = task.timeWorkedMillis / (1000 * 60)

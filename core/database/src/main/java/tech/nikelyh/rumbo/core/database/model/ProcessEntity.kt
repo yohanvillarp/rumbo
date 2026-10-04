@@ -15,5 +15,6 @@ data class ProcessEntity(
     val colorOrVisualId: String,
     val accumulatedDirectCost: Double,
     val nextAction: String?,
-    val isSystemProcess: Boolean = false
+    val isSystemProcess: Boolean = false,
+    val parentProcessId: String? = null
 )
