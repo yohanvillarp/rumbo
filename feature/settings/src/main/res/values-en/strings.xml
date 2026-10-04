@@ -10,6 +10,7 @@
     <string name="settings_language_system">System default</string>
     <string name="settings_language_spanish">Español</string>
     <string name="settings_language_english">English</string>
+    <string name="settings_language_portuguese">Português</string>
     <string name="settings_reset_zone">Reset Zone</string>
     <string name="settings_reset_description">Permanently removes all processes, tasks, work sessions, and history stored on this device.</string>
     <string name="settings_reset_button">Reset Application</string>

@@ -270,6 +270,11 @@ private fun SettingsLanguageCard(
                     onClick = { onLanguageSelected(AppLanguage.ENGLISH) },
                     label = { Text(stringResource(R.string.settings_language_english)) }
                 )
+                FilterChip(
+                    selected = currentLanguage == AppLanguage.PORTUGUESE,
+                    onClick = { onLanguageSelected(AppLanguage.PORTUGUESE) },
+                    label = { Text(stringResource(R.string.settings_language_portuguese)) }
+                )
             }
         }
     }

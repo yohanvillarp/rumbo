@@ -8,7 +8,8 @@ package tech.nikelyh.rumbo.core.model
 enum class AppLanguage(val code: String?) {
     SYSTEM(null),
     SPANISH("es"),
-    ENGLISH("en");
+    ENGLISH("en"),
+    PORTUGUESE("pt");
 
     companion object {
         /**

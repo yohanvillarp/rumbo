@@ -93,4 +93,14 @@ class SettingsViewModelTest {
 
         assertEquals(null, stateSystem.userSettings.languageCode)
     }
+
+    @Test
+    fun `change language to portuguese updates user settings language code to pt`() = runTest {
+        viewModel.onEvent(SettingsUiEvent.ChangeLanguage(tech.nikelyh.rumbo.core.model.AppLanguage.PORTUGUESE))
+        val state = viewModel.uiState.first { 
+            it is SettingsUiState.Success && (it as SettingsUiState.Success).userSettings.languageCode == "pt" 
+        } as SettingsUiState.Success
+
+        assertEquals("pt", state.userSettings.languageCode)
+    }
 }
