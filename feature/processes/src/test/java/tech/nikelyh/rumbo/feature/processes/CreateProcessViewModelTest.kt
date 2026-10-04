@@ -44,25 +44,13 @@ class CreateProcessViewModelTest {
     }
 
     @Test
-    fun `negative cost produces validation error`() {
-        viewModel.onEvent(CreateProcessUiEvent.NameChanged("Mi Proceso"))
-        viewModel.onEvent(CreateProcessUiEvent.CostChanged("-10.0"))
-        viewModel.onEvent(CreateProcessUiEvent.SubmitProcess)
-
-        val state = viewModel.uiState.value
-        assertEquals("El costo inicial no puede ser negativo", state.costError)
-    }
-
-    @Test
-    fun `valid process submission saves process into repository`() = runBlocking {
+    fun `valid process submission saves process into repository with initial zero cost`() = runBlocking {
         viewModel.onEvent(CreateProcessUiEvent.NameChanged("  Aprender Android  "))
         viewModel.onEvent(CreateProcessUiEvent.DescriptionChanged("  Notas  "))
-        viewModel.onEvent(CreateProcessUiEvent.CostChanged("100.5"))
         viewModel.onEvent(CreateProcessUiEvent.SubmitProcess)
 
         val state = viewModel.uiState.value
         assertNull(state.nameError)
-        assertNull(state.costError)
         assertTrue(state.isSuccess)
 
         val savedProcesses = processRepository.getProcesses().first()
@@ -70,7 +58,7 @@ class CreateProcessViewModelTest {
         val process = savedProcesses.first()
         assertEquals("Aprender Android", process.name)
         assertEquals("Notas", process.description)
-        assertEquals(100.5, process.accumulatedDirectCost, 0.01)
+        assertEquals(0.0, process.accumulatedDirectCost, 0.01)
     }
 
     @Test

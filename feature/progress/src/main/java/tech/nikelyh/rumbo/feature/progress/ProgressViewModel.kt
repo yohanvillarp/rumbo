@@ -62,7 +62,7 @@ class ProgressViewModel @Inject constructor(
 
         val totalTimeInvestedMillis = filteredSessions.sumOf { it.durationMillis }
         val totalSessionsCount = filteredSessions.size
-        val totalAccumulatedCost = userProcesses.sumOf { it.accumulatedDirectCost }
+        val totalAccumulatedCost = userProcesses.filter { it.parentProcessId == null }.sumOf { it.accumulatedDirectCost }
 
         val activeDaysMap = mutableMapOf<String, MutableSet<String>>()
         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault())

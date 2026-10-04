@@ -5,9 +5,7 @@ data class EditProcessUiState(
     val name: String = "",
     val description: String = "",
     val colorOrVisualId: String = "teal",
-    val costInput: String = "0",
     val nameError: String? = null,
-    val costError: String? = null,
     val isLoading: Boolean = true,
     val isSubmitting: Boolean = false,
     val isSuccess: Boolean = false

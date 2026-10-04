@@ -37,7 +37,6 @@ class EditProcessViewModel @Inject constructor(
                         name = process.name,
                         description = process.description ?: "",
                         colorOrVisualId = process.colorOrVisualId,
-                        costInput = process.accumulatedDirectCost.toString(),
                         isLoading = false
                     )
                 }
@@ -63,21 +62,12 @@ class EditProcessViewModel @Inject constructor(
             is EditProcessUiEvent.ColorChanged -> {
                 _uiState.update { it.copy(colorOrVisualId = event.colorOrVisualId) }
             }
-            is EditProcessUiEvent.CostChanged -> {
-                _uiState.update { current ->
-                    current.copy(
-                        costInput = event.cost,
-                        costError = if (current.costError != null) validateCost(event.cost) else null
-                    )
-                }
-            }
             EditProcessUiEvent.SubmitProcess -> {
                 val current = _uiState.value
                 val nameErr = validateName(current.name)
-                val costErr = validateCost(current.costInput)
 
-                if (nameErr != null || costErr != null) {
-                    _uiState.update { it.copy(nameError = nameErr, costError = costErr) }
+                if (nameErr != null) {
+                    _uiState.update { it.copy(nameError = nameErr) }
                     return
                 }
 
@@ -87,13 +77,11 @@ class EditProcessViewModel @Inject constructor(
                 }
                 val trimmedName = current.name.trim()
                 val trimmedDesc = current.description.trim().ifBlank { null }
-                val costDouble = current.costInput.trim().toDoubleOrNull() ?: 0.0
 
                 val updatedProcess = target.copy(
                     name = trimmedName,
                     description = trimmedDesc,
-                    colorOrVisualId = current.colorOrVisualId,
-                    accumulatedDirectCost = costDouble
+                    colorOrVisualId = current.colorOrVisualId
                 )
 
                 viewModelScope.launch {
@@ -110,16 +98,6 @@ class EditProcessViewModel @Inject constructor(
         return when {
             trimmed.isBlank() -> "El nombre del proceso es obligatorio"
             trimmed.length > 50 -> "El nombre no puede superar los 50 caracteres"
-            else -> null
-        }
-    }
-
-    private fun validateCost(input: String): String? {
-        if (input.isBlank()) return null
-        val parsed = input.trim().toDoubleOrNull()
-        return when {
-            parsed == null -> "El costo debe ser un valor numérico"
-            parsed < 0 -> "El costo no puede ser negativo"
             else -> null
         }
     }

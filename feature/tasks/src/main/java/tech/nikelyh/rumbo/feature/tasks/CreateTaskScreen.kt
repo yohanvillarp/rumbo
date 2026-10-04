@@ -389,7 +389,7 @@ internal fun CreateTaskScreen(
             value = uiState.costInput,
             onValueChange = { onEvent(CreateTaskUiEvent.CostChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Costo estimado ($)") },
+            label = { Text("Costo ($)") },
             placeholder = { Text("0.0") },
             leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null) },
             isError = uiState.costError != null,

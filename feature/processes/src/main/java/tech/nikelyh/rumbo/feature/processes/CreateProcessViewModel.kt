@@ -50,30 +50,20 @@ class CreateProcessViewModel @Inject constructor(
             is CreateProcessUiEvent.ColorChanged -> {
                 _uiState.update { it.copy(colorOrVisualId = event.colorOrVisualId) }
             }
-            is CreateProcessUiEvent.CostChanged -> {
-                _uiState.update { current ->
-                    current.copy(
-                        costInput = event.cost,
-                        costError = if (current.costError != null) validateCost(event.cost) else null
-                    )
-                }
-            }
             is CreateProcessUiEvent.ParentProcessSelected -> {
                 _uiState.update { it.copy(parentProcessId = event.parentId) }
             }
             CreateProcessUiEvent.SubmitProcess -> {
                 val current = _uiState.value
                 val nameErr = validateName(current.name)
-                val costErr = validateCost(current.costInput)
 
-                if (nameErr != null || costErr != null) {
-                    _uiState.update { it.copy(nameError = nameErr, costError = costErr) }
+                if (nameErr != null) {
+                    _uiState.update { it.copy(nameError = nameErr) }
                     return
                 }
 
                 val trimmedName = current.name.trim()
                 val trimmedDesc = current.description.trim().ifBlank { null }
-                val costDouble = current.costInput.trim().toDoubleOrNull() ?: 0.0
 
                 val newProcess = Process(
                     id = UUID.randomUUID().toString(),
@@ -81,7 +71,7 @@ class CreateProcessViewModel @Inject constructor(
                     description = trimmedDesc,
                     createdAtEpochMillis = System.currentTimeMillis(),
                     colorOrVisualId = current.colorOrVisualId,
-                    accumulatedDirectCost = costDouble,
+                    accumulatedDirectCost = 0.0,
                     parentProcessId = current.parentProcessId
                 )
 
@@ -99,16 +89,6 @@ class CreateProcessViewModel @Inject constructor(
         return when {
             trimmed.isBlank() -> "El nombre del proceso es obligatorio"
             trimmed.length > 50 -> "El nombre no puede superar los 50 caracteres"
-            else -> null
-        }
-    }
-
-    private fun validateCost(input: String): String? {
-        if (input.isBlank()) return null
-        val parsed = input.trim().toDoubleOrNull()
-        return when {
-            parsed == null -> "El costo debe ser un valor numérico"
-            parsed < 0 -> "El costo inicial no puede ser negativo"
             else -> null
         }
     }

@@ -19,7 +19,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountTree
-import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
@@ -44,7 +43,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -213,31 +211,6 @@ internal fun CreateProcessScreen(
                 }
             }
         }
-
-        // Initial Cost (KeyboardType.Decimal)
-        OutlinedTextField(
-            value = uiState.costInput,
-            onValueChange = { onEvent(CreateProcessUiEvent.CostChanged(it)) },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Presupuesto o costo inicial ($)") },
-            placeholder = { Text("0.0") },
-            leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null) },
-            isError = uiState.costError != null,
-            supportingText = {
-                uiState.costError?.let { error ->
-                    Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal,
-                imeAction = ImeAction.Done
-            )
-        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
