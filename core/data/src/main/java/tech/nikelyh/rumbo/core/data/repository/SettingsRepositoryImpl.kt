@@ -39,6 +39,10 @@ class SettingsRepositoryImpl @Inject constructor(
         preferencesDataSource.setUserName(name)
     }
 
+    override suspend fun setLanguage(languageCode: String?) {
+        preferencesDataSource.setLanguage(languageCode)
+    }
+
     override suspend fun resetApplicationData() = withContext(ioDispatcher) {
         rumboDatabase.clearAllTables()
         preferencesDataSource.clearAllData()

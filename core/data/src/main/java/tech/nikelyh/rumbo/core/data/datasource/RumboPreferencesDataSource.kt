@@ -27,6 +27,7 @@ class RumboPreferencesDataSource @Inject constructor(
         val DARK_MODE = booleanPreferencesKey("dark_mode")
         val NOTIFICATIONS = booleanPreferencesKey("notifications")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val LANGUAGE = stringPreferencesKey("language")
         val USER_NAME = stringPreferencesKey("user_name")
         val USER_CREATED_AT = stringPreferencesKey("user_created_at")
         val ACTIVE_SESSION_PROCESS_ID = stringPreferencesKey("active_session_process_id")
@@ -84,7 +85,8 @@ class RumboPreferencesDataSource @Inject constructor(
         UserSettings(
             isDarkModeEnabled = preferences[PreferencesKeys.DARK_MODE],
             isNotificationsEnabled = preferences[PreferencesKeys.NOTIFICATIONS] ?: true,
-            hasCompletedOnboarding = preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
+            hasCompletedOnboarding = preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false,
+            languageCode = preferences[PreferencesKeys.LANGUAGE]
         )
     }
 
@@ -107,6 +109,16 @@ class RumboPreferencesDataSource @Inject constructor(
     suspend fun setNotifications(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.NOTIFICATIONS] = enabled
+        }
+    }
+
+    suspend fun setLanguage(languageCode: String?) {
+        context.dataStore.edit { preferences ->
+            if (languageCode.isNullOrBlank()) {
+                preferences.remove(PreferencesKeys.LANGUAGE)
+            } else {
+                preferences[PreferencesKeys.LANGUAGE] = languageCode
+            }
         }
     }
 

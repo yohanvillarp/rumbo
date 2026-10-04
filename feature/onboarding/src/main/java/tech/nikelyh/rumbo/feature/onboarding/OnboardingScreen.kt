@@ -53,14 +53,18 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import tech.nikelyh.rumbo.core.common.LocaleHelper
 import tech.nikelyh.rumbo.core.designsystem.component.MascotState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLogo
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
+import tech.nikelyh.rumbo.core.model.AppLanguage
 
 @Composable
 fun OnboardingRoute(
@@ -93,6 +97,7 @@ internal fun OnboardingScreen(
     val totalPages = tutorialSteps.size + 1
     val pagerState = rememberPagerState(pageCount = { totalPages })
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Column(
         modifier = modifier
@@ -155,7 +160,12 @@ internal fun OnboardingScreen(
                 OnboardingTutorialStep(
                     step = tutorialSteps[pageIndex],
                     pageIndex = pageIndex,
-                    totalPages = tutorialSteps.size
+                    totalPages = tutorialSteps.size,
+                    selectedLanguageCode = uiState.selectedLanguageCode,
+                    onLanguageSelected = { lang ->
+                        onEvent(OnboardingUiEvent.ChangeLanguage(lang))
+                        LocaleHelper.applyLanguage(context, lang.code)
+                    }
                 )
             } else {
                 OnboardingNameStep(
@@ -187,7 +197,7 @@ internal fun OnboardingScreen(
                 ) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Atrás")
+                    Text(stringResource(R.string.tutorial_back))
                 }
             }
 
@@ -200,7 +210,7 @@ internal fun OnboardingScreen(
                     },
                     modifier = Modifier.weight(if (isFirstPage) 2f else 1f)
                 ) {
-                    Text("Siguiente")
+                    Text(stringResource(R.string.tutorial_next))
                     Spacer(modifier = Modifier.width(6.dp))
                     Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
                 }
@@ -212,7 +222,7 @@ internal fun OnboardingScreen(
                 ) {
                     Icon(Icons.Default.Explore, contentDescription = null)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Comenzar mi Rumbo")
+                    Text(stringResource(R.string.onboarding_start_button))
                 }
             }
         }
@@ -224,6 +234,8 @@ private fun OnboardingTutorialStep(
     step: TutorialStep,
     pageIndex: Int,
     totalPages: Int,
+    selectedLanguageCode: String?,
+    onLanguageSelected: (AppLanguage) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -265,7 +277,7 @@ private fun OnboardingTutorialStep(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Guía ${pageIndex + 1} de $totalPages",
+                    text = stringResource(R.string.tutorial_step_indicator, pageIndex + 1, totalPages),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -275,7 +287,7 @@ private fun OnboardingTutorialStep(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = step.title,
+            text = stringResource(step.titleRes),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -283,7 +295,7 @@ private fun OnboardingTutorialStep(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = step.subtitle,
+            text = stringResource(step.subtitleRes),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.primary
         )
@@ -291,7 +303,7 @@ private fun OnboardingTutorialStep(
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = step.description,
+            text = stringResource(step.descriptionRes),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -309,7 +321,7 @@ private fun OnboardingTutorialStep(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                step.keyPoints.forEach { point ->
+                step.keyPointsRes.forEach { pointRes ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.Top
@@ -324,13 +336,21 @@ private fun OnboardingTutorialStep(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = point,
+                            text = stringResource(pointRes),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
+        }
+
+        if (step.showsLanguageSelector) {
+            Spacer(modifier = Modifier.height(16.dp))
+            TutorialLanguageSelector(
+                selectedLanguageCode = selectedLanguageCode,
+                onLanguageSelected = onLanguageSelected
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -360,7 +380,7 @@ private fun OnboardingNameStep(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "¡Todo listo para empezar!",
+            text = stringResource(R.string.onboarding_ready_title),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -368,7 +388,7 @@ private fun OnboardingNameStep(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Para personalizar tu experiencia, cuéntanos cómo te gustaría que te llamemos.",
+            text = stringResource(R.string.onboarding_ready_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -379,12 +399,12 @@ private fun OnboardingNameStep(
             value = uiState.name,
             onValueChange = { onEvent(OnboardingUiEvent.NameChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("¿Cómo te llamas?") },
-            placeholder = { Text("Introduce tu nombre") },
+            label = { Text(stringResource(R.string.onboarding_name_label)) },
+            placeholder = { Text(stringResource(R.string.onboarding_name_placeholder)) },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "Nombre"
+                    contentDescription = stringResource(R.string.onboarding_name_icon_desc)
                 )
             },
             isError = uiState.nameError != null,

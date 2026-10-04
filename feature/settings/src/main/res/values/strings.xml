@@ -1,0 +1,21 @@
+<resources>
+    <string name="settings_title">Configuración</string>
+    <string name="settings_dark_mode">Modo Oscuro</string>
+    <string name="settings_theme_system">Automático (según el dispositivo)</string>
+    <string name="settings_theme_dark">Modo oscuro activado</string>
+    <string name="settings_theme_light">Modo claro activado</string>
+    <string name="settings_notifications">Notificaciones</string>
+    <string name="settings_language">Idioma de la aplicación</string>
+    <string name="settings_language_subtitle">Selecciona el idioma preferido para Rumbo</string>
+    <string name="settings_language_system">Predeterminado del sistema</string>
+    <string name="settings_language_spanish">Español</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_reset_zone">Zona de Restablecimiento</string>
+    <string name="settings_reset_description">Elimina permanentemente todos los procesos, tareas, sesiones de trabajo e historial almacenados en este dispositivo.</string>
+    <string name="settings_reset_button">Restablecer Aplicación</string>
+    <string name="settings_resetting">Restableciendo datos…</string>
+    <string name="settings_reset_dialog_title">¿Restablecer Aplicación?</string>
+    <string name="settings_reset_dialog_message">Se eliminarán todos tus datos (procesos, tareas, historial y configuración) de forma permanente. La aplicación se reiniciará con el proceso general por defecto.</string>
+    <string name="settings_reset_dialog_confirm">Restablecer</string>
+    <string name="settings_reset_dialog_cancel">Cancelar</string>
+</resources>

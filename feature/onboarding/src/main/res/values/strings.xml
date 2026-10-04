@@ -1,0 +1,56 @@
+<resources>
+    <!-- Tutorial Navigation & Step Indicators -->
+    <string name="tutorial_step_indicator">Paso %1$d de %2$d</string>
+    <string name="tutorial_back">Atrás</string>
+    <string name="tutorial_next">Siguiente</string>
+    <string name="tutorial_finish">Entendido</string>
+
+    <!-- Language Selector on Last Step -->
+    <string name="tutorial_language_label">Idioma de la aplicación</string>
+    <string name="tutorial_language_system">Sistema</string>
+    <string name="tutorial_language_spanish">Español</string>
+    <string name="tutorial_language_english">English</string>
+
+    <!-- Step 1: Processes -->
+    <string name="tutorial_process_title">¿Qué es un Proceso?</string>
+    <string name="tutorial_process_subtitle">Tu gran objetivo dividido en pasos posibles</string>
+    <string name="tutorial_process_description">Un proceso es una tarea grande que para completarse necesita de varias tareas más pequeñas. Si uno de esos pasos también es grande, se convierte en otro proceso dentro de él.</string>
+    <string name="tutorial_process_point_1">Divide lo que parece difícil en pasos simples y alcanzables</string>
+    <string name="tutorial_process_point_2">Si una tarea crece mucho, conviértela en un nuevo proceso</string>
+    <string name="tutorial_process_point_3">Cuentas con un espacio General para tus tareas del día a día</string>
+    <string name="tutorial_process_point_4">Puedes pausar, culminar y reactivar tus procesos cuando quieras</string>
+
+    <!-- Step 2: Tasks -->
+    <string name="tutorial_tasks_title">Tus Tareas Diarias</string>
+    <string name="tutorial_tasks_subtitle">Acciones concretas con día y hora de cierre</string>
+    <string name="tutorial_tasks_description">Las tareas son los pasos prácticos de tu proceso. Cada una tiene su fecha y hora límite para que siempre sepas cuál es el siguiente paso y cuándo terminarlo.</string>
+    <string name="tutorial_tasks_point_1">Elige la fecha y la hora límite de forma rápida y sencilla</string>
+    <string name="tutorial_tasks_point_2">Puedes editar y ajustar tus tareas en cualquier momento</string>
+    <string name="tutorial_tasks_point_3">Asigna un costo estimado si la actividad requiere alguna compra</string>
+    <string name="tutorial_tasks_point_4">Calculamos automáticamente el tiempo que le dedicas</string>
+
+    <!-- Step 3: Focus Sessions -->
+    <string name="tutorial_sessions_title">Sesiones de Enfoque</string>
+    <string name="tutorial_sessions_subtitle">Dedica tiempo con calma y concentración</string>
+    <string name="tutorial_sessions_description">Inicia el temporizador en cualquier tarea para avanzar con serenidad. La aplicación cuidará tu tiempo en segundo plano mientras trabajas a tu propio ritmo.</string>
+    <string name="tutorial_sessions_point_1">El cronómetro sigue corriendo aunque salgas de la app</string>
+    <string name="tutorial_sessions_point_2">Anota tus aprendizajes o ideas al terminar cada sesión</string>
+    <string name="tutorial_sessions_point_3">Al marcar la tarea como lista, respetamos todo el tiempo acumulado</string>
+    <string name="tutorial_sessions_point_4">Pausa o cancela tu sesión libremente cuando lo necesites</string>
+
+    <!-- Step 4: Real Progress -->
+    <string name="tutorial_progress_title">Tu Progreso Real</string>
+    <string name="tutorial_progress_subtitle">Descubre a dónde va tu tiempo y energía</string>
+    <string name="tutorial_progress_description">Visualiza de forma clara y amable cuánto tiempo y dedicación le has entregado a cada proyecto. Cada minuto invertido te acerca a lo que deseas lograr.</string>
+    <string name="tutorial_progress_point_1">Resumen diario y semanal fácil de comprender</string>
+    <string name="tutorial_progress_point_2">Conoce el total invertido en cada uno de tus proyectos</string>
+    <string name="tutorial_progress_point_3">Celebra tus avances y reflexiona sobre tu ritmo de vida</string>
+
+    <!-- Onboarding Name Step -->
+    <string name="onboarding_ready_title">¡Todo listo para empezar!</string>
+    <string name="onboarding_ready_subtitle">Para personalizar tu experiencia, cuéntanos cómo te gustaría que te llamemos.</string>
+    <string name="onboarding_name_label">¿Cómo te llamas?</string>
+    <string name="onboarding_name_placeholder">Introduce tu nombre</string>
+    <string name="onboarding_name_icon_desc">Nombre</string>
+    <string name="onboarding_start_button">Comenzar mi Rumbo</string>
+</resources>

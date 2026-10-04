@@ -51,6 +51,11 @@ class SettingsViewModel @Inject constructor(
                     settingsRepository.setNotifications(event.enabled)
                 }
             }
+            is SettingsUiEvent.ChangeLanguage -> {
+                viewModelScope.launch {
+                    settingsRepository.setLanguage(event.language.code)
+                }
+            }
             SettingsUiEvent.ResetApplicationData -> {
                 viewModelScope.launch {
                     isResettingFlow.value = true

@@ -31,6 +31,10 @@ class FakeSettingsRepository : SettingsRepository {
         profileFlow.value = UserProfile(id = "user_me", name = name, createdAtEpochMillis = 1000L)
     }
 
+    override suspend fun setLanguage(languageCode: String?) {
+        settingsFlow.value = settingsFlow.value.copy(languageCode = languageCode)
+    }
+
     override suspend fun resetApplicationData() {
         resetCalled = true
         settingsFlow.value = UserSettings()

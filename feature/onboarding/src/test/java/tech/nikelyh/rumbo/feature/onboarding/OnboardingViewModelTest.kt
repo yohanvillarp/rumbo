@@ -17,6 +17,7 @@ import org.junit.Before
 import org.junit.Test
 import tech.nikelyh.rumbo.feature.onboarding.fakes.FakeSettingsRepository
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class OnboardingViewModelTest {
 
     private lateinit var settingsRepository: FakeSettingsRepository
@@ -79,5 +80,20 @@ class OnboardingViewModelTest {
 
         val savedSettings = settingsRepository.userSettings.first()
         assertTrue(savedSettings.hasCompletedOnboarding)
+    }
+
+    @Test
+    fun `change language updates selected language and repository`() = runBlocking {
+        viewModel.onEvent(OnboardingUiEvent.ChangeLanguage(tech.nikelyh.rumbo.core.model.AppLanguage.ENGLISH))
+
+        val state = viewModel.uiState.value
+        assertEquals("en", state.selectedLanguageCode)
+
+        val savedSettings = settingsRepository.userSettings.first()
+        assertEquals("en", savedSettings.languageCode)
+
+        viewModel.onEvent(OnboardingUiEvent.ChangeLanguage(tech.nikelyh.rumbo.core.model.AppLanguage.SYSTEM))
+        assertEquals(null, viewModel.uiState.value.selectedLanguageCode)
+        assertEquals(null, settingsRepository.userSettings.first().languageCode)
     }
 }

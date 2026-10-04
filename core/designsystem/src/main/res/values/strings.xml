@@ -16,4 +16,8 @@
     <string name="action_finish">Finalizar</string>
     <string name="action_archive">Archivar</string>
     <string name="action_back">Regresar</string>
+    <string name="language_title">Idioma</string>
+    <string name="language_system_default">Predeterminado del sistema</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_english">English</string>
 </resources>

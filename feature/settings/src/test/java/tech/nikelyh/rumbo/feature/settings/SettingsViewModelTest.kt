@@ -76,4 +76,21 @@ class SettingsViewModelTest {
 
         collectJob.cancel()
     }
+
+    @Test
+    fun `change language updates user settings language code`() = runTest {
+        viewModel.onEvent(SettingsUiEvent.ChangeLanguage(tech.nikelyh.rumbo.core.model.AppLanguage.ENGLISH))
+        val state = viewModel.uiState.first { 
+            it is SettingsUiState.Success && (it as SettingsUiState.Success).userSettings.languageCode == "en" 
+        } as SettingsUiState.Success
+
+        assertEquals("en", state.userSettings.languageCode)
+
+        viewModel.onEvent(SettingsUiEvent.ChangeLanguage(tech.nikelyh.rumbo.core.model.AppLanguage.SYSTEM))
+        val stateSystem = viewModel.uiState.first { 
+            it is SettingsUiState.Success && (it as SettingsUiState.Success).userSettings.languageCode == null 
+        } as SettingsUiState.Success
+
+        assertEquals(null, stateSystem.userSettings.languageCode)
+    }
 }

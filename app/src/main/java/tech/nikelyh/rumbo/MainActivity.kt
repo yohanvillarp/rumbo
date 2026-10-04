@@ -25,6 +25,11 @@ class MainActivity : ComponentActivity() {
             val hasCompletedOnboarding = successState?.hasCompletedOnboarding
             val isDarkMode = successState?.isDarkMode
             val activeSession = successState?.activeSession
+            val languageCode = successState?.languageCode
+
+            androidx.compose.runtime.LaunchedEffect(languageCode) {
+                tech.nikelyh.rumbo.core.common.LocaleHelper.applyLanguage(this@MainActivity, languageCode)
+            }
 
             RumboApp(
                 hasCompletedOnboarding = hasCompletedOnboarding,

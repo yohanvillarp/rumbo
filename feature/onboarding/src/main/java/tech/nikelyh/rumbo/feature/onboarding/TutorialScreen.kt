@@ -1,9 +1,7 @@
 package tech.nikelyh.rumbo.feature.onboarding
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,34 +25,66 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import tech.nikelyh.rumbo.core.common.LocaleHelper
 import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLogo
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
+import tech.nikelyh.rumbo.core.model.AppLanguage
+
+@Composable
+fun TutorialRoute(
+    onFinishTutorial: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: OnboardingViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    TutorialScreen(
+        onFinishTutorial = onFinishTutorial,
+        selectedLanguageCode = uiState.selectedLanguageCode,
+        onLanguageSelected = { lang ->
+            viewModel.onEvent(OnboardingUiEvent.ChangeLanguage(lang))
+            LocaleHelper.applyLanguage(context, lang.code)
+        },
+        modifier = modifier
+    )
+}
 
 /**
  * Multi-step interactive onboarding tutorial screen highlighting core workflow paradigms in Rumbo.
  *
  * @param onFinishTutorial Callback invoked when the user reaches the end and confirms completion.
  * @param modifier Optional [Modifier] for layout adjustments.
+ * @param selectedLanguageCode Currently selected language code, or null for system default.
+ * @param onLanguageSelected Callback invoked when the user selects an [AppLanguage] on the final step.
  * @param steps Sequence of [TutorialStep] pages to display in the horizontal carousel.
  */
 @Composable
 fun TutorialScreen(
     onFinishTutorial: () -> Unit,
     modifier: Modifier = Modifier,
+    selectedLanguageCode: String? = null,
+    onLanguageSelected: (AppLanguage) -> Unit = {},
     steps: List<TutorialStep> = TutorialContent.steps
 ) {
     val pagerState = rememberPagerState(pageCount = { steps.size })
@@ -102,7 +132,9 @@ fun TutorialScreen(
             TutorialStepPage(
                 step = step,
                 pageIndex = pageIndex,
-                totalPages = steps.size
+                totalPages = steps.size,
+                selectedLanguageCode = selectedLanguageCode,
+                onLanguageSelected = onLanguageSelected
             )
         }
 
@@ -128,7 +160,7 @@ fun TutorialScreen(
                 ) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Atrás")
+                    Text(stringResource(R.string.tutorial_back))
                 }
             }
 
@@ -147,9 +179,9 @@ fun TutorialScreen(
                 if (isLastPage) {
                     Icon(Icons.Default.Check, contentDescription = null)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Entendido")
+                    Text(stringResource(R.string.tutorial_finish))
                 } else {
-                    Text("Siguiente")
+                    Text(stringResource(R.string.tutorial_next))
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
                 }
@@ -163,6 +195,8 @@ private fun TutorialStepPage(
     step: TutorialStep,
     pageIndex: Int,
     totalPages: Int,
+    selectedLanguageCode: String?,
+    onLanguageSelected: (AppLanguage) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -205,7 +239,7 @@ private fun TutorialStepPage(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Paso ${pageIndex + 1} de $totalPages",
+                    text = stringResource(R.string.tutorial_step_indicator, pageIndex + 1, totalPages),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -215,7 +249,7 @@ private fun TutorialStepPage(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = step.title,
+            text = stringResource(step.titleRes),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -223,7 +257,7 @@ private fun TutorialStepPage(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = step.subtitle,
+            text = stringResource(step.subtitleRes),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.primary
         )
@@ -231,7 +265,7 @@ private fun TutorialStepPage(
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = step.description,
+            text = stringResource(step.descriptionRes),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -250,7 +284,7 @@ private fun TutorialStepPage(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                step.keyPoints.forEach { point ->
+                step.keyPointsRes.forEach { pointRes ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.Top
@@ -265,7 +299,7 @@ private fun TutorialStepPage(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = point,
+                            text = stringResource(pointRes),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -274,7 +308,69 @@ private fun TutorialStepPage(
             }
         }
 
+        // Language Selector Card (Displayed on the final step of the tutorial)
+        if (step.showsLanguageSelector) {
+            Spacer(modifier = Modifier.height(16.dp))
+            TutorialLanguageSelector(
+                selectedLanguageCode = selectedLanguageCode,
+                onLanguageSelected = onLanguageSelected
+            )
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+/**
+ * Clean, interactive language selector card shown on the final tutorial step.
+ */
+@Composable
+fun TutorialLanguageSelector(
+    selectedLanguageCode: String?,
+    onLanguageSelected: (AppLanguage) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val currentLanguage = AppLanguage.fromCode(selectedLanguageCode)
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.tutorial_language_label),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = currentLanguage == AppLanguage.SYSTEM,
+                    onClick = { onLanguageSelected(AppLanguage.SYSTEM) },
+                    label = { Text(stringResource(R.string.tutorial_language_system)) }
+                )
+                FilterChip(
+                    selected = currentLanguage == AppLanguage.SPANISH,
+                    onClick = { onLanguageSelected(AppLanguage.SPANISH) },
+                    label = { Text(stringResource(R.string.tutorial_language_spanish)) }
+                )
+                FilterChip(
+                    selected = currentLanguage == AppLanguage.ENGLISH,
+                    onClick = { onLanguageSelected(AppLanguage.ENGLISH) },
+                    label = { Text(stringResource(R.string.tutorial_language_english)) }
+                )
+            }
+        }
     }
 }
 

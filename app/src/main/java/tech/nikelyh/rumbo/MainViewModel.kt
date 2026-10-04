@@ -17,7 +17,8 @@ sealed interface MainUiState {
     data class Success(
         val hasCompletedOnboarding: Boolean,
         val isDarkMode: Boolean? = null,
-        val activeSession: ActiveSessionState? = null
+        val activeSession: ActiveSessionState? = null,
+        val languageCode: String? = null
     ) : MainUiState
 }
 
@@ -34,7 +35,8 @@ class MainViewModel @Inject constructor(
         MainUiState.Success(
             hasCompletedOnboarding = settings.hasCompletedOnboarding,
             isDarkMode = settings.isDarkModeEnabled,
-            activeSession = if (sessionState.hasActiveSession && sessionState.isRunning) sessionState else null
+            activeSession = if (sessionState.hasActiveSession && sessionState.isRunning) sessionState else null,
+            languageCode = settings.languageCode
         )
     }.stateIn(
         scope = viewModelScope,
