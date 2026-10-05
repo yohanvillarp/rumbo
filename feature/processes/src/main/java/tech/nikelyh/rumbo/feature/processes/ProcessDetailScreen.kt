@@ -180,12 +180,14 @@ private fun ProcessDetailContent(
         // Header
         item {
             RumboCard(modifier = Modifier.fillMaxWidth()) {
-                val processStatusSpanish = when (process.status) {
-                    ProcessStatus.ACTIVE -> "Activo"
-                    ProcessStatus.PAUSED -> "Pausado"
-                    ProcessStatus.COMPLETED -> "Completado"
-                    ProcessStatus.ARCHIVED -> "Archivado"
-                }
+                val processStatusLabel = stringResource(
+                    when (process.status) {
+                        ProcessStatus.ACTIVE -> tech.nikelyh.rumbo.core.designsystem.R.string.status_active
+                        ProcessStatus.PAUSED -> tech.nikelyh.rumbo.core.designsystem.R.string.status_paused
+                        ProcessStatus.COMPLETED -> tech.nikelyh.rumbo.core.designsystem.R.string.status_completed
+                        ProcessStatus.ARCHIVED -> tech.nikelyh.rumbo.core.designsystem.R.string.status_archived
+                    }
+                )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -203,7 +205,7 @@ private fun ProcessDetailContent(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = processStatusSpanish,
+                            text = processStatusLabel,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -307,10 +309,10 @@ private fun ProcessDetailContent(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "${uiState.workSessions.size} ses.",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                                 text = stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_sessions_count, uiState.workSessions.size),
+                                 style = MaterialTheme.typography.labelSmall,
+                                 color = MaterialTheme.colorScheme.onSurfaceVariant
+                             )
                         }
                     }
                 }
@@ -334,7 +336,7 @@ private fun ProcessDetailContent(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Parte de: ${uiState.parentProcess.name}",
+                                text = stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_part_of, uiState.parentProcess.name),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
@@ -360,7 +362,7 @@ private fun ProcessDetailContent(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Espacio para tus tareas y actividades cotidianas",
+                                text = stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_general_info),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
@@ -380,7 +382,7 @@ private fun ProcessDetailContent(
                     ) {
                         Icon(Icons.Default.AddTask, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Nueva Tarea")
+                        Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_new_task))
                     }
 
                     if (!process.isSystem) {
@@ -390,7 +392,7 @@ private fun ProcessDetailContent(
                         ) {
                             Icon(Icons.Default.AccountTree, contentDescription = null)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Nuevo Proceso")
+                            Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_new_subprocess))
                         }
                     }
                 } else {
@@ -400,7 +402,7 @@ private fun ProcessDetailContent(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "Este proceso ha sido completado.",
+                            text = stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_completed_banner),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(12.dp)
@@ -413,7 +415,7 @@ private fun ProcessDetailContent(
                     ) {
                         Icon(Icons.Default.Refresh, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Reabrir Proceso")
+                        Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_reopen))
                     }
                 }
 
@@ -428,7 +430,7 @@ private fun ProcessDetailContent(
                         ) {
                             Icon(Icons.Default.Edit, contentDescription = null)
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Editar")
+                            Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_edit))
                         }
 
                         if (process.isActive || process.status == ProcessStatus.PAUSED) {
@@ -443,7 +445,7 @@ private fun ProcessDetailContent(
                             ) {
                                 Icon(Icons.Default.CheckCircle, contentDescription = null)
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Finalizar")
+                                Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_finish))
                             }
                         }
                     }
@@ -514,14 +516,14 @@ private fun ProcessDetailContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RumboSectionHeader(
-                        title = "Subprocesos (${uiState.subProcesses.size})",
+                        title = stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_subprocesses_title, uiState.subProcesses.size),
                         modifier = Modifier.weight(1f)
                     )
                     if (!process.isFinished && !process.isSystem) {
                         TextButton(onClick = { onNavigateToCreateProcess(process.id) }) {
                             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Nuevo Subproceso")
+                            Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_new_subprocess))
                         }
                     }
                 }
@@ -538,7 +540,7 @@ private fun ProcessDetailContent(
         // Section: Milestones (shown when milestones exist)
         if (uiState.milestones.isNotEmpty()) {
             item {
-                RumboSectionHeader(title = "Hitos del proceso")
+                RumboSectionHeader(title = stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_milestones_title))
             }
 
             items(uiState.milestones, key = { it.id }) { milestone ->
@@ -567,7 +569,7 @@ private fun ProcessDetailContent(
 
         // Section: Pending Tasks
         item {
-            RumboSectionHeader(title = "Tareas Pendientes")
+            RumboSectionHeader(title = stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_pending_tasks_title))
         }
 
         if (uiState.pendingTasks.isNotEmpty()) {
@@ -582,7 +584,7 @@ private fun ProcessDetailContent(
         if (uiState.pendingTasks.isEmpty()) {
             item {
                 Text(
-                    text = "Aún no tienes tareas pendientes en este proceso.",
+                    text = stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_pending_tasks_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
@@ -609,7 +611,7 @@ private fun ProcessDetailContent(
         // Section: Completed Tasks (Preserved & Visible)
         if (uiState.completedTasks.isNotEmpty()) {
             item {
-                RumboSectionHeader(title = "Tareas Completadas")
+                RumboSectionHeader(title = stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_completed_tasks_title))
             }
 
             items(uiState.completedTasks, key = { it.id }) { taskItem ->
@@ -627,11 +629,11 @@ private fun ProcessDetailContent(
     if (uiState.userMessage != null) {
         AlertDialog(
             onDismissRequest = { onEvent(ProcessDetailUiEvent.DismissUserMessage) },
-            title = { Text("No se puede finalizar el proceso") },
+            title = { Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_cannot_finish_title)) },
             text = { Text(uiState.userMessage) },
             confirmButton = {
                 TextButton(onClick = { onEvent(ProcessDetailUiEvent.DismissUserMessage) }) {
-                    Text("Entendido")
+                    Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_understood))
                 }
             }
         )
@@ -703,17 +705,17 @@ private fun PendingTasksSortRow(
         FilterChip(
             selected = taskSortOrder == TaskSortOrder.DUE_DATE,
             onClick = { onSortOrderSelected(TaskSortOrder.DUE_DATE) },
-            label = { Text("Próximas a vencer") }
+            label = { Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.filter_due_date)) }
         )
         FilterChip(
             selected = taskSortOrder == TaskSortOrder.RECENT,
             onClick = { onSortOrderSelected(TaskSortOrder.RECENT) },
-            label = { Text("Más recientes") }
+            label = { Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.filter_recent)) }
         )
         FilterChip(
             selected = taskSortOrder == TaskSortOrder.PRIORITY,
             onClick = { onSortOrderSelected(TaskSortOrder.PRIORITY) },
-            label = { Text("Mayor prioridad") }
+            label = { Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.filter_priority)) }
         )
     }
 }

@@ -83,7 +83,7 @@ internal fun CreateProcessScreen(
 ) {
     var parentDropdownExpanded by remember { mutableStateOf(false) }
     val selectedParent = uiState.availableParents.firstOrNull { it.id == uiState.parentProcessId }
-    val selectedParentLabel = selectedParent?.name ?: "Ninguno (Proceso Principal)"
+    val selectedParentLabel = selectedParent?.name ?: androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_parent_none)
 
     Column(
         modifier = modifier
@@ -97,8 +97,8 @@ internal fun CreateProcessScreen(
             value = uiState.name,
             onValueChange = { onEvent(CreateProcessUiEvent.NameChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Nombre del proceso *") },
-            placeholder = { Text("Ej. Renovar el hogar o Plan de estudio") },
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_name_label)) },
+            placeholder = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_name_placeholder)) },
             leadingIcon = { Icon(Icons.Default.Folder, contentDescription = null) },
             isError = uiState.nameError != null,
             supportingText = {
@@ -122,8 +122,8 @@ internal fun CreateProcessScreen(
             value = uiState.description,
             onValueChange = { onEvent(CreateProcessUiEvent.DescriptionChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Descripción (opcional)") },
-            placeholder = { Text("¿En qué consiste este proyecto y qué esperas lograr?") },
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_desc_label)) },
+            placeholder = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_desc_placeholder)) },
             leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
             maxLines = 3,
             keyboardOptions = KeyboardOptions(
@@ -142,7 +142,7 @@ internal fun CreateProcessScreen(
                 value = selectedParentLabel,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("¿Forma parte de otro proceso? (opcional)") },
+                label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_parent_label)) },
                 leadingIcon = { Icon(Icons.Default.AccountTree, contentDescription = null) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentDropdownExpanded) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
@@ -156,7 +156,7 @@ internal fun CreateProcessScreen(
                 onDismissRequest = { parentDropdownExpanded = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text("Ninguno (Es un proceso principal)") },
+                    text = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_parent_none_dropdown)) },
                     onClick = {
                         onEvent(CreateProcessUiEvent.ParentProcessSelected(null))
                         parentDropdownExpanded = false
@@ -176,7 +176,7 @@ internal fun CreateProcessScreen(
 
         // Circular Color Picker (No English text labels!)
         Text(
-            text = "Color representativo",
+            text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_color_label),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -203,7 +203,7 @@ internal fun CreateProcessScreen(
                     if (isSelected) {
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = "Color seleccionado",
+                            contentDescription = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_color_selected),
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)
                         )
@@ -219,7 +219,7 @@ internal fun CreateProcessScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isSubmitting
         ) {
-            Text("Guardar Proceso")
+            Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_save))
         }
     }
 }

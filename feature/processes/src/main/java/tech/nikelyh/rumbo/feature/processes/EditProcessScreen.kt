@@ -84,8 +84,8 @@ internal fun EditProcessScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         RumboSectionHeader(
-            title = "Editar Proceso",
-            subtitle = "Actualiza los detalles o el siguiente paso de tu proceso."
+            title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.title_edit_process),
+            subtitle = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_edit_subtitle)
         )
 
         // Name
@@ -93,8 +93,8 @@ internal fun EditProcessScreen(
             value = uiState.name,
             onValueChange = { onEvent(EditProcessUiEvent.NameChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Nombre del proceso *") },
-            placeholder = { Text("Ej. Renovar el hogar o Plan de estudio") },
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_name_label)) },
+            placeholder = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_name_placeholder)) },
             leadingIcon = { Icon(Icons.Default.Folder, contentDescription = null) },
             isError = uiState.nameError != null,
             supportingText = {
@@ -118,8 +118,8 @@ internal fun EditProcessScreen(
             value = uiState.description,
             onValueChange = { onEvent(EditProcessUiEvent.DescriptionChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Descripción (opcional)") },
-            placeholder = { Text("¿En qué consiste este proyecto y qué esperas lograr?") },
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_desc_label)) },
+            placeholder = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_desc_placeholder)) },
             leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
             maxLines = 3,
             keyboardOptions = KeyboardOptions(
@@ -130,7 +130,7 @@ internal fun EditProcessScreen(
 
         // Circular Color Picker (No English text labels!)
         Text(
-            text = "Color representativo",
+            text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_color_label),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -157,7 +157,7 @@ internal fun EditProcessScreen(
                     if (isSelected) {
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = "Color seleccionado",
+                            contentDescription = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_color_selected),
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)
                         )
@@ -173,7 +173,7 @@ internal fun EditProcessScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isSubmitting
         ) {
-            Text("Guardar Cambios")
+            Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_form_save_changes))
         }
     }
 }
