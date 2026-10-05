@@ -16,6 +16,7 @@
     <string name="action_finish">Finish</string>
     <string name="action_archive">Archive</string>
     <string name="action_back">Back</string>
+    <string name="action_skip">Skip</string>
     <string name="language_title">Language</string>
     <string name="language_system_default">System default</string>
     <string name="language_spanish">Español</string>
@@ -27,7 +28,7 @@
     <string name="home_view_all_processes">View all processes</string>
     <string name="celebration_process_completed_title">Process Completed!</string>
     <string name="celebration_process_completed_subtitle">You have conquered this major milestone in your journey.</string>
-    <string name="celebration_task_completed_title">Task completed! 🎉</string>
+    <string name="celebration_task_completed_title">Task completed!</string>
     <string name="celebration_continue_action">Continue Journey</string>
 
     <!-- Navigation TopBar Titles -->
@@ -70,4 +71,243 @@
     <string name="dialog_delete_process_title">Delete process?</string>
     <string name="dialog_delete_process_message">Are you sure you want to delete this process and all its associated tasks? This action cannot be undone.</string>
     <string name="process_deleted_success">Process deleted successfully</string>
+
+    <!-- Statuses -->
+    <string name="status_active">Active</string>
+    <string name="status_paused">Paused</string>
+    <string name="status_completed">Completed</string>
+    <string name="status_archived">Archived</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_in_progress">In progress</string>
+    <string name="status_cancelled">Cancelled</string>
+    <string name="task_status_pending">Pending</string>
+    <string name="task_status_in_progress">In progress</string>
+    <string name="task_status_completed">Completed</string>
+    <string name="task_status_cancelled">Cancelled</string>
+
+    <!-- Filters & Sort Orders -->
+    <string name="task_filter_pending">Pending</string>
+    <string name="task_filter_today">For today</string>
+    <string name="task_filter_overdue">Overdue</string>
+    <string name="task_filter_completed">Completed</string>
+    <string name="task_filter_all">All</string>
+    <string name="filter_pending">Pending</string>
+    <string name="filter_today">For today</string>
+    <string name="filter_overdue">Overdue</string>
+    <string name="filter_completed">Completed</string>
+    <string name="filter_all">All</string>
+    <string name="filter_due_date">Upcoming due</string>
+    <string name="filter_recent">Most recent</string>
+    <string name="filter_priority">Highest priority</string>
+    <string name="process_filter_active">Active (%1$d)</string>
+    <string name="process_filter_completed">Completed (%1$d)</string>
+    <string name="process_type_all">All</string>
+    <string name="process_type_main">Main</string>
+    <string name="process_type_sub">Subprocesses</string>
+    <string name="sort_recent">Most recent</string>
+    <string name="sort_alphabetical">Alphabetical (A-Z)</string>
+    <string name="sort_cost">Highest investment</string>
+    <string name="sort_due_date">Upcoming due</string>
+    <string name="sort_priority">Highest priority</string>
+    <string name="filter_high_priority_only">High priority only</string>
+
+    <!-- Priorities -->
+    <string name="priority_low">Low</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_high">High</string>
+    <string name="priority_label">Priority</string>
+    <string name="priority_prefix">Priority: %1$s</string>
+
+    <!-- Processes Screen & Detail -->
+    <string name="processes_search_placeholder">Search processes...</string>
+    <string name="processes_search_desc">Search</string>
+    <string name="processes_empty_title">You don\'t have processes yet</string>
+    <string name="processes_empty_subtitle">Create a process to break a large project down into simpler tasks.</string>
+    <string name="processes_create_action">Create Process</string>
+    <string name="processes_new_button">New Process</string>
+    <string name="processes_empty_completed">No completed processes</string>
+    <string name="processes_empty_active">No active processes</string>
+    <string name="processes_empty_filter_subtitle">Use the button below to create a new process.</string>
+    <string name="process_form_name_label">Process name *</string>
+    <string name="process_form_name_placeholder">e.g. Home renovation or Study plan</string>
+    <string name="process_form_desc_label">Description (optional)</string>
+    <string name="process_form_desc_placeholder">What is this project about and what do you hope to achieve?</string>
+    <string name="process_form_parent_label">Part of another process? (optional)</string>
+    <string name="process_form_parent_none">None (Main Process)</string>
+    <string name="process_form_parent_none_dropdown">None (It\'s a main process)</string>
+    <string name="process_form_color_label">Representative color</string>
+    <string name="process_form_color_selected">Selected color</string>
+    <string name="process_form_save">Save Process</string>
+    <string name="process_form_save_changes">Save Changes</string>
+    <string name="process_form_edit_subtitle">Update the details or the next step of your process.</string>
+    <string name="process_detail_sessions_count">%1$d sess.</string>
+    <string name="process_detail_part_of">Part of: %1$s</string>
+    <string name="process_detail_general_info">Space for your everyday tasks and activities</string>
+    <string name="process_detail_new_task">New Task</string>
+    <string name="process_detail_new_subprocess">New Subprocess</string>
+    <string name="process_detail_completed_banner">This process has been completed.</string>
+    <string name="process_detail_reopen">Reopen Process</string>
+    <string name="process_detail_finish">Finish</string>
+    <string name="process_detail_subprocesses_title">Subprocesses (%1$d)</string>
+    <string name="process_detail_milestones_title">Process milestones</string>
+    <string name="process_detail_pending_tasks_title">Pending Tasks</string>
+    <string name="process_detail_pending_tasks_empty">You don\'t have pending tasks in this process yet.</string>
+    <string name="process_detail_completed_tasks_title">Completed Tasks</string>
+    <string name="process_detail_cannot_finish_title">Cannot finish process</string>
+    <string name="process_detail_understood">Understood</string>
+    <string name="process_tag_subprocess">Subprocess</string>
+    <string name="process_card_investment">Investment: $%1$s</string>
+
+    <!-- Tasks Screen, Forms & Detail -->
+    <string name="tasks_search_placeholder">Search tasks...</string>
+    <string name="tasks_empty_title">No tasks for now</string>
+    <string name="tasks_empty_subtitle">Add a task to know exactly what to do today or in the coming days.</string>
+    <string name="tasks_create_action">Create Task</string>
+    <string name="tasks_empty_filter">No tasks match this filter</string>
+    <string name="tasks_new_button">New Task</string>
+    <string name="task_form_title_label">What do you need to do? *</string>
+    <string name="task_form_title_placeholder">e.g. Buy materials or Send report</string>
+    <string name="task_form_notes_label">Notes or details (optional)</string>
+    <string name="task_form_notes_placeholder">Add any useful note or instruction</string>
+    <string name="task_form_process_label">Belongs to process *</string>
+    <string name="task_form_no_processes">No active processes available</string>
+    <string name="task_form_no_processes_item">No active processes available</string>
+    <string name="task_form_select_process">Select a process</string>
+    <string name="task_form_due_date_label">Due date and time *</string>
+    <string name="task_form_due_date_placeholder">Tap to choose date and time</string>
+    <string name="task_form_pick_date">Choose date</string>
+    <string name="task_form_choose_date">Choose date</string>
+    <string name="task_form_pick_time">Choose time</string>
+    <string name="task_form_choose_time">Choose time</string>
+    <string name="task_form_time_title">Due time</string>
+    <string name="task_form_time_limit_title">Due time</string>
+    <string name="dialog_accept">Accept</string>
+    <string name="task_form_cost_label">Cost ($)</string>
+    <string name="task_form_duration_label">Estimated duration (minutes, optional)</string>
+    <string name="task_form_duration_placeholder">e.g. 30</string>
+    <string name="task_form_save">Save Task</string>
+    <string name="task_form_save_changes">Save Changes</string>
+    <string name="task_detail_title">Task Details</string>
+    <string name="task_detail_process_priority">Process: %1$s  •  Priority: %2$s</string>
+    <string name="task_detail_cost">Cost: $%1$s</string>
+    <string name="task_detail_time_worked">Time worked: %1$s</string>
+    <string name="task_detail_estimated_duration">Estimated duration: %1$d min</string>
+    <string name="task_detail_due_date">Due date: %1$s</string>
+    <string name="task_detail_due_date_prefix">Due: %1$s</string>
+    <string name="task_detail_start_session">Start Session</string>
+    <string name="task_detail_continue_session">Continue Session</string>
+    <string name="task_detail_mark_completed">Mark as Completed</string>
+    <string name="task_detail_mark_pending">Mark as Pending</string>
+    <string name="task_detail_delete_dialog_title">Confirm deletion</string>
+    <string name="task_detail_delete_dialog_message">Do you want to delete task \'%1$s\'? This action cannot be undone.</string>
+
+    <!-- Progress & Analytics -->
+    <string name="progress_empty_title">No progress records</string>
+    <string name="progress_empty_subtitle">Start work sessions or evaluate your progress to generate analytics.</string>
+    <string name="progress_tab_processes">Process Analytics</string>
+    <string name="progress_tab_tasks">Task Analytics</string>
+    <string name="progress_timeframe_7_days">7 days</string>
+    <string name="progress_timeframe_30_days">30 days</string>
+    <string name="progress_timeframe_90_days">90 days</string>
+    <string name="progress_distribution_time_title">Time Distribution</string>
+    <string name="progress_distribution_time_subtitle">Proportion of hours dedicated to each process</string>
+    <string name="progress_investment_process_title">Investment by Process</string>
+    <string name="progress_investment_process_subtitle">Comparison of accumulated hours and costs</string>
+    <string name="progress_comparison_title">Time Invested vs Declared Progress</string>
+    <string name="progress_comparison_subtitle">Comparison between time dedication and qualitative level</string>
+    <string name="progress_comparison_empty">No processes to compare.</string>
+    <string name="progress_activity_title">Consistency &amp; Activity</string>
+    <string name="progress_activity_subtitle">Days with recorded sessions in this period</string>
+    <string name="progress_completion_rate_title">Completion Rate</string>
+    <string name="progress_completion_rate_subtitle">Percentage of completed tasks of total</string>
+    <string name="progress_status_distribution_title">Status Distribution</string>
+    <string name="progress_status_distribution_subtitle">Proportion of completed, pending, and overdue</string>
+    <string name="metric_total_time">Total Time</string>
+    <string name="metric_sessions">Sessions</string>
+    <string name="metric_active_days">Active Days</string>
+    <string name="metric_invested_cost">Invested Cost</string>
+    <string name="metric_completed_tasks">Completed</string>
+    <string name="metric_pending_tasks">Pending</string>
+    <string name="metric_overdue_tasks">Overdue</string>
+    <string name="metric_total_tasks">Total Tasks</string>
+    <string name="metric_on_time_tasks">On time (%1$d)</string>
+    <string name="metric_completed_count">Completed (%1$d)</string>
+    <string name="metric_pending_count">Pending (%1$d)</string>
+    <string name="metric_overdue_count">Overdue (%1$d)</string>
+    <string name="metric_total_hours">Total Hours</string>
+    <string name="metric_active_days_count">Active Days (%1$d days)</string>
+    <string name="metric_active_days_desc">Contribution calendar showing %1$d active days.</string>
+    <string name="metric_qualitative_declared">Declared Qualitative Level</string>
+    <string name="progress_level_low">Low</string>
+    <string name="progress_level_medium">Medium</string>
+    <string name="progress_level_high">High</string>
+    <string name="progress_level_initial">Initial</string>
+    <string name="progress_level_consolidated">Consolidated</string>
+
+    <!-- Work Session Screen -->
+    <string name="session_title_default">Work Session</string>
+    <string name="session_status_running">Session in progress</string>
+    <string name="session_status_paused">Session paused</string>
+    <string name="session_action_finish">Finish Session</string>
+    <string name="session_action_pause">Pause</string>
+    <string name="session_action_continue">Continue</string>
+    <string name="session_action_forgot">Forgot to stop</string>
+    <string name="session_action_cancel">Cancel Session</string>
+    <string name="session_culmination_title">Session Finished</string>
+    <string name="session_culmination_subtitle">Review the invested time and save your session.</string>
+    <string name="session_total_time_recorded">Total time recorded</string>
+    <string name="session_task_prefix">Task: %1$s</string>
+    <string name="session_note_label">Session note (optional)</string>
+    <string name="session_note_placeholder">What did you accomplish during this session?</string>
+    <string name="session_qualitative_checkbox">Record qualitative progress level</string>
+    <string name="session_qualitative_level_label">Progress Level</string>
+    <string name="session_complete_task_title">Mark task as completed</string>
+    <string name="session_complete_task_subtitle">Complete \'%1$s\' upon saving</string>
+    <string name="session_save_and_complete">Save &amp; Complete Task</string>
+    <string name="session_save">Save Session</string>
+    <string name="session_discard">Discard Session</string>
+    <string name="session_cancel_dialog_title">Cancel session?</string>
+    <string name="session_cancel_dialog_message">The elapsed time in this session will be discarded and no record will be saved.</string>
+    <string name="session_cancel_dialog_confirm">Yes, cancel</string>
+    <string name="session_cancel_dialog_back">Go back</string>
+    <string name="session_adjust_dialog_title">Adjust Invested Time</string>
+    <string name="session_adjust_dialog_message">Enter the actual number of minutes you worked in this session:</string>
+    <string name="session_adjust_minutes_label">Estimated minutes</string>
+    <string name="session_adjust_minutes_placeholder">e.g. 45</string>
+    <string name="session_adjust_and_continue">Adjust &amp; Continue</string>
+    <string name="session_adjust_and_culminate">Complete</string>
+
+    <!-- Log Progress Screen -->
+    <string name="log_progress_process_label">Assigned Process</string>
+    <string name="log_progress_general_default">General (Default Process)</string>
+    <string name="log_progress_level_label">Qualitative Progress Level</string>
+    <string name="log_progress_note_label">Evaluation note (optional)</string>
+    <string name="log_progress_note_placeholder">Brief reflection or milestone achieved</string>
+    <string name="log_progress_submit">Save Evaluation</string>
+
+    <!-- Duration Dialog -->
+    <string name="task_duration_dialog_title">Complete Task</string>
+    <string name="task_duration_dialog_sessions_msg">This task has %1$d min calculated from work sessions. You can increase the total time if you did extra work, but not decrease below this minimum.</string>
+    <string name="task_duration_dialog_manual_msg">To complete \'%1$s\', enter the actual time dedicated to this task:</string>
+    <string name="task_duration_dialog_label">Total duration (minutes) *</string>
+    <string name="task_duration_dialog_placeholder_default">e.g. 30</string>
+    <string name="task_duration_dialog_min_error">Time cannot be less than the %1$d min calculated from sessions.</string>
+    <string name="task_duration_dialog_zero_error">Enter a duration in minutes greater than 0</string>
+    <string name="task_duration_dialog_min_registered">Registered minimum: %1$d min</string>
+    <string name="task_duration_dialog_confirm">Complete</string>
+
+    <!-- Celebrations (No emojis) -->
+    <string name="celebration_task_success_title">Task completed!</string>
+    <string name="celebration_cinematic_title_1">You completed \"%1$s\"!</string>
+    <string name="celebration_cinematic_msg_1">Unstoppable! Every completed process builds discipline and brings you closer to your most ambitious goals.</string>
+    <string name="celebration_cinematic_btn_1">Keep going strong!</string>
+    <string name="celebration_cinematic_title_2">Mission Accomplished in \"%1$s\"!</string>
+    <string name="celebration_cinematic_msg_2">Extraordinary work! You showed focus and consistency from start to finish. Celebrate your victory!</string>
+    <string name="celebration_cinematic_btn_2">On to the next challenge!</string>
+    <string name="celebration_cinematic_title_3">Outstanding achievement with \"%1$s\"!</string>
+    <string name="celebration_cinematic_msg_3">Goal achieved with mastery! Your consistency turns plans into tangible reality.</string>
+    <string name="celebration_cinematic_btn_3">Keep growing!</string>
+    <string name="celebration_metric_time">Time</string>
+    <string name="celebration_metric_investment">Investment</string>
+    <string name="celebration_metric_tasks">Tasks</string>
 </resources>

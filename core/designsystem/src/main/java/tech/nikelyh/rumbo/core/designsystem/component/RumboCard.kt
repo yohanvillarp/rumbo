@@ -84,11 +84,11 @@ fun RumboProcessCard(
     onToggleStar: (() -> Unit)? = null
 ) {
     val processColor = ProcessColors.getColor(process.colorOrVisualId)
-    val statusSpanish = when (process.status) {
-        ProcessStatus.ACTIVE -> "Activo"
-        ProcessStatus.PAUSED -> "Pausado"
-        ProcessStatus.COMPLETED -> "Completado"
-        ProcessStatus.ARCHIVED -> "Archivado"
+    val statusLabel = when (process.status) {
+        ProcessStatus.ACTIVE -> stringResource(R.string.status_active)
+        ProcessStatus.PAUSED -> stringResource(R.string.status_paused)
+        ProcessStatus.COMPLETED -> stringResource(R.string.status_completed)
+        ProcessStatus.ARCHIVED -> stringResource(R.string.status_archived)
     }
 
     Card(
@@ -151,7 +151,7 @@ fun RumboProcessCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "Subproceso",
+                                    text = stringResource(R.string.process_tag_subprocess),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
@@ -163,7 +163,7 @@ fun RumboProcessCard(
                         shape = RoundedCornerShape(6.dp)
                     ) {
                         Text(
-                            text = statusSpanish,
+                            text = statusLabel,
                             style = MaterialTheme.typography.labelSmall,
                             color = processColor,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
@@ -221,7 +221,7 @@ fun RumboProcessCard(
                             )
                             Spacer(modifier = Modifier.width(2.dp))
                             Text(
-                                text = "Inversión: $${process.accumulatedDirectCost}",
+                                text = stringResource(R.string.process_card_investment, process.accumulatedDirectCost.toString()),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary
                             )

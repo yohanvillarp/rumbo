@@ -50,6 +50,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.res.stringResource
+import tech.nikelyh.rumbo.core.designsystem.R
 
 data class ProcessCelebrationVariation(
     val title: String,
@@ -74,27 +76,24 @@ fun CelebrationCinematicDialog(
 ) {
     var contentVisible by remember { mutableStateOf(false) }
 
-    val variations = remember(processName) {
-        listOf(
-            ProcessCelebrationVariation(
-                title = "¡Has completado \"$processName\"!",
-                message = "¡Imparable! Cada proceso culminado consolida tu disciplina y te acerca a tus metas más ambiciosas.",
-                buttonText = "¡Continuar imparable!"
-            ),
-            ProcessCelebrationVariation(
-                title = "¡Misión Cumplida en \"$processName\"!",
-                message = "¡Extraordinario trabajo! Has demostrado enfoque y constancia de inicio a fin. ¡Celebra tu conquista!",
-                buttonText = "¡A por el siguiente reto!"
-            ),
-            ProcessCelebrationVariation(
-                title = "¡Excelente logro con \"$processName\"!",
-                message = "¡Objetivo alcanzado con maestría! Tu constancia transforma planes en realidades tangibles.",
-                buttonText = "¡Seguir creciendo!"
-            )
-        )
-    }
+    val var1 = ProcessCelebrationVariation(
+        title = stringResource(R.string.celebration_cinematic_title_1, processName),
+        message = stringResource(R.string.celebration_cinematic_msg_1),
+        buttonText = stringResource(R.string.celebration_cinematic_btn_1)
+    )
+    val var2 = ProcessCelebrationVariation(
+        title = stringResource(R.string.celebration_cinematic_title_2, processName),
+        message = stringResource(R.string.celebration_cinematic_msg_2),
+        buttonText = stringResource(R.string.celebration_cinematic_btn_2)
+    )
+    val var3 = ProcessCelebrationVariation(
+        title = stringResource(R.string.celebration_cinematic_title_3, processName),
+        message = stringResource(R.string.celebration_cinematic_msg_3),
+        buttonText = stringResource(R.string.celebration_cinematic_btn_3)
+    )
+    val variations = remember(var1, var2, var3) { listOf(var1, var2, var3) }
 
-    val selectedVariation = remember(processName) {
+    val selectedVariation = remember(processName, variations) {
         val hash = kotlin.math.abs(processName.hashCode())
         variations[hash % variations.size]
     }
@@ -225,7 +224,7 @@ fun CelebrationCinematicDialog(
                                 MetricRecapTile(
                                     modifier = Modifier.weight(1f),
                                     icon = Icons.Default.Schedule,
-                                    label = "Tiempo",
+                                    label = stringResource(R.string.celebration_metric_time),
                                     value = totalTimeFormatted,
                                     tint = MaterialTheme.colorScheme.primary
                                 )
@@ -234,7 +233,7 @@ fun CelebrationCinematicDialog(
                                 MetricRecapTile(
                                     modifier = Modifier.weight(1f),
                                     icon = Icons.Default.AttachMoney,
-                                    label = "Inversión",
+                                    label = stringResource(R.string.celebration_metric_investment),
                                     value = totalCostFormatted,
                                     tint = Color(0xFF2E7D32)
                                 )
@@ -243,7 +242,7 @@ fun CelebrationCinematicDialog(
                                 MetricRecapTile(
                                     modifier = Modifier.weight(1f),
                                     icon = Icons.Default.CheckCircle,
-                                    label = "Tareas",
+                                    label = stringResource(R.string.celebration_metric_tasks),
                                     value = "$completedTasksCount",
                                     tint = MaterialTheme.colorScheme.tertiary
                                 )

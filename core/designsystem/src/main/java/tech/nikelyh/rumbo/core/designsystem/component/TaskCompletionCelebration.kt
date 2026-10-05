@@ -137,7 +137,7 @@ fun TaskCompletionCelebration(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                text = "¡Tarea completada! 🎉",
+                                text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.celebration_task_success_title),
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.onSurface
                             )

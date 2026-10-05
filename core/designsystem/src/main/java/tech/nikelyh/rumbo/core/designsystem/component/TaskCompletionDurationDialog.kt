@@ -18,9 +18,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import tech.nikelyh.rumbo.core.designsystem.R
 
 @Composable
 fun TaskCompletionDurationDialog(
@@ -41,20 +43,23 @@ fun TaskCompletionDurationDialog(
     var minutesText by remember { mutableStateOf(defaultText) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    val minErrorMsg = stringResource(R.string.task_duration_dialog_min_error, effectiveMin)
+    val zeroErrorMsg = stringResource(R.string.task_duration_dialog_zero_error)
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Culminar Tarea") },
+        title = { Text(stringResource(R.string.task_duration_dialog_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (effectiveMin > 1L) {
                     Text(
-                        text = "Esta tarea tiene $effectiveMin min calculados en sus sesiones de trabajo. Puedes aumentar el tiempo total si realizaste trabajo adicional, pero no disminuir de este mínimo.",
+                        text = stringResource(R.string.task_duration_dialog_sessions_msg, effectiveMin),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 } else {
                     Text(
-                        text = "Para culminar '$taskTitle', ingresa el tiempo real dedicado a esta tarea:",
+                        text = stringResource(R.string.task_duration_dialog_manual_msg, taskTitle),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -66,19 +71,17 @@ fun TaskCompletionDurationDialog(
                             minutesText = input
                             val parsed = input.trim().toLongOrNull()
                             if (parsed != null && parsed < effectiveMin) {
-                                errorMessage = if (effectiveMin > 1L) {
-                                    "El tiempo no puede ser menor a los $effectiveMin min calculados en las sesiones."
-                                } else {
-                                    "Ingresa una duración en minutos mayor a 0"
-                                }
+                                errorMessage = if (effectiveMin > 1L) minErrorMsg else zeroErrorMsg
                             } else {
                                 errorMessage = null
                             }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Duración total (minutos) *") },
-                    placeholder = { Text(if (effectiveMin > 1L) effectiveMin.toString() else "Ej. 30") },
+                    label = { Text(stringResource(R.string.task_duration_dialog_label)) },
+                    placeholder = {
+                        Text(if (effectiveMin > 1L) effectiveMin.toString() else stringResource(R.string.task_duration_dialog_placeholder_default))
+                    },
                     leadingIcon = { Icon(Icons.Default.Timer, contentDescription = null) },
                     singleLine = true,
                     isError = errorMessage != null,
@@ -91,7 +94,7 @@ fun TaskCompletionDurationDialog(
                             )
                         } else if (effectiveMin > 1L) {
                             Text(
-                                text = "Mínimo registrado: $effectiveMin min",
+                                text = stringResource(R.string.task_duration_dialog_min_registered, effectiveMin),
                                 color = MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.labelSmall
                             )
@@ -113,21 +116,17 @@ fun TaskCompletionDurationDialog(
                     if (currentParsed != null && currentParsed >= effectiveMin) {
                         onConfirm(currentParsed)
                     } else {
-                        errorMessage = if (effectiveMin > 1L) {
-                            "El tiempo no puede ser menor a los $effectiveMin min calculados en las sesiones."
-                        } else {
-                            "Ingresa una duración en minutos mayor a 0"
-                        }
+                        errorMessage = if (effectiveMin > 1L) minErrorMsg else zeroErrorMsg
                     }
                 },
                 enabled = isValid
             ) {
-                Text("Culminar")
+                Text(stringResource(R.string.task_duration_dialog_confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.action_cancel))
             }
         }
     )

@@ -16,6 +16,7 @@
     <string name="action_finish">Finalizar</string>
     <string name="action_archive">Archivar</string>
     <string name="action_back">Regresar</string>
+    <string name="action_skip">Saltar</string>
     <string name="language_title">Idioma</string>
     <string name="language_system_default">Predeterminado del sistema</string>
     <string name="language_spanish">Español</string>
@@ -27,7 +28,7 @@
     <string name="home_view_all_processes">Ver todos los procesos</string>
     <string name="celebration_process_completed_title">¡Proceso Culminado!</string>
     <string name="celebration_process_completed_subtitle">Has conquistado este gran hito en tu rumbo.</string>
-    <string name="celebration_task_completed_title">¡Tarea completada! 🎉</string>
+    <string name="celebration_task_completed_title">¡Tarea completada!</string>
     <string name="celebration_continue_action">Continuar Rumbo</string>
 
     <!-- Navigation TopBar Titles -->
@@ -70,4 +71,243 @@
     <string name="dialog_delete_process_title">¿Eliminar proceso?</string>
     <string name="dialog_delete_process_message">¿Estás seguro de que deseas eliminar este proceso y todas sus tareas asociadas? Esta acción no se puede deshacer.</string>
     <string name="process_deleted_success">Proceso eliminado correctamente</string>
+
+    <!-- Statuses -->
+    <string name="status_active">Activo</string>
+    <string name="status_paused">Pausado</string>
+    <string name="status_completed">Completado</string>
+    <string name="status_archived">Archivado</string>
+    <string name="status_pending">Pendiente</string>
+    <string name="status_in_progress">En progreso</string>
+    <string name="status_cancelled">Cancelada</string>
+    <string name="task_status_pending">Pendiente</string>
+    <string name="task_status_in_progress">En progreso</string>
+    <string name="task_status_completed">Completada</string>
+    <string name="task_status_cancelled">Cancelada</string>
+
+    <!-- Filters & Sort Orders -->
+    <string name="task_filter_pending">Pendientes</string>
+    <string name="task_filter_today">Para hoy</string>
+    <string name="task_filter_overdue">Vencidas</string>
+    <string name="task_filter_completed">Completadas</string>
+    <string name="task_filter_all">Todas</string>
+    <string name="filter_pending">Pendientes</string>
+    <string name="filter_today">Para hoy</string>
+    <string name="filter_overdue">Vencidas</string>
+    <string name="filter_completed">Completadas</string>
+    <string name="filter_all">Todas</string>
+    <string name="filter_due_date">Próximas a vencer</string>
+    <string name="filter_recent">Más recientes</string>
+    <string name="filter_priority">Mayor prioridad</string>
+    <string name="process_filter_active">Activos (%1$d)</string>
+    <string name="process_filter_completed">Completados (%1$d)</string>
+    <string name="process_type_all">Todos</string>
+    <string name="process_type_main">Principales</string>
+    <string name="process_type_sub">Subprocesos</string>
+    <string name="sort_recent">Más recientes</string>
+    <string name="sort_alphabetical">Alfabético (A-Z)</string>
+    <string name="sort_cost">Mayor inversión</string>
+    <string name="sort_due_date">Próximas a vencer</string>
+    <string name="sort_priority">Mayor prioridad</string>
+    <string name="filter_high_priority_only">Solo Alta</string>
+
+    <!-- Priorities -->
+    <string name="priority_low">Baja</string>
+    <string name="priority_medium">Media</string>
+    <string name="priority_high">Alta</string>
+    <string name="priority_label">Prioridad</string>
+    <string name="priority_prefix">Prioridad: %1$s</string>
+
+    <!-- Processes Screen & Detail -->
+    <string name="processes_search_placeholder">Buscar procesos...</string>
+    <string name="processes_search_desc">Buscar</string>
+    <string name="processes_empty_title">Aún no tienes procesos</string>
+    <string name="processes_empty_subtitle">Crea un proceso para dividir un proyecto grande en tareas más sencillas.</string>
+    <string name="processes_create_action">Crear Proceso</string>
+    <string name="processes_new_button">Nuevo Proceso</string>
+    <string name="processes_empty_completed">Sin procesos completados</string>
+    <string name="processes_empty_active">Sin procesos activos</string>
+    <string name="processes_empty_filter_subtitle">Usa el botón inferior para crear un nuevo proceso.</string>
+    <string name="process_form_name_label">Nombre del proceso *</string>
+    <string name="process_form_name_placeholder">Ej. Renovar el hogar o Plan de estudio</string>
+    <string name="process_form_desc_label">Descripción (opcional)</string>
+    <string name="process_form_desc_placeholder">¿En qué consiste este proyecto y qué esperas lograr?</string>
+    <string name="process_form_parent_label">¿Forma parte de otro proceso? (opcional)</string>
+    <string name="process_form_parent_none">Ninguno (Proceso Principal)</string>
+    <string name="process_form_parent_none_dropdown">Ninguno (Es un proceso principal)</string>
+    <string name="process_form_color_label">Color representativo</string>
+    <string name="process_form_color_selected">Color seleccionado</string>
+    <string name="process_form_save">Guardar Proceso</string>
+    <string name="process_form_save_changes">Guardar Cambios</string>
+    <string name="process_form_edit_subtitle">Actualiza los detalles o el siguiente paso de tu proceso.</string>
+    <string name="process_detail_sessions_count">%1$d ses.</string>
+    <string name="process_detail_part_of">Parte de: %1$s</string>
+    <string name="process_detail_general_info">Espacio para tus tareas y actividades cotidianas</string>
+    <string name="process_detail_new_task">Nueva Tarea</string>
+    <string name="process_detail_new_subprocess">Nuevo Subproceso</string>
+    <string name="process_detail_completed_banner">Este proceso ha sido completado.</string>
+    <string name="process_detail_reopen">Reabrir Proceso</string>
+    <string name="process_detail_finish">Finalizar</string>
+    <string name="process_detail_subprocesses_title">Subprocesos (%1$d)</string>
+    <string name="process_detail_milestones_title">Hitos del proceso</string>
+    <string name="process_detail_pending_tasks_title">Tareas Pendientes</string>
+    <string name="process_detail_pending_tasks_empty">Aún no tienes tareas pendientes en este proceso.</string>
+    <string name="process_detail_completed_tasks_title">Tareas Completadas</string>
+    <string name="process_detail_cannot_finish_title">No se puede finalizar el proceso</string>
+    <string name="process_detail_understood">Entendido</string>
+    <string name="process_tag_subprocess">Subproceso</string>
+    <string name="process_card_investment">Inversión: $%1$s</string>
+
+    <!-- Tasks Screen, Forms & Detail -->
+    <string name="tasks_search_placeholder">Buscar tareas...</string>
+    <string name="tasks_empty_title">Sin tareas por ahora</string>
+    <string name="tasks_empty_subtitle">Agrega una tarea para saber exactamente qué hacer hoy o en los próximos días.</string>
+    <string name="tasks_create_action">Crear Tarea</string>
+    <string name="tasks_empty_filter">No hay tareas en este filtro</string>
+    <string name="tasks_new_button">Nueva Tarea</string>
+    <string name="task_form_title_label">¿Qué necesitas hacer? *</string>
+    <string name="task_form_title_placeholder">Ej. Comprar materiales o Enviar informe</string>
+    <string name="task_form_notes_label">Notas o detalles (opcional)</string>
+    <string name="task_form_notes_placeholder">Agrega cualquier apunte o instrucción útil</string>
+    <string name="task_form_process_label">Proceso al que pertenece *</string>
+    <string name="task_form_no_processes">No hay procesos activos disponibles</string>
+    <string name="task_form_no_processes_item">No hay procesos activos disponibles</string>
+    <string name="task_form_select_process">Selecciona un proceso</string>
+    <string name="task_form_due_date_label">Fecha y hora límite *</string>
+    <string name="task_form_due_date_placeholder">Toca para elegir fecha y hora</string>
+    <string name="task_form_pick_date">Elegir fecha</string>
+    <string name="task_form_choose_date">Elegir fecha</string>
+    <string name="task_form_pick_time">Elegir hora</string>
+    <string name="task_form_choose_time">Elegir hora</string>
+    <string name="task_form_time_title">Hora límite</string>
+    <string name="task_form_time_limit_title">Hora límite</string>
+    <string name="dialog_accept">Aceptar</string>
+    <string name="task_form_cost_label">Costo ($)</string>
+    <string name="task_form_duration_label">Tiempo estimado (minutos, opcional)</string>
+    <string name="task_form_duration_placeholder">Ej. 30</string>
+    <string name="task_form_save">Guardar Tarea</string>
+    <string name="task_form_save_changes">Guardar Cambios</string>
+    <string name="task_detail_title">Detalle de Tarea</string>
+    <string name="task_detail_process_priority">Proceso: %1$s  •  Prioridad: %2$s</string>
+    <string name="task_detail_cost">Costo: $%1$s</string>
+    <string name="task_detail_time_worked">Tiempo trabajado: %1$s</string>
+    <string name="task_detail_estimated_duration">Duración estimada: %1$d min</string>
+    <string name="task_detail_due_date">Fecha límite: %1$s</string>
+    <string name="task_detail_due_date_prefix">Límite: %1$s</string>
+    <string name="task_detail_start_session">Iniciar Sesión</string>
+    <string name="task_detail_continue_session">Continuar Sesión</string>
+    <string name="task_detail_mark_completed">Marcar Completada</string>
+    <string name="task_detail_mark_pending">Marcar Pendiente</string>
+    <string name="task_detail_delete_dialog_title">Confirmar eliminación</string>
+    <string name="task_detail_delete_dialog_message">¿Deseas eliminar la tarea \'%1$s\'? Esta acción no se puede deshacer.</string>
+
+    <!-- Progress & Analytics -->
+    <string name="progress_empty_title">Sin registros de progreso</string>
+    <string name="progress_empty_subtitle">Inicia sesiones de trabajo o evalúa tu progreso para generar analíticas.</string>
+    <string name="progress_tab_processes">Analítica de Procesos</string>
+    <string name="progress_tab_tasks">Analítica de Tareas</string>
+    <string name="progress_timeframe_7_days">7 días</string>
+    <string name="progress_timeframe_30_days">30 días</string>
+    <string name="progress_timeframe_90_days">90 días</string>
+    <string name="progress_distribution_time_title">Distribución del Tiempo</string>
+    <string name="progress_distribution_time_subtitle">Proporción de horas dedicadas por cada proceso</string>
+    <string name="progress_investment_process_title">Inversión por Proceso</string>
+    <string name="progress_investment_process_subtitle">Comparativa de horas acumuladas y costos</string>
+    <string name="progress_comparison_title">Tiempo Invertido vs Progreso Declarado</string>
+    <string name="progress_comparison_subtitle">Comparación entre dedicación temporal y nivel cualitativo</string>
+    <string name="progress_comparison_empty">Sin procesos para comparar.</string>
+    <string name="progress_activity_title">Consistencia y Actividad</string>
+    <string name="progress_activity_subtitle">Días con sesiones registradas en el período</string>
+    <string name="progress_completion_rate_title">Tasa de Finalización</string>
+    <string name="progress_completion_rate_subtitle">Porcentaje de tareas completadas del total</string>
+    <string name="progress_status_distribution_title">Distribución de Estados</string>
+    <string name="progress_status_distribution_subtitle">Proporción entre completadas, pendientes y vencidas</string>
+    <string name="metric_total_time">Tiempo Total</string>
+    <string name="metric_sessions">Sesiones</string>
+    <string name="metric_active_days">Días Activos</string>
+    <string name="metric_invested_cost">Costo Invertido</string>
+    <string name="metric_completed_tasks">Completadas</string>
+    <string name="metric_pending_tasks">Pendientes</string>
+    <string name="metric_overdue_tasks">Vencidas</string>
+    <string name="metric_total_tasks">Total Tareas</string>
+    <string name="metric_on_time_tasks">A tiempo (%1$d)</string>
+    <string name="metric_completed_count">Completadas (%1$d)</string>
+    <string name="metric_pending_count">Pendientes (%1$d)</string>
+    <string name="metric_overdue_count">Vencidas (%1$d)</string>
+    <string name="metric_total_hours">Total Horas</string>
+    <string name="metric_active_days_count">Días Activos (%1$d días)</string>
+    <string name="metric_active_days_desc">Calendario de contribución que muestra %1$d días activos.</string>
+    <string name="metric_qualitative_declared">Nivel Cualitativo Declarado</string>
+    <string name="progress_level_low">Bajo</string>
+    <string name="progress_level_medium">Medio</string>
+    <string name="progress_level_high">Alto</string>
+    <string name="progress_level_initial">Inicial</string>
+    <string name="progress_level_consolidated">Consolidado</string>
+
+    <!-- Work Session Screen -->
+    <string name="session_title_default">Sesión de Trabajo</string>
+    <string name="session_status_running">Sesión en curso</string>
+    <string name="session_status_paused">Sesión en pausa</string>
+    <string name="session_action_finish">Finalizar Sesión</string>
+    <string name="session_action_pause">Pausar</string>
+    <string name="session_action_continue">Continuar</string>
+    <string name="session_action_forgot">Olvidé detenerlo</string>
+    <string name="session_action_cancel">Cancelar Sesión</string>
+    <string name="session_culmination_title">Sesión Finalizada</string>
+    <string name="session_culmination_subtitle">Revisa el tiempo invertido y guarda tu sesión.</string>
+    <string name="session_total_time_recorded">Tiempo total registrado</string>
+    <string name="session_task_prefix">Tarea: %1$s</string>
+    <string name="session_note_label">Nota de la sesión (opcional)</string>
+    <string name="session_note_placeholder">¿Qué lograste durante esta sesión?</string>
+    <string name="session_qualitative_checkbox">Registrar nivel de progreso cualitativo</string>
+    <string name="session_qualitative_level_label">Nivel de Progreso</string>
+    <string name="session_complete_task_title">Marcar tarea como culminada</string>
+    <string name="session_complete_task_subtitle">Completar \'%1$s\' al guardar</string>
+    <string name="session_save_and_complete">Guardar y Culminar Tarea</string>
+    <string name="session_save">Guardar Sesión</string>
+    <string name="session_discard">Descartar Sesión</string>
+    <string name="session_cancel_dialog_title">¿Cancelar sesión?</string>
+    <string name="session_cancel_dialog_message">Se descartará el tiempo transcurrido en esta sesión y no se guardará ningún registro.</string>
+    <string name="session_cancel_dialog_confirm">Sí, cancelar</string>
+    <string name="session_cancel_dialog_back">Volver</string>
+    <string name="session_adjust_dialog_title">Ajustar Tiempo Invertido</string>
+    <string name="session_adjust_dialog_message">Introduce la cantidad de minutos reales que trabajaste en esta sesión:</string>
+    <string name="session_adjust_minutes_label">Minutos estimados</string>
+    <string name="session_adjust_minutes_placeholder">Ej. 45</string>
+    <string name="session_adjust_and_continue">Ajustar y Seguir</string>
+    <string name="session_adjust_and_culminate">Culminar</string>
+
+    <!-- Log Progress Screen -->
+    <string name="log_progress_process_label">Proceso Asignado</string>
+    <string name="log_progress_general_default">General (Proceso por defecto)</string>
+    <string name="log_progress_level_label">Nivel Cualitativo de Progreso</string>
+    <string name="log_progress_note_label">Nota de evaluación (opcional)</string>
+    <string name="log_progress_note_placeholder">Reflexión breve o hito alcanzado</string>
+    <string name="log_progress_submit">Guardar Evaluación</string>
+
+    <!-- Duration Dialog -->
+    <string name="task_duration_dialog_title">Culminar Tarea</string>
+    <string name="task_duration_dialog_sessions_msg">Esta tarea tiene %1$d min calculados en sus sesiones de trabajo. Puedes aumentar el tiempo total si realizaste trabajo adicional, pero no disminuir de este mínimo.</string>
+    <string name="task_duration_dialog_manual_msg">Para culminar \'%1$s\', ingresa el tiempo real dedicado a esta tarea:</string>
+    <string name="task_duration_dialog_label">Duración total (minutos) *</string>
+    <string name="task_duration_dialog_placeholder_default">Ej. 30</string>
+    <string name="task_duration_dialog_min_error">El tiempo no puede ser menor a los %1$d min calculados en las sesiones.</string>
+    <string name="task_duration_dialog_zero_error">Ingresa una duración en minutos mayor a 0</string>
+    <string name="task_duration_dialog_min_registered">Mínimo registrado: %1$d min</string>
+    <string name="task_duration_dialog_confirm">Culminar</string>
+
+    <!-- Celebrations (No emojis) -->
+    <string name="celebration_task_success_title">¡Tarea completada!</string>
+    <string name="celebration_cinematic_title_1">¡Has completado \"%1$s\"!</string>
+    <string name="celebration_cinematic_msg_1">¡Imparable! Cada proceso culminado consolida tu disciplina y te acerca a tus metas más ambiciosas.</string>
+    <string name="celebration_cinematic_btn_1">¡Continuar imparable!</string>
+    <string name="celebration_cinematic_title_2">¡Misión Cumplida en \"%1$s\"!</string>
+    <string name="celebration_cinematic_msg_2">¡Extraordinario trabajo! Has demostrado enfoque y constancia de inicio a fin. ¡Celebra tu conquista!</string>
+    <string name="celebration_cinematic_btn_2">¡A por el siguiente reto!</string>
+    <string name="celebration_cinematic_title_3">¡Excelente logro con \"%1$s\"!</string>
+    <string name="celebration_cinematic_msg_3">¡Objetivo alcanzado con maestría! Tu constancia transforma planes en realidades tangibles.</string>
+    <string name="celebration_cinematic_btn_3">¡Seguir creciendo!</string>
+    <string name="celebration_metric_time">Tiempo</string>
+    <string name="celebration_metric_investment">Inversión</string>
+    <string name="celebration_metric_tasks">Tareas</string>
 </resources>
