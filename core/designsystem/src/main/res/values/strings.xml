@@ -29,4 +29,45 @@
     <string name="celebration_process_completed_subtitle">Has conquistado este gran hito en tu rumbo.</string>
     <string name="celebration_task_completed_title">¡Tarea completada! 🎉</string>
     <string name="celebration_continue_action">Continuar Rumbo</string>
+
+    <!-- Navigation TopBar Titles -->
+    <string name="title_home">Rumbo</string>
+    <string name="title_processes">Procesos</string>
+    <string name="title_tasks">Tareas</string>
+    <string name="title_progress">Progreso</string>
+    <string name="title_settings">Configuración</string>
+    <string name="title_tutorial">Cómo funciona Rumbo</string>
+    <string name="title_create_process">Nuevo Proceso</string>
+    <string name="title_edit_process">Editar Proceso</string>
+    <string name="title_create_task">Nueva Tarea</string>
+    <string name="title_edit_task">Editar Tarea</string>
+    <string name="title_process_detail">Detalle de Proceso</string>
+    <string name="title_task_detail">Detalle de Tarea</string>
+    <string name="title_start_session">Sesión de Trabajo</string>
+    <string name="title_log_progress">Registrar Progreso</string>
+
+    <!-- Home Screen -->
+    <string name="home_welcome_title">Bienvenido a Rumbo</string>
+    <string name="home_welcome_subtitle">¿Qué te gustaría comenzar hoy?</string>
+    <string name="home_create_first_process">Crear primer proceso</string>
+    <string name="home_create_first_task">Crear primera tarea</string>
+    <string name="home_create_process">Crear proceso</string>
+    <string name="home_create_task">Crear tarea</string>
+    <string name="home_starred_processes_title">Procesos Destacados</string>
+    <string name="home_starred_processes_subtitle">Tus procesos favoritos en seguimiento</string>
+    <string name="home_recent_processes_title">Últimos Procesos</string>
+    <string name="home_recent_processes_subtitle">Tus procesos agregados recientemente</string>
+    <string name="home_today_title">Hoy</string>
+    <string name="home_today_subtitle">Tareas pendientes para hoy</string>
+    <string name="home_today_empty">Sin tareas pendientes para hoy</string>
+    <string name="home_greeting_day">Buenos días</string>
+    <string name="home_greeting_afternoon">Buenas tardes</string>
+    <string name="home_greeting_night">Buenas noches</string>
+    <string name="home_question_today">¿En qué deseas avanzar hoy?</string>
+
+    <!-- Process Actions & Dialogs -->
+    <string name="action_delete_process">Eliminar Proceso</string>
+    <string name="dialog_delete_process_title">¿Eliminar proceso?</string>
+    <string name="dialog_delete_process_message">¿Estás seguro de que deseas eliminar este proceso y todas sus tareas asociadas? Esta acción no se puede deshacer.</string>
+    <string name="process_deleted_success">Proceso eliminado correctamente</string>
 </resources>

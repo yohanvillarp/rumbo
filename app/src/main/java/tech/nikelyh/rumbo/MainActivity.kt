@@ -27,15 +27,39 @@ class MainActivity : ComponentActivity() {
             val activeSession = successState?.activeSession
             val languageCode = successState?.languageCode
 
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val effectiveLanguage = androidx.compose.runtime.remember(languageCode) {
+                tech.nikelyh.rumbo.core.common.LocaleHelper.resolveEffectiveLanguage(context, languageCode)
+            }
+            val targetLocale = androidx.compose.runtime.remember(effectiveLanguage) {
+                when (effectiveLanguage) {
+                    tech.nikelyh.rumbo.core.model.AppLanguage.SPANISH -> java.util.Locale("es")
+                    tech.nikelyh.rumbo.core.model.AppLanguage.ENGLISH -> java.util.Locale("en")
+                    tech.nikelyh.rumbo.core.model.AppLanguage.PORTUGUESE -> java.util.Locale("pt")
+                    tech.nikelyh.rumbo.core.model.AppLanguage.SYSTEM -> java.util.Locale.getDefault()
+                }
+            }
+
             androidx.compose.runtime.LaunchedEffect(languageCode) {
                 tech.nikelyh.rumbo.core.common.LocaleHelper.applyLanguage(this@MainActivity, languageCode)
             }
 
-            RumboApp(
-                hasCompletedOnboarding = hasCompletedOnboarding,
-                isDarkMode = isDarkMode,
-                activeSession = activeSession
-            )
+            val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+            val localizedConfiguration = androidx.compose.runtime.remember(configuration, targetLocale) {
+                android.content.res.Configuration(configuration).apply {
+                    setLocale(targetLocale)
+                }
+            }
+
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.compose.ui.platform.LocalConfiguration provides localizedConfiguration
+            ) {
+                RumboApp(
+                    hasCompletedOnboarding = hasCompletedOnboarding,
+                    isDarkMode = isDarkMode,
+                    activeSession = activeSession
+                )
+            }
         }
     }
 }
