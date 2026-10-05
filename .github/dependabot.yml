@@ -13,6 +13,30 @@ updates:
       - "gradle"
     commit-message:
       prefix: "build(deps)"
+    groups:
+      androidx-and-compose:
+        patterns:
+          - "androidx.*"
+          - "com.google.android.material:*"
+      kotlin-and-tooling:
+        patterns:
+          - "org.jetbrains.kotlin*"
+          - "com.google.devtools.ksp*"
+          - "com.android.*"
+          - "gradle"
+      hilt-and-di:
+        patterns:
+          - "com.google.dagger*"
+      testing:
+        patterns:
+          - "junit*"
+          - "org.junit*"
+          - "androidx.test*"
+          - "com.google.truth*"
+          - "app.cash.turbine*"
+      coroutines:
+        patterns:
+          - "org.jetbrains.kotlinx:kotlinx-coroutines*"
 
   # Maintain GitHub Actions workflows in .github/workflows
   - package-ecosystem: "github-actions"
@@ -27,3 +51,7 @@ updates:
       - "actions"
     commit-message:
       prefix: "ci(deps)"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
