@@ -149,7 +149,7 @@ internal fun OnboardingScreen(
                         }
                     }
                 ) {
-                    Text("Saltar")
+                    Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_skip))
                 }
             } else {
                 Spacer(modifier = Modifier.width(48.dp))

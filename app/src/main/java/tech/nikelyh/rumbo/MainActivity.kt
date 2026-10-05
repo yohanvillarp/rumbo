@@ -50,9 +50,13 @@ class MainActivity : ComponentActivity() {
                     setLocale(targetLocale)
                 }
             }
+            val localizedContext = androidx.compose.runtime.remember(context, localizedConfiguration) {
+                context.createConfigurationContext(localizedConfiguration)
+            }
 
             androidx.compose.runtime.CompositionLocalProvider(
-                androidx.compose.ui.platform.LocalConfiguration provides localizedConfiguration
+                androidx.compose.ui.platform.LocalConfiguration provides localizedConfiguration,
+                androidx.compose.ui.platform.LocalContext provides localizedContext
             ) {
                 RumboApp(
                     hasCompletedOnboarding = hasCompletedOnboarding,
