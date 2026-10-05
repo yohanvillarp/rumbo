@@ -84,16 +84,19 @@ import tech.nikelyh.rumbo.feature.tasks.navigation.navigateToTaskDetail
 import tech.nikelyh.rumbo.feature.tasks.navigation.navigateToTasks
 import tech.nikelyh.rumbo.feature.tasks.navigation.tasksScreen
 
+import androidx.compose.ui.res.stringResource
+import tech.nikelyh.rumbo.core.designsystem.R
+
 // 4 Primary Top-Level Destinations
 enum class TopLevelDestination(
     val route: String,
     val icon: ImageVector,
-    val label: String
+    val labelResId: Int
 ) {
-    HOME(HomeDestination.route, Icons.Default.Home, "Inicio"),
-    PROCESSES(ProcessesDestination.route, Icons.AutoMirrored.Filled.ListAlt, "Procesos"),
-    TASKS(TasksDestination.route, Icons.AutoMirrored.Filled.Assignment, "Tareas"),
-    PROGRESS(ProgressDestination.route, Icons.Default.BarChart, "Progreso")
+    HOME(HomeDestination.route, Icons.Default.Home, R.string.nav_home),
+    PROCESSES(ProcessesDestination.route, Icons.AutoMirrored.Filled.ListAlt, R.string.nav_processes),
+    TASKS(TasksDestination.route, Icons.AutoMirrored.Filled.Assignment, R.string.nav_tasks),
+    PROGRESS(ProgressDestination.route, Icons.Default.BarChart, R.string.nav_progress)
 }
 
 @Composable
@@ -170,30 +173,30 @@ fun RumboApp(
                         if (!isOnboarding) {
                             RumboTopBar(
                                 title = when (currentRoute) {
-                                    HomeDestination.route -> "Rumbo"
-                                    ProcessesDestination.route -> "Procesos"
-                                    TasksDestination.route -> "Tareas"
-                                    ProgressDestination.route -> "Progreso"
-                                    SettingsDestination.route -> "Configuración"
-                                    TutorialDestination.route -> "Cómo funciona Rumbo"
-                                    CreateProcessDestination.route -> "Nuevo Proceso"
-                                    EditProcessDestination.route -> "Editar Proceso"
-                                    CreateTaskDestination.route -> "Nueva Tarea"
-                                    EditTaskDestination.route -> "Editar Tarea"
-                                    ProcessDetailDestination.route -> "Detalle de Proceso"
-                                    TaskDetailDestination.route -> "Detalle de Tarea"
-                                    StartSessionDestination.route -> "Sesión de Trabajo"
-                                    LogProgressDestination.route -> "Registrar Progreso"
-                                    else -> "Rumbo"
+                                    HomeDestination.route -> stringResource(R.string.title_home)
+                                    ProcessesDestination.route -> stringResource(R.string.title_processes)
+                                    TasksDestination.route -> stringResource(R.string.title_tasks)
+                                    ProgressDestination.route -> stringResource(R.string.title_progress)
+                                    SettingsDestination.route -> stringResource(R.string.title_settings)
+                                    TutorialDestination.route -> stringResource(R.string.title_tutorial)
+                                    CreateProcessDestination.route -> stringResource(R.string.title_create_process)
+                                    EditProcessDestination.route -> stringResource(R.string.title_edit_process)
+                                    CreateTaskDestination.route -> stringResource(R.string.title_create_task)
+                                    EditTaskDestination.route -> stringResource(R.string.title_edit_task)
+                                    ProcessDetailDestination.route -> stringResource(R.string.title_process_detail)
+                                    TaskDetailDestination.route -> stringResource(R.string.title_task_detail)
+                                    StartSessionDestination.route -> stringResource(R.string.title_start_session)
+                                    LogProgressDestination.route -> stringResource(R.string.title_log_progress)
+                                    else -> stringResource(R.string.app_name)
                                 },
                                 navigationIcon = if (!isTopLevel) Icons.AutoMirrored.Filled.ArrowBack else null,
-                                navigationIconContentDescription = "Regresar",
+                                navigationIconContentDescription = stringResource(R.string.action_back),
                                 onNavigationClick = { navController.popBackStack() },
                                 secondaryActionIcon = if (!isOnboarding && !isTutorial) Icons.AutoMirrored.Filled.HelpOutline else null,
-                                secondaryActionContentDescription = "Cómo funciona Rumbo",
+                                secondaryActionContentDescription = stringResource(R.string.title_tutorial),
                                 onSecondaryActionClick = { navController.navigateToTutorial() },
                                 actionIcon = if (!isSettings) Icons.Default.Settings else null,
-                                actionIconContentDescription = "Configuración",
+                                actionIconContentDescription = stringResource(R.string.title_settings),
                                 onActionClick = { navController.navigateToSettings() }
                             )
                         }
@@ -293,6 +296,9 @@ fun RumboApp(
                                 },
                                 onProcessEdited = {
                                     navController.popBackStack()
+                                },
+                                onNavigateBack = {
+                                    navController.popBackStack()
                                 }
                             )
                             tasksScreen(
@@ -380,11 +386,12 @@ private fun RumboBottomBar(
     NavigationBar {
         destinations.forEach { destination ->
             val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
+            val labelText = stringResource(destination.labelResId)
             NavigationBarItem(
                 selected = selected,
                 onClick = { onNavigateToDestination(destination) },
-                icon = { Icon(imageVector = destination.icon, contentDescription = destination.label) },
-                label = { Text(text = destination.label) }
+                icon = { Icon(imageVector = destination.icon, contentDescription = labelText) },
+                label = { Text(text = labelText) }
             )
         }
     }
@@ -399,11 +406,12 @@ private fun RumboNavigationRail(
     NavigationRail {
         destinations.forEach { destination ->
             val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
+            val labelText = stringResource(destination.labelResId)
             NavigationRailItem(
                 selected = selected,
                 onClick = { onNavigateToDestination(destination) },
-                icon = { Icon(imageVector = destination.icon, contentDescription = destination.label) },
-                label = { Text(text = destination.label) }
+                icon = { Icon(imageVector = destination.icon, contentDescription = labelText) },
+                label = { Text(text = labelText) }
             )
         }
     }
