@@ -435,6 +435,16 @@ private fun ProcessDetailContent(
                             }
                         }
                     }
+
+                    if (uiState.completionBlockedReason != null && (process.isActive || process.status == ProcessStatus.PAUSED)) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = uiState.completionBlockedReason,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+                    }
                 }
             }
         }

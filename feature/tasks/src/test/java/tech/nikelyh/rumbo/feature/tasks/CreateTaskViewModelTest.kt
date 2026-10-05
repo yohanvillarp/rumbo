@@ -109,4 +109,11 @@ class CreateTaskViewModelTest {
         assertEquals(23, savedZdt.hour)
         assertEquals(59, savedZdt.minute)
     }
+
+    @Test
+    fun `general process is included and selected by default in availableProcesses`() = runBlocking {
+        val state = viewModel.uiState.value
+        assertEquals(tech.nikelyh.rumbo.core.model.Process.GENERAL_PROCESS_ID, state.selectedProcessId)
+        assertTrue(state.availableProcesses.any { it.id == tech.nikelyh.rumbo.core.model.Process.GENERAL_PROCESS_ID })
+    }
 }

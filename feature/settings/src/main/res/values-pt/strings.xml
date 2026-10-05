@@ -11,6 +11,7 @@
     <string name="settings_language_spanish">Español</string>
     <string name="settings_language_english">English</string>
     <string name="settings_language_portuguese">Português</string>
+    <string name="settings_apply_language">Aplicar idioma</string>
     <string name="settings_reset_zone">Zona de Redefinição</string>
     <string name="settings_reset_description">Remove permanentemente todos os processos, tarefas, sessões de trabalho e histórico armazenados neste dispositivo.</string>
     <string name="settings_reset_button">Redefinir Aplicativo</string>

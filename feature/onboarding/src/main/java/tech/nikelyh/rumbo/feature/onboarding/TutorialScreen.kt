@@ -355,11 +355,6 @@ fun TutorialLanguageSelector(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilterChip(
-                    selected = currentLanguage == AppLanguage.SYSTEM,
-                    onClick = { onLanguageSelected(AppLanguage.SYSTEM) },
-                    label = { Text(stringResource(R.string.tutorial_language_system)) }
-                )
-                FilterChip(
                     selected = currentLanguage == AppLanguage.SPANISH,
                     onClick = { onLanguageSelected(AppLanguage.SPANISH) },
                     label = { Text(stringResource(R.string.tutorial_language_spanish)) }

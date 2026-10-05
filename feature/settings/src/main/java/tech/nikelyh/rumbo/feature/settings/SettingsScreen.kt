@@ -25,6 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.AlertDialog
@@ -54,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import tech.nikelyh.rumbo.core.common.LocaleHelper
+import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingWheel
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
@@ -251,39 +253,57 @@ private fun SettingsLanguageCard(
 ) {
     val languages = remember {
         listOf(
-            AppLanguage.SYSTEM,
             AppLanguage.SPANISH,
             AppLanguage.ENGLISH,
             AppLanguage.PORTUGUESE
         )
     }
 
-    val currentLanguage = AppLanguage.fromCode(selectedLanguageCode)
-    val currentIndex = languages.indexOf(currentLanguage).coerceAtLeast(0)
+    val currentSavedLanguage = remember(selectedLanguageCode) {
+        if (selectedLanguageCode != null) {
+            val resolved = AppLanguage.fromCode(selectedLanguageCode)
+            if (resolved in languages) resolved else AppLanguage.SPANISH
+        } else {
+            val sysLang = java.util.Locale.getDefault().language
+            when {
+                sysLang.startsWith("pt") -> AppLanguage.PORTUGUESE
+                sysLang.startsWith("en") -> AppLanguage.ENGLISH
+                else -> AppLanguage.SPANISH
+            }
+        }
+    }
 
-    val currentLabel = when (currentLanguage) {
-        AppLanguage.SYSTEM -> stringResource(R.string.settings_language_system)
+    var pendingLanguage by remember(currentSavedLanguage) {
+        mutableStateOf(currentSavedLanguage)
+    }
+
+    val currentIndex = languages.indexOf(pendingLanguage).coerceAtLeast(0)
+
+    val currentLabel = when (pendingLanguage) {
         AppLanguage.SPANISH -> stringResource(R.string.settings_language_spanish)
         AppLanguage.ENGLISH -> stringResource(R.string.settings_language_english)
         AppLanguage.PORTUGUESE -> stringResource(R.string.settings_language_portuguese)
+        AppLanguage.SYSTEM -> stringResource(R.string.settings_language_spanish)
     }
 
-    val currentSubtitle = when (currentLanguage) {
-        AppLanguage.SYSTEM -> "Auto"
+    val currentSubtitle = when (pendingLanguage) {
         AppLanguage.SPANISH -> "Español (es)"
         AppLanguage.ENGLISH -> "English (en)"
         AppLanguage.PORTUGUESE -> "Português (pt)"
+        AppLanguage.SYSTEM -> "Español (es)"
     }
 
     fun selectPrevious() {
         val prevIndex = if (currentIndex > 0) currentIndex - 1 else languages.size - 1
-        onLanguageSelected(languages[prevIndex])
+        pendingLanguage = languages[prevIndex]
     }
 
     fun selectNext() {
         val nextIndex = if (currentIndex < languages.size - 1) currentIndex + 1 else 0
-        onLanguageSelected(languages[nextIndex])
+        pendingLanguage = languages[nextIndex]
     }
+
+    val isModified = pendingLanguage != currentSavedLanguage
 
     RumboCard(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -391,6 +411,18 @@ private fun SettingsLanguageCard(
                             )
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            RumboButton(
+                onClick = { onLanguageSelected(pendingLanguage) },
+                enabled = isModified,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(R.string.settings_apply_language))
             }
         }
     }
