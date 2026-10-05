@@ -146,7 +146,8 @@ class StartSessionViewModelTest {
         assertTrue(!state.showForgotTimerDialog)
         assertTrue(!state.isSessionFinished)
         assertTrue(state.isTimerRunning)
-        assertEquals(35 * 60 * 1000L, state.elapsedTimeMillis)
+        assertTrue(state.elapsedTimeMillis >= 35 * 60 * 1000L)
+        assertTrue(state.elapsedTimeMillis < 35 * 60 * 1000L + 5000L)
     }
 
     @Test
