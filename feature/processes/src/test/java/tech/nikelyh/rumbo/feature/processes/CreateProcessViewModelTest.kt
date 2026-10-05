@@ -76,4 +76,31 @@ class CreateProcessViewModelTest {
         assertEquals("parent-123", process.parentProcessId)
         assertTrue(process.isSubProcess)
     }
+
+    @Test
+    fun `submitting process with optional due date saves dueDateEpochMillis`() = runBlocking {
+        val deadline = 8000L
+        viewModel.onEvent(CreateProcessUiEvent.NameChanged("Proceso con fecha"))
+        viewModel.onEvent(CreateProcessUiEvent.DueDateChanged(deadline))
+        viewModel.onEvent(CreateProcessUiEvent.SubmitProcess)
+
+        val state = viewModel.uiState.value
+        assertTrue(state.isSuccess)
+
+        val process = processRepository.getProcesses().first().first()
+        assertEquals(deadline, process.dueDateEpochMillis)
+    }
+
+    @Test
+    fun `submitting process without due date saves null dueDateEpochMillis`() = runBlocking {
+        viewModel.onEvent(CreateProcessUiEvent.NameChanged("Proceso sin fecha"))
+        viewModel.onEvent(CreateProcessUiEvent.DueDateChanged(null))
+        viewModel.onEvent(CreateProcessUiEvent.SubmitProcess)
+
+        val state = viewModel.uiState.value
+        assertTrue(state.isSuccess)
+
+        val process = processRepository.getProcesses().first().first()
+        assertNull(process.dueDateEpochMillis)
+    }
 }

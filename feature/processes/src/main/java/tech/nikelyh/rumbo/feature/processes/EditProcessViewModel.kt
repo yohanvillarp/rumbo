@@ -11,13 +11,18 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tech.nikelyh.rumbo.core.data.repository.ProcessRepository
+import tech.nikelyh.rumbo.core.data.repository.TaskRepository
 import tech.nikelyh.rumbo.core.model.Process
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
 class EditProcessViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val processRepository: ProcessRepository
+    private val processRepository: ProcessRepository,
+    private val taskRepository: TaskRepository
 ) : ViewModel() {
 
     val processId: String = savedStateHandle.get<String>("processId") ?: ""
@@ -30,6 +35,9 @@ class EditProcessViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val process = processRepository.getProcessById(processId).firstOrNull()
+            val tasks = taskRepository.getTasksByProcessId(processId).firstOrNull() ?: emptyList()
+            val maxTaskDueDate = tasks.mapNotNull { it.dueDateEpochMillis }.maxOrNull()
+
             if (process != null) {
                 originalProcess = process
                 _uiState.update { current ->
@@ -37,11 +45,13 @@ class EditProcessViewModel @Inject constructor(
                         name = process.name,
                         description = process.description ?: "",
                         colorOrVisualId = process.colorOrVisualId,
+                        dueDateEpochMillis = process.dueDateEpochMillis,
+                        maxTaskDueDateEpochMillis = maxTaskDueDate,
                         isLoading = false
                     )
                 }
             } else {
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(isLoading = false, maxTaskDueDateEpochMillis = maxTaskDueDate) }
             }
         }
     }
@@ -62,12 +72,22 @@ class EditProcessViewModel @Inject constructor(
             is EditProcessUiEvent.ColorChanged -> {
                 _uiState.update { it.copy(colorOrVisualId = event.colorOrVisualId) }
             }
+            is EditProcessUiEvent.DueDateChanged -> {
+                _uiState.update { current ->
+                    val error = validateDueDate(event.millis, current.maxTaskDueDateEpochMillis)
+                    current.copy(
+                        dueDateEpochMillis = event.millis,
+                        dueDateError = error
+                    )
+                }
+            }
             EditProcessUiEvent.SubmitProcess -> {
                 val current = _uiState.value
                 val nameErr = validateName(current.name)
+                val dueDateErr = validateDueDate(current.dueDateEpochMillis, current.maxTaskDueDateEpochMillis)
 
-                if (nameErr != null) {
-                    _uiState.update { it.copy(nameError = nameErr) }
+                if (nameErr != null || dueDateErr != null) {
+                    _uiState.update { it.copy(nameError = nameErr, dueDateError = dueDateErr) }
                     return
                 }
 
@@ -81,7 +101,8 @@ class EditProcessViewModel @Inject constructor(
                 val updatedProcess = target.copy(
                     name = trimmedName,
                     description = trimmedDesc,
-                    colorOrVisualId = current.colorOrVisualId
+                    colorOrVisualId = current.colorOrVisualId,
+                    dueDateEpochMillis = current.dueDateEpochMillis
                 )
 
                 viewModelScope.launch {
@@ -100,5 +121,16 @@ class EditProcessViewModel @Inject constructor(
             trimmed.length > 50 -> "El nombre no puede superar los 50 caracteres"
             else -> null
         }
+    }
+
+    private fun validateDueDate(processDueDate: Long?, maxTaskDueDate: Long?): String? {
+        if (processDueDate == null || maxTaskDueDate == null) return null
+        if (processDueDate < maxTaskDueDate) {
+            val instant = Instant.ofEpochMilli(maxTaskDueDate)
+            val zone = ZoneId.systemDefault()
+            val maxTaskDateStr = instant.atZone(zone).format(DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a"))
+            return "La fecha límite del proceso no puede ser anterior a la de sus tareas ($maxTaskDateStr)"
+        }
+        return null
     }
 }

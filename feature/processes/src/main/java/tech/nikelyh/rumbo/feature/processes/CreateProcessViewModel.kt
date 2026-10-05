@@ -53,6 +53,9 @@ class CreateProcessViewModel @Inject constructor(
             is CreateProcessUiEvent.ParentProcessSelected -> {
                 _uiState.update { it.copy(parentProcessId = event.parentId) }
             }
+            is CreateProcessUiEvent.DueDateChanged -> {
+                _uiState.update { it.copy(dueDateEpochMillis = event.millis) }
+            }
             CreateProcessUiEvent.SubmitProcess -> {
                 val current = _uiState.value
                 val nameErr = validateName(current.name)
@@ -72,7 +75,8 @@ class CreateProcessViewModel @Inject constructor(
                     createdAtEpochMillis = System.currentTimeMillis(),
                     colorOrVisualId = current.colorOrVisualId,
                     accumulatedDirectCost = 0.0,
-                    parentProcessId = current.parentProcessId
+                    parentProcessId = current.parentProcessId,
+                    dueDateEpochMillis = current.dueDateEpochMillis
                 )
 
                 viewModelScope.launch {
