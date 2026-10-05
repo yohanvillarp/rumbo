@@ -151,6 +151,29 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `recent processes includes last 3 added processes latest first`() = runBlocking {
+        for (i in 1..5) {
+            processRepository.saveProcess(
+                Process(
+                    id = "p$i",
+                    name = "Proceso $i",
+                    status = ProcessStatus.ACTIVE,
+                    createdAtEpochMillis = i * 1000L,
+                    colorOrVisualId = "blue"
+                )
+            )
+        }
+
+        val state = viewModel.uiState.first()
+        assertTrue(state is HomeUiState.Content)
+        val content = state as HomeUiState.Content
+        assertEquals(3, content.recentProcesses.size)
+        assertEquals("p5", content.recentProcesses[0].id)
+        assertEquals("p4", content.recentProcesses[1].id)
+        assertEquals("p3", content.recentProcesses[2].id)
+    }
+
+    @Test
     fun `toggle star warns when attempting to star 4 processes`() = runBlocking {
         processRepository.saveProcess(Process("p1", "P1", status = ProcessStatus.ACTIVE, createdAtEpochMillis = 1000L, colorOrVisualId = "blue", isStarred = true))
         processRepository.saveProcess(Process("p2", "P2", status = ProcessStatus.ACTIVE, createdAtEpochMillis = 2000L, colorOrVisualId = "blue", isStarred = true))

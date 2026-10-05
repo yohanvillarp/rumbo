@@ -8,8 +8,10 @@ sealed interface HomeUiState {
     data class Content(
         val greeting: String,
         val userName: String,
+        val greetingHour: Int = 12,
         val continueProcess: Process?,
         val starredProcesses: List<Process> = emptyList(),
+        val recentProcesses: List<Process> = emptyList(),
         val activeProcesses: List<Process> = starredProcesses,
         val todayTasks: List<Task>,
         val allProcesses: List<Process> = emptyList(),

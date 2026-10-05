@@ -93,6 +93,7 @@ class ProcessRepositoryImpl @Inject constructor(
         if (id == Process.GENERAL_PROCESS_ID) {
             return false // General process cannot be deleted
         }
+        taskDao.deleteByProcessId(id)
         val rows = processDao.deleteById(id)
         return rows > 0
     }

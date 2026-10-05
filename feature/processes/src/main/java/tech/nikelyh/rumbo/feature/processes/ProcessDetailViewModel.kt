@@ -45,6 +45,7 @@ class ProcessDetailViewModel @Inject constructor(
 
     private val userMessageFlow = MutableStateFlow<String?>(null)
     private val taskSortOrderFlow = MutableStateFlow(TaskSortOrder.DUE_DATE)
+    private val isDeletedFlow = MutableStateFlow(false)
 
     val uiState: StateFlow<ProcessDetailUiState> = combine(
         processRepository.getProcessById(processId),
@@ -55,7 +56,8 @@ class ProcessDetailViewModel @Inject constructor(
         weeklyGoalRepository.getWeeklyGoalsByProcessId(processId),
         processRepository.getProcesses(),
         userMessageFlow,
-        taskSortOrderFlow
+        taskSortOrderFlow,
+        isDeletedFlow
     ) { flows ->
         @Suppress("UNCHECKED_CAST")
         val process = flows[0] as Process?
@@ -74,8 +76,11 @@ class ProcessDetailViewModel @Inject constructor(
         @Suppress("UNCHECKED_CAST")
         val userMsg = flows[7] as String?
         val sortOrder = flows[8] as TaskSortOrder
+        val isDel = flows[9] as Boolean
 
-        if (process == null) {
+        if (isDel) {
+            ProcessDetailUiState.Deleted
+        } else if (process == null) {
             ProcessDetailUiState.Error("Proceso no encontrado")
         } else {
             val totalTimeInvested = sessions.sumOf { it.durationMillis }
@@ -125,6 +130,7 @@ class ProcessDetailViewModel @Inject constructor(
                 parentProcess = parentProcess,
                 completionBlockedReason = completionBlockedReason,
                 userMessage = userMsg,
+                isDeleted = isDel,
                 taskSortOrder = sortOrder
             )
         }
@@ -184,6 +190,18 @@ class ProcessDetailViewModel @Inject constructor(
             ProcessDetailUiEvent.ReopenProcess -> {
                 viewModelScope.launch {
                     processRepository.saveProcess(currentProcess.reopen())
+                }
+            }
+            ProcessDetailUiEvent.DeleteProcess -> {
+                if (currentProcess.isSystem || currentProcess.id == tech.nikelyh.rumbo.core.model.Process.GENERAL_PROCESS_ID) {
+                    userMessageFlow.value = "El proceso General no puede ser eliminado."
+                    return
+                }
+                viewModelScope.launch {
+                    val deleted = processRepository.deleteProcess(currentProcess.id)
+                    if (deleted) {
+                        isDeletedFlow.value = true
+                    }
                 }
             }
             ProcessDetailUiEvent.ArchiveProcess -> {

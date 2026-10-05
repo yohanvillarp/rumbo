@@ -35,4 +35,10 @@ class FakeTaskDao : TaskDao {
         }
         return 0
     }
+
+    override suspend fun deleteByProcessId(processId: String): Int {
+        val toDelete = tasksFlow.value.values.filter { it.processId == processId }
+        tasksFlow.value = tasksFlow.value.filterValues { it.processId != processId }
+        return toDelete.size
+    }
 }
