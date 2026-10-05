@@ -115,18 +115,15 @@ internal fun HomeScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        modifier = modifier
-    ) { innerPadding ->
+    Box(modifier = modifier.fillMaxSize()) {
         when (uiState) {
             HomeUiState.Loading -> {
-                RumboLoadingState(isLoading = true, modifier = Modifier.padding(innerPadding))
+                RumboLoadingState(isLoading = true, modifier = Modifier.fillMaxSize())
             }
             is HomeUiState.Error -> {
                 RumboEmptyState(
                     message = uiState.message,
-                    modifier = Modifier.padding(innerPadding)
+                    modifier = Modifier.fillMaxSize()
                 )
             }
             HomeUiState.Empty -> {
@@ -136,7 +133,7 @@ internal fun HomeScreen(
                     mascotState = MascotState.DEFAULT,
                     actionLabel = "Crear primer proceso",
                     onActionClick = { onEvent(HomeUiEvent.OnCreateProcessClick) },
-                    modifier = Modifier.padding(innerPadding)
+                    modifier = Modifier.fillMaxSize()
                 )
             }
             is HomeUiState.Content -> {
@@ -145,10 +142,15 @@ internal fun HomeScreen(
                     onEvent = onEvent,
                     onNavigateToProcesses = onNavigateToProcesses,
                     onNavigateToStartSession = onNavigateToStartSession,
-                    modifier = Modifier.padding(innerPadding)
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 

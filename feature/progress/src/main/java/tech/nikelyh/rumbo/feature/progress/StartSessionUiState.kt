@@ -19,6 +19,7 @@ data class StartSessionUiState(
     val progressLevel: ProgressLevel = ProgressLevel.MEDIUM,
     val showForgotTimerDialog: Boolean = false,
     val manualMinutesInput: String = "",
+    val markTaskAsCompleted: Boolean = false,
     val isSubmitting: Boolean = false,
     val isSuccess: Boolean = false
 )

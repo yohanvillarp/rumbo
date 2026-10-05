@@ -597,8 +597,6 @@ private fun ProcessDetailContent(
         val costStr = "S/ ${"%.2f".format(java.util.Locale.US, process.accumulatedDirectCost)}"
 
         CelebrationCinematicDialog(
-            title = "¡Proceso Culminado!",
-            subtitle = "Has conquistado este gran hito en tu rumbo.",
             processName = process.name,
             totalTimeFormatted = timeStr,
             totalCostFormatted = costStr,

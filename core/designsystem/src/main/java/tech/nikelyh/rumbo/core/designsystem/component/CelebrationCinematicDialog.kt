@@ -51,21 +51,57 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
+data class ProcessCelebrationVariation(
+    val title: String,
+    val message: String,
+    val buttonText: String
+)
+
 /**
- * Enterprise UX celebratory cinematic dialog presented upon process or major milestone completion.
- * Features animated celestial mascot, celebratory particle bursts, achievement badges, and metric recap.
+ * Enterprise UX celebratory cinematic dialog presented upon process completion.
+ * Features an expansive motivating panel with 3 dynamic inspirational variations,
+ * the Rumbo brand logo in the center, and a concordant action button.
  */
 @Composable
 fun CelebrationCinematicDialog(
-    title: String = "¡Proceso Culminado!",
-    subtitle: String = "Has conquistado este gran hito en tu rumbo.",
     processName: String,
+    title: String? = null,
+    subtitle: String? = null,
     totalTimeFormatted: String? = null,
     totalCostFormatted: String? = null,
     completedTasksCount: Int? = null,
     onDismiss: () -> Unit
 ) {
     var contentVisible by remember { mutableStateOf(false) }
+
+    val variations = remember(processName) {
+        listOf(
+            ProcessCelebrationVariation(
+                title = "¡Has completado \"$processName\"!",
+                message = "¡Imparable! Cada proceso culminado consolida tu disciplina y te acerca a tus metas más ambiciosas.",
+                buttonText = "¡Continuar imparable!"
+            ),
+            ProcessCelebrationVariation(
+                title = "¡Misión Cumplida en \"$processName\"!",
+                message = "¡Extraordinario trabajo! Has demostrado enfoque y constancia de inicio a fin. ¡Celebra tu conquista!",
+                buttonText = "¡A por el siguiente reto!"
+            ),
+            ProcessCelebrationVariation(
+                title = "¡Excelente logro con \"$processName\"!",
+                message = "¡Objetivo alcanzado con maestría! Tu constancia transforma planes en realidades tangibles.",
+                buttonText = "¡Seguir creciendo!"
+            )
+        )
+    }
+
+    val selectedVariation = remember(processName) {
+        val hash = kotlin.math.abs(processName.hashCode())
+        variations[hash % variations.size]
+    }
+
+    val effectiveTitle = title ?: selectedVariation.title
+    val effectiveSubtitle = subtitle ?: selectedVariation.message
+    val effectiveButtonText = selectedVariation.buttonText
 
     LaunchedEffect(Unit) {
         contentVisible = true
@@ -81,30 +117,31 @@ fun CelebrationCinematicDialog(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.92f)
-                .clip(RoundedCornerShape(28.dp))
+                .fillMaxWidth(0.95f)
+                .clip(RoundedCornerShape(32.dp))
                 .background(MaterialTheme.colorScheme.surface)
                 .border(
-                    width = 1.dp,
+                    width = 1.5.dp,
                     brush = Brush.verticalGradient(
                         listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.25f),
+                            Color.Transparent
                         )
                     ),
-                    shape = RoundedCornerShape(28.dp)
+                    shape = RoundedCornerShape(32.dp)
                 )
         ) {
             // Background Confetti Particle Burst
             ConfettiCelebration(
-                particleCount = 90,
-                durationMillis = 3200
+                particleCount = 100,
+                durationMillis = 3400
             )
 
             AnimatedVisibility(
                 visible = contentVisible,
                 enter = scaleIn(
-                    initialScale = 0.75f,
+                    initialScale = 0.72f,
                     animationSpec = spring(
                         dampingRatio = Spring.DampingRatioMediumBouncy,
                         stiffness = Spring.StiffnessLow
@@ -120,7 +157,7 @@ fun CelebrationCinematicDialog(
                     // Trophy / Crown badge
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(46.dp)
                             .clip(CircleShape)
                             .background(
                                 Brush.radialGradient(
@@ -137,58 +174,43 @@ fun CelebrationCinematicDialog(
                             imageVector = Icons.Default.EmojiEvents,
                             contentDescription = null,
                             tint = Color(0xFFFFB300),
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                    // Animated Celestial Mascot in SUCCESS state
-                    RumboMascot(
-                        state = MascotState.SUCCESS,
-                        size = 110.dp
-                    )
+                    // Brand Logo in the middle
+                    Box(
+                        modifier = Modifier.size(100.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        RumboLogo(
+                            size = 96.dp,
+                            state = MascotState.SUCCESS,
+                            showSubtitle = false
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Title
+                    // Motivating Title
                     Text(
-                        text = title,
-                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        text = effectiveTitle,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                    // Subtitle
+                    // Motivating Subtitle
                     Text(
-                        text = subtitle,
+                        text = effectiveSubtitle,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // Process name badge
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f),
-                        border = androidx.compose.foundation.BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
-                        )
-                    ) {
-                        Text(
-                            text = processName,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
-                    }
 
                     Spacer(modifier = Modifier.height(18.dp))
 
@@ -228,15 +250,15 @@ fun CelebrationCinematicDialog(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(22.dp))
                     }
 
-                    // Celebratory Confirmation Button
+                    // Celebratory Confirmation Button concordant with the motivation text
                     RumboButton(
                         onClick = onDismiss,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Continuar Rumbo")
+                        Text(effectiveButtonText)
                     }
                 }
             }

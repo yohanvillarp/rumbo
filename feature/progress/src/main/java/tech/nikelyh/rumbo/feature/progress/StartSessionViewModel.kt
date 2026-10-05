@@ -159,10 +159,30 @@ class StartSessionViewModel @Inject constructor(
                         elapsedTimeMillis = manualMillis,
                         showForgotTimerDialog = false,
                         isSessionFinished = true,
-                        isTimerRunning = false
+                        isTimerRunning = false,
+                        markTaskAsCompleted = it.selectedTaskId != null
                     )
                 }
                 saveActiveState(isRunning = false)
+            }
+            is StartSessionUiEvent.AdjustMinutesAndResume -> {
+                val parsedMinutes = event.minutesInput.trim().toLongOrNull() ?: 0L
+                val manualMillis = parsedMinutes * 60 * 1000L
+                accumulatedTimeMillis = manualMillis
+                lastResumeEpochMillis = System.currentTimeMillis()
+                _uiState.update {
+                    it.copy(
+                        elapsedTimeMillis = manualMillis,
+                        showForgotTimerDialog = false,
+                        isSessionFinished = false,
+                        isTimerRunning = true
+                    )
+                }
+                saveActiveState(isRunning = true)
+                resumeTimerLoop()
+            }
+            is StartSessionUiEvent.ToggleCompleteTask -> {
+                _uiState.update { it.copy(markTaskAsCompleted = event.complete) }
             }
             is StartSessionUiEvent.NoteChanged -> {
                 _uiState.update { it.copy(sessionNote = event.note) }
@@ -265,7 +285,12 @@ class StartSessionViewModel @Inject constructor(
             current.selectedTaskId?.let { taskId ->
                 val task = taskRepository.getTaskById(taskId).firstOrNull()
                 if (task != null) {
-                    taskRepository.saveTask(task.addWorkedTime(durationMillis))
+                    val updatedTask = if (current.markTaskAsCompleted) {
+                        task.addWorkedTime(durationMillis).complete(endTimeMillis)
+                    } else {
+                        task.addWorkedTime(durationMillis)
+                    }
+                    taskRepository.saveTask(updatedTask)
                 }
             }
 

@@ -3,6 +3,7 @@ package tech.nikelyh.rumbo.feature.onboarding
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,9 +28,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -39,6 +43,9 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -94,7 +101,7 @@ internal fun OnboardingScreen(
     modifier: Modifier = Modifier,
     tutorialSteps: List<TutorialStep> = TutorialContent.steps
 ) {
-    val totalPages = tutorialSteps.size + 1
+    val totalPages = tutorialSteps.size + 2
     val pagerState = rememberPagerState(pageCount = { totalPages })
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -156,22 +163,29 @@ internal fun OnboardingScreen(
                 .weight(1f)
                 .fillMaxWidth()
         ) { pageIndex ->
-            if (pageIndex < tutorialSteps.size) {
-                OnboardingTutorialStep(
-                    step = tutorialSteps[pageIndex],
-                    pageIndex = pageIndex,
-                    totalPages = tutorialSteps.size,
-                    selectedLanguageCode = uiState.selectedLanguageCode,
-                    onLanguageSelected = { lang ->
-                        onEvent(OnboardingUiEvent.ChangeLanguage(lang))
-                        LocaleHelper.applyLanguage(context, lang.code)
-                    }
-                )
-            } else {
-                OnboardingNameStep(
-                    uiState = uiState,
-                    onEvent = onEvent
-                )
+            when {
+                pageIndex == 0 -> {
+                    OnboardingWelcomePanel()
+                }
+                pageIndex <= tutorialSteps.size -> {
+                    val stepIndex = pageIndex - 1
+                    OnboardingTutorialStep(
+                        step = tutorialSteps[stepIndex],
+                        pageIndex = stepIndex,
+                        totalPages = tutorialSteps.size,
+                        selectedLanguageCode = uiState.selectedLanguageCode,
+                        onLanguageSelected = { lang ->
+                            onEvent(OnboardingUiEvent.ChangeLanguage(lang))
+                            LocaleHelper.applyLanguage(context, lang.code)
+                        }
+                    )
+                }
+                else -> {
+                    OnboardingNameStep(
+                        uiState = uiState,
+                        onEvent = onEvent
+                    )
+                }
             }
         }
 
@@ -210,7 +224,7 @@ internal fun OnboardingScreen(
                     },
                     modifier = Modifier.weight(if (isFirstPage) 2f else 1f)
                 ) {
-                    Text(stringResource(R.string.tutorial_next))
+                    Text(if (isFirstPage) "Comenzar recorrido" else stringResource(R.string.tutorial_next))
                     Spacer(modifier = Modifier.width(6.dp))
                     Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
                 }
@@ -432,6 +446,127 @@ private fun OnboardingNameStep(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+/**
+ * Dedicated Welcome Panel presented prior to the tutorial upon first app installation.
+ * Showcases the animated Rumbo brand logo, motivating greeting, and core pillars.
+ */
+@Composable
+private fun OnboardingWelcomePanel(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Box(
+            modifier = Modifier.size(130.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            RumboLogo(
+                size = 120.dp,
+                state = MascotState.DEFAULT,
+                showSubtitle = true
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Bienvenido a Rumbo",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Tu brújula para transformar metas y proyectos en procesos ordenados, tareas claras y hábitos de éxito.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            shape = RoundedCornerShape(16.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                WelcomeFeatureRow(
+                    icon = Icons.Default.AccountTree,
+                    title = "Estructura en Procesos",
+                    description = "Crea jerarquías y subprocesos para proyectos grandes."
+                )
+                WelcomeFeatureRow(
+                    icon = Icons.AutoMirrored.Filled.Assignment,
+                    title = "Tareas con Enfoque",
+                    description = "Asigna prioridades, fechas límite e inversión económica."
+                )
+                WelcomeFeatureRow(
+                    icon = Icons.Default.Timer,
+                    title = "Sesiones de Trabajo",
+                    description = "Mide tu dedicación real con cronómetro y métricas de avance."
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WelcomeFeatureRow(
+    icon: ImageVector,
+    title: String,
+    description: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Surface(
+            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.size(40.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
