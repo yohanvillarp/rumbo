@@ -365,25 +365,6 @@ internal fun CreateTaskScreen(
             }
         }
 
-        // Estimated Duration (STRICT Digits Only + KeyboardType.Number)
-        OutlinedTextField(
-            value = uiState.estimatedDurationMinutesInput,
-            onValueChange = { input ->
-                if (input.all { it.isDigit() }) {
-                    onEvent(CreateTaskUiEvent.DurationChanged(input))
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Tiempo estimado (minutos, opcional)") },
-            placeholder = { Text("Ej. 30") },
-            leadingIcon = { Icon(Icons.Default.Timer, contentDescription = null) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Next
-            )
-        )
-
         // Cost (KeyboardType.Decimal)
         OutlinedTextField(
             value = uiState.costInput,
