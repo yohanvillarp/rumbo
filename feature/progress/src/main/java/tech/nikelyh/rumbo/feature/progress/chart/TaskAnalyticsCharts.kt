@@ -118,7 +118,7 @@ fun TaskCompletionGauge(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Completadas",
+                    text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_completed_tasks),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
@@ -189,16 +189,21 @@ fun TaskDistributionBar(
         ) {
             LegendIndicator(
                 color = completedColor,
-                label = "Completadas (${data.completedTasksCount})"
+                label = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_completed_count, data.completedTasksCount)
             )
+            val pendingLabel = if (data.overdueTasksCount > 0) {
+                androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_on_time_tasks, onTimePendingCount)
+            } else {
+                androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_pending_count, data.pendingTasksCount)
+            }
             LegendIndicator(
                 color = pendingColor,
-                label = if (data.overdueTasksCount > 0) "A tiempo ($onTimePendingCount)" else "Pendientes (${data.pendingTasksCount})"
+                label = pendingLabel
             )
             if (data.overdueTasksCount > 0) {
                 LegendIndicator(
                     color = overdueColor,
-                    label = "Vencidas (${data.overdueTasksCount})"
+                    label = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_overdue_count, data.overdueTasksCount)
                 )
             }
         }
@@ -240,14 +245,14 @@ fun TaskMetricTiles(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             MetricCard(
-                title = "Completadas",
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_completed_tasks),
                 value = data.completedTasksCount.toString(),
                 icon = Icons.Default.CheckCircle,
                 iconTint = Color(0xFF2E7D32),
                 modifier = Modifier.weight(1f)
             )
             MetricCard(
-                title = "Pendientes",
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_pending_tasks),
                 value = data.pendingTasksCount.toString(),
                 icon = Icons.Default.Schedule,
                 iconTint = Color(0xFF0F5257),
@@ -260,14 +265,14 @@ fun TaskMetricTiles(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             MetricCard(
-                title = "Vencidas",
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_overdue_tasks),
                 value = data.overdueTasksCount.toString(),
                 icon = Icons.Default.Warning,
                 iconTint = if (data.overdueTasksCount > 0) Color(0xFFC62828) else MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.weight(1f)
             )
             MetricCard(
-                title = "Total Tareas",
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_total_tasks),
                 value = data.totalTasksCount.toString(),
                 icon = Icons.AutoMirrored.Filled.Assignment,
                 iconTint = MaterialTheme.colorScheme.primary,

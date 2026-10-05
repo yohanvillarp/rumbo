@@ -28,15 +28,17 @@ fun ContributionCalendar(
     val columns = 7
     val rows = totalDays / columns
 
+    val calendarDesc = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_active_days_desc, activeDates.size)
+
     Column(
         modifier = modifier
             .fillMaxWidth()
             .semantics {
-                contentDescription = "Calendario de contribución que muestra ${activeDates.size} días activos."
+                contentDescription = calendarDesc
             }
     ) {
         Text(
-            text = "Días Activos (${activeDates.size} días)",
+            text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_active_days_count, activeDates.size),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

@@ -78,8 +78,8 @@ internal fun ProgressScreen(
         }
         ProgressUiState.Empty -> {
             RumboEmptyState(
-                message = "Sin registros de progreso",
-                subtitle = "Inicia sesiones de trabajo o evalúa tu progreso para generar analíticas.",
+                message = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_empty_title),
+                subtitle = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_empty_subtitle),
                 icon = Icons.Default.BarChart,
                 modifier = modifier
             )
@@ -120,6 +120,10 @@ private fun ProgressContent(
             modifier = Modifier.fillMaxWidth()
         ) {
             AnalyticsTab.entries.forEachIndexed { index, tab ->
+                val tabLabel = when (tab) {
+                    AnalyticsTab.PROCESS_ANALYTICS -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_tab_processes)
+                    AnalyticsTab.TASK_ANALYTICS -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_tab_tasks)
+                }
                 Tab(
                     selected = pagerState.currentPage == index,
                     onClick = {
@@ -127,7 +131,7 @@ private fun ProgressContent(
                             pagerState.animateScrollToPage(index)
                         }
                     },
-                    text = { Text(tab.label) }
+                    text = { Text(tabLabel) }
                 )
             }
         }
@@ -140,10 +144,15 @@ private fun ProgressContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             TimeframeFilter.entries.forEach { timeframe ->
+                val timeframeLabel = when (timeframe) {
+                    TimeframeFilter.DAYS_7 -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_timeframe_7_days)
+                    TimeframeFilter.DAYS_30 -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_timeframe_30_days)
+                    TimeframeFilter.DAYS_90 -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_timeframe_90_days)
+                }
                 FilterChip(
                     selected = uiState.selectedTimeframe == timeframe,
                     onClick = { onEvent(ProgressUiEvent.TimeframeSelected(timeframe)) },
-                    label = { Text(timeframe.label) }
+                    label = { Text(timeframeLabel) }
                 )
             }
         }
@@ -184,8 +193,8 @@ private fun ProcessAnalyticsView(
         if (data.processInvestmentSummaries.isNotEmpty()) {
             item {
                 RumboSectionHeader(
-                    title = "Distribución del Tiempo",
-                    subtitle = "Proporción de horas dedicadas por cada proceso"
+                    title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_distribution_time_title),
+                    subtitle = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_distribution_time_subtitle)
                 )
             }
             item {
@@ -197,8 +206,8 @@ private fun ProcessAnalyticsView(
             // Process Investment Comparative Bar Chart
             item {
                 RumboSectionHeader(
-                    title = "Inversión por Proceso",
-                    subtitle = "Comparativa de horas acumuladas y costos"
+                    title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_investment_process_title),
+                    subtitle = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_investment_process_subtitle)
                 )
             }
             item {
@@ -211,15 +220,15 @@ private fun ProcessAnalyticsView(
         // Time Invested vs Declared Progress Comparison
         item {
             RumboSectionHeader(
-                title = "Tiempo Invertido vs Progreso Declarado",
-                subtitle = "Comparación entre dedicación temporal y nivel cualitativo"
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_comparison_title),
+                subtitle = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_comparison_subtitle)
             )
         }
 
         if (data.comparisons.isEmpty()) {
             item {
                 Text(
-                    text = "Sin procesos para comparar.",
+                    text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_comparison_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
@@ -233,8 +242,8 @@ private fun ProcessAnalyticsView(
         // Activity Calendar
         item {
             RumboSectionHeader(
-                title = "Consistencia y Actividad",
-                subtitle = "Días con sesiones registradas en el período"
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_activity_title),
+                subtitle = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_activity_subtitle)
             )
         }
         item {
@@ -263,8 +272,8 @@ private fun TaskAnalyticsView(
         // Task Completion Circular Gauge
         item {
             RumboSectionHeader(
-                title = "Tasa de Finalización",
-                subtitle = "Porcentaje de tareas completadas del total"
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_completion_rate_title),
+                subtitle = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_completion_rate_subtitle)
             )
         }
         item {
@@ -276,8 +285,8 @@ private fun TaskAnalyticsView(
         // Task Status Proportional Distribution Bar
         item {
             RumboSectionHeader(
-                title = "Distribución de Estados",
-                subtitle = "Proporción entre completadas, pendientes y vencidas"
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_status_distribution_title),
+                subtitle = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_status_distribution_subtitle)
             )
         }
         item {

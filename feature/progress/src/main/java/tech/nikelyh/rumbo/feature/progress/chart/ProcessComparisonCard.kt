@@ -46,7 +46,12 @@ fun ProcessComparisonCard(
         else -> 2
     }
 
-    val levelNames = listOf("Inicial", "Medio", "Alto", "Consolidado")
+    val levelNames = listOf(
+        androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_initial),
+        androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_medium),
+        androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_high),
+        androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_consolidated)
+    )
 
     RumboCard(modifier = modifier.fillMaxWidth()) {
         Column(
@@ -118,7 +123,7 @@ fun ProcessComparisonCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Nivel Cualitativo Declarado",
+                            text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_qualitative_declared),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.secondary
                         )
