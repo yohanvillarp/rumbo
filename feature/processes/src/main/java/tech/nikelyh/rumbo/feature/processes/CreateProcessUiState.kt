@@ -9,6 +9,7 @@ data class CreateProcessUiState(
     val parentProcessId: String? = null,
     val availableParents: List<Process> = emptyList(),
     val nameError: String? = null,
+    val dueDateEpochMillis: Long? = null,
     val isSubmitting: Boolean = false,
     val isSuccess: Boolean = false
 )

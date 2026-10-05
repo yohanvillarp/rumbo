@@ -111,19 +111,23 @@ internal fun TaskDetailScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    RumboSectionHeader(title = "Detalle de Tarea")
+                    RumboSectionHeader(title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_title))
 
-                    val statusSpanish = when (task.status) {
-                    TaskStatus.PENDING -> "Pendiente"
-                    TaskStatus.IN_PROGRESS -> "En progreso"
-                    TaskStatus.COMPLETED -> "Completada"
-                    TaskStatus.CANCELLED -> "Cancelada"
-                }
-                val prioritySpanish = when (task.priority) {
-                    Priority.LOW -> "Baja"
-                    Priority.MEDIUM -> "Media"
-                    Priority.HIGH -> "Alta"
-                }
+                    val statusLabel = androidx.compose.ui.res.stringResource(
+                        when (task.status) {
+                            TaskStatus.PENDING -> tech.nikelyh.rumbo.core.designsystem.R.string.status_pending
+                            TaskStatus.IN_PROGRESS -> tech.nikelyh.rumbo.core.designsystem.R.string.status_in_progress
+                            TaskStatus.COMPLETED -> tech.nikelyh.rumbo.core.designsystem.R.string.status_completed
+                            TaskStatus.CANCELLED -> tech.nikelyh.rumbo.core.designsystem.R.string.status_cancelled
+                        }
+                    )
+                    val priorityLabel = androidx.compose.ui.res.stringResource(
+                        when (task.priority) {
+                            Priority.LOW -> tech.nikelyh.rumbo.core.designsystem.R.string.priority_low
+                            Priority.MEDIUM -> tech.nikelyh.rumbo.core.designsystem.R.string.priority_medium
+                            Priority.HIGH -> tech.nikelyh.rumbo.core.designsystem.R.string.priority_high
+                        }
+                    )
 
                 RumboCard(modifier = Modifier.fillMaxWidth()) {
                     Row(
@@ -137,7 +141,7 @@ internal fun TaskDetailScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = statusSpanish,
+                            text = statusLabel,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -146,7 +150,7 @@ internal fun TaskDetailScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Proceso: ${uiState.processName}  •  Prioridad: $prioritySpanish",
+                        text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_process_priority, uiState.processName, priorityLabel),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -163,7 +167,7 @@ internal fun TaskDetailScreen(
                     if (task.cost > 0.0) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Costo: $${task.cost}",
+                            text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_cost, task.cost.toString()),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -176,7 +180,7 @@ internal fun TaskDetailScreen(
                         val timeText = if (hours > 0) "${hours}h ${remainingMinutes}m" else "${minutes}m"
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Tiempo trabajado: $timeText",
+                            text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_time_worked, timeText),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -185,7 +189,7 @@ internal fun TaskDetailScreen(
                     task.estimatedDurationMinutes?.let { minutes ->
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Duración estimada: $minutes min",
+                            text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_estimated_duration, minutes),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -208,7 +212,7 @@ internal fun TaskDetailScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Fecha límite: $dateText",
+                                text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_due_date, dateText),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.tertiary
                             )
@@ -229,7 +233,13 @@ internal fun TaskDetailScreen(
                         contentDescription = null
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (isTaskStarted) "Continuar Sesión" else "Iniciar Sesión")
+                    Text(
+                        if (isTaskStarted) {
+                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_continue_session)
+                        } else {
+                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_start_session)
+                        }
+                    )
                 }
 
                 RumboOutlinedButton(
@@ -247,7 +257,13 @@ internal fun TaskDetailScreen(
                         contentDescription = null
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (task.isCompleted) "Marcar Pendiente" else "Marcar Completada")
+                    Text(
+                        if (task.isCompleted) {
+                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_mark_pending)
+                        } else {
+                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_mark_completed)
+                        }
+                    )
                 }
 
                 Row(
@@ -260,7 +276,7 @@ internal fun TaskDetailScreen(
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = null)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Editar")
+                        Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_edit))
                     }
 
                     RumboOutlinedButton(
@@ -269,7 +285,7 @@ internal fun TaskDetailScreen(
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                        Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_delete), color = MaterialTheme.colorScheme.error)
                     }
                 }
 
@@ -294,8 +310,8 @@ internal fun TaskDetailScreen(
                 if (showDeleteDialog) {
                     AlertDialog(
                         onDismissRequest = { showDeleteDialog = false },
-                        title = { Text("Confirmar eliminación") },
-                        text = { Text("¿Deseas eliminar la tarea '${task.title}'? Esta acción no se puede deshacer.") },
+                        title = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_delete_dialog_title)) },
+                        text = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_delete_dialog_message, task.title)) },
                         confirmButton = {
                             TextButton(
                                 onClick = {
@@ -303,12 +319,12 @@ internal fun TaskDetailScreen(
                                     onEvent(TaskDetailUiEvent.DeleteTask)
                                 }
                             ) {
-                                Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                                Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_delete), color = MaterialTheme.colorScheme.error)
                             }
                         },
                         dismissButton = {
                             TextButton(onClick = { showDeleteDialog = false }) {
-                                Text("Cancelar")
+                                Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_cancel))
                             }
                         }
                     )

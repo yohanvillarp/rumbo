@@ -22,5 +22,6 @@ data class ProcessEntity(
     val accumulatedDirectCost: Double,
     val isStarred: Boolean = false,
     val isSystemProcess: Boolean = false,
-    val parentProcessId: String? = null
+    val parentProcessId: String? = null,
+    val dueDateEpochMillis: Long? = null
 )

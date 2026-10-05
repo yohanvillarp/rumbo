@@ -105,7 +105,8 @@ internal fun EditTaskScreen(
 
     val selectableProcesses = uiState.availableProcesses
     val selectedProcess = selectableProcesses.firstOrNull { it.id == uiState.selectedProcessId }
-    val selectedProcessLabel = selectedProcess?.name ?: if (uiState.selectedProcessId == "general") "General" else "Selecciona un proceso"
+    val selectProcessText = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_select_process)
+    val selectedProcessLabel = selectedProcess?.name ?: if (uiState.selectedProcessId == "general") "General" else selectProcessText
 
     val dueDateFormatted = remember(uiState.dueDateEpochMillis) {
         val dueMillis = uiState.dueDateEpochMillis
@@ -129,8 +130,8 @@ internal fun EditTaskScreen(
             value = uiState.title,
             onValueChange = { onEvent(EditTaskUiEvent.TitleChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("¿Qué necesitas hacer? *") },
-            placeholder = { Text("Ej. Comprar materiales o Enviar informe") },
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_title_label)) },
+            placeholder = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_title_placeholder)) },
             leadingIcon = { Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null) },
             isError = uiState.titleError != null,
             supportingText = {
@@ -154,8 +155,8 @@ internal fun EditTaskScreen(
             value = uiState.description,
             onValueChange = { onEvent(EditTaskUiEvent.DescriptionChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Notas o detalles (opcional)") },
-            placeholder = { Text("Agrega cualquier apunte o instrucción útil") },
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_notes_label)) },
+            placeholder = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_notes_placeholder)) },
             leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
             maxLines = 3,
             keyboardOptions = KeyboardOptions(
@@ -174,7 +175,7 @@ internal fun EditTaskScreen(
                 value = selectedProcessLabel,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Proceso al que pertenece *") },
+                label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_process_label)) },
                 leadingIcon = { Icon(Icons.Default.Folder, contentDescription = null) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = processDropdownExpanded) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
@@ -195,7 +196,7 @@ internal fun EditTaskScreen(
             ) {
                 if (selectableProcesses.isEmpty()) {
                     DropdownMenuItem(
-                        text = { Text("No hay procesos activos disponibles") },
+                        text = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_no_processes_item)) },
                         enabled = false,
                         onClick = {}
                     )
@@ -220,17 +221,17 @@ internal fun EditTaskScreen(
                 onValueChange = {},
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Fecha y hora límite *") },
-                placeholder = { Text("Toca para elegir fecha y hora") },
+                label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_due_date_label)) },
+                placeholder = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_due_date_placeholder)) },
                 leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
                 trailingIcon = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { showDatePicker = true }) {
-                            Icon(Icons.Default.CalendarToday, contentDescription = "Elegir fecha")
+                            Icon(Icons.Default.CalendarToday, contentDescription = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_choose_date))
                         }
                         if (uiState.dueDateEpochMillis != null) {
                             IconButton(onClick = { showTimePicker = true }) {
-                                Icon(Icons.Default.Schedule, contentDescription = "Elegir hora")
+                                Icon(Icons.Default.Schedule, contentDescription = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_choose_time))
                             }
                         }
                     }
@@ -283,12 +284,12 @@ internal fun EditTaskScreen(
                             showTimePicker = true
                         }
                     ) {
-                        Text("Aceptar")
+                        Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.dialog_accept))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) {
-                        Text("Cancelar")
+                        Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_cancel))
                     }
                 }
             ) {
@@ -317,15 +318,15 @@ internal fun EditTaskScreen(
                             showTimePicker = false
                         }
                     ) {
-                        Text("Aceptar")
+                        Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.dialog_accept))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showTimePicker = false }) {
-                        Text("Cancelar")
+                        Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_cancel))
                     }
                 },
-                title = { Text("Hora límite") },
+                title = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_time_limit_title)) },
                 text = {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
@@ -348,7 +349,7 @@ internal fun EditTaskScreen(
 
         // Priority Selection
         Text(
-            text = "Prioridad",
+            text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.priority_label),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -357,15 +358,17 @@ internal fun EditTaskScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Priority.entries.forEach { priority ->
-                val spanishLabel = when (priority) {
-                    Priority.LOW -> "Baja"
-                    Priority.MEDIUM -> "Media"
-                    Priority.HIGH -> "Alta"
-                }
+                val priorityLabel = androidx.compose.ui.res.stringResource(
+                    when (priority) {
+                        Priority.LOW -> tech.nikelyh.rumbo.core.designsystem.R.string.priority_low
+                        Priority.MEDIUM -> tech.nikelyh.rumbo.core.designsystem.R.string.priority_medium
+                        Priority.HIGH -> tech.nikelyh.rumbo.core.designsystem.R.string.priority_high
+                    }
+                )
                 FilterChip(
                     selected = uiState.priority == priority,
                     onClick = { onEvent(EditTaskUiEvent.PriorityChanged(priority)) },
-                    label = { Text(spanishLabel) }
+                    label = { Text(priorityLabel) }
                 )
             }
         }
@@ -379,8 +382,8 @@ internal fun EditTaskScreen(
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Tiempo estimado (minutos, opcional)") },
-            placeholder = { Text("Ej. 30") },
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_duration_label)) },
+            placeholder = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_duration_placeholder)) },
             leadingIcon = { Icon(Icons.Default.Timer, contentDescription = null) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(
@@ -394,7 +397,7 @@ internal fun EditTaskScreen(
             value = uiState.costInput,
             onValueChange = { onEvent(EditTaskUiEvent.CostChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Costo ($)") },
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_cost_label)) },
             placeholder = { Text("0.0") },
             leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null) },
             isError = uiState.costError != null,
@@ -421,7 +424,7 @@ internal fun EditTaskScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isSubmitting
         ) {
-            Text("Guardar Cambios")
+            Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_form_save_changes))
         }
     }
 }

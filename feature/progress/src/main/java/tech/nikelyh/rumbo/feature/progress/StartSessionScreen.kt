@@ -61,6 +61,7 @@ import java.util.Locale
 @Composable
 fun StartSessionRoute(
     onSessionFinished: () -> Unit,
+    onSessionPaused: (taskId: String?, processId: String?) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
     viewModel: StartSessionViewModel = hiltViewModel()
 ) {
@@ -69,6 +70,13 @@ fun StartSessionRoute(
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             onSessionFinished()
+        }
+    }
+
+    LaunchedEffect(uiState.isSessionPaused) {
+        if (uiState.isSessionPaused) {
+            onSessionPaused(uiState.selectedTaskId, uiState.selectedProcessId)
+            viewModel.onEvent(StartSessionUiEvent.ResetPausedState)
         }
     }
 
@@ -118,7 +126,8 @@ internal fun StartSessionScreen(
                 ) {
                     val process = uiState.availableProcesses.firstOrNull { it.id == uiState.selectedProcessId }
                     val processName = process?.name ?: "General"
-                    val titleText = if (uiState.selectedTaskTitle.isNotBlank()) uiState.selectedTaskTitle else "Sesión de Trabajo"
+                    val defaultSessionTitle = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_title_default)
+                    val titleText = if (uiState.selectedTaskTitle.isNotBlank()) uiState.selectedTaskTitle else defaultSessionTitle
 
                     Text(
                         text = titleText,
@@ -163,8 +172,13 @@ internal fun StartSessionScreen(
                             .height(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
+                        val sessionStatusText = if (uiState.isTimerRunning) {
+                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_status_running)
+                        } else {
+                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_status_paused)
+                        }
                         Text(
-                            text = if (uiState.isTimerRunning) "Sesión en curso" else "Sesión en pausa",
+                            text = sessionStatusText,
                             style = MaterialTheme.typography.bodyMedium,
                             color = if (uiState.isTimerRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
                         )
@@ -187,7 +201,10 @@ internal fun StartSessionScreen(
                     ) {
                         Icon(Icons.Default.CheckCircle, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Finalizar Sesión", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_action_finish),
+                            style = MaterialTheme.typography.titleMedium
+                        )
                     }
 
                     RumboOutlinedButton(
@@ -201,7 +218,12 @@ internal fun StartSessionScreen(
                             contentDescription = null
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(if (uiState.isTimerRunning) "Pausar" else "Continuar")
+                        val toggleText = if (uiState.isTimerRunning) {
+                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_action_pause)
+                        } else {
+                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_action_continue)
+                        }
+                        Text(toggleText)
                     }
 
                     Row(
@@ -214,7 +236,10 @@ internal fun StartSessionScreen(
                         ) {
                             Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Olvidé detenerlo", color = MaterialTheme.colorScheme.secondary)
+                            Text(
+                                text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_action_forgot),
+                                color = MaterialTheme.colorScheme.secondary
+                            )
                         }
 
                         TextButton(
@@ -222,7 +247,10 @@ internal fun StartSessionScreen(
                         ) {
                             Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Cancelar Sesión", color = MaterialTheme.colorScheme.error)
+                            Text(
+                                text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_action_cancel),
+                                color = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 }
@@ -238,8 +266,8 @@ internal fun StartSessionScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             RumboSectionHeader(
-                title = "Sesión Finalizada",
-                subtitle = "Revisa el tiempo invertido y guarda tu sesión."
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_culmination_title),
+                subtitle = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_culmination_subtitle)
             )
 
             RumboCard(modifier = Modifier.fillMaxWidth()) {
@@ -250,7 +278,7 @@ internal fun StartSessionScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Tiempo total registrado",
+                        text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_total_time_recorded),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -266,7 +294,7 @@ internal fun StartSessionScreen(
                     if (uiState.selectedTaskTitle.isNotBlank()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Tarea: ${uiState.selectedTaskTitle}",
+                            text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_task_prefix, uiState.selectedTaskTitle),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -278,8 +306,8 @@ internal fun StartSessionScreen(
                 value = uiState.sessionNote,
                 onValueChange = { onEvent(StartSessionUiEvent.NoteChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Nota de la sesión (opcional)") },
-                placeholder = { Text("¿Qué lograste durante esta sesión?") },
+                label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_note_label)) },
+                placeholder = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_note_placeholder)) },
                 leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
                 maxLines = 3
             )
@@ -293,24 +321,29 @@ internal fun StartSessionScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Registrar nivel de progreso cualitativo",
+                    text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_qualitative_checkbox),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
 
             if (uiState.saveProgressEntry) {
                 Text(
-                    text = "Nivel de Progreso",
+                    text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_qualitative_level_label),
                     style = MaterialTheme.typography.labelSmall
                 )
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     ProgressLevel.entries.forEach { level ->
+                        val levelLabel = when (level) {
+                            ProgressLevel.LOW -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_low)
+                            ProgressLevel.MEDIUM -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_medium)
+                            ProgressLevel.HIGH -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_high)
+                        }
                         FilterChip(
                             selected = uiState.progressLevel == level,
                             onClick = { onEvent(StartSessionUiEvent.ProgressLevelSelected(level)) },
-                            label = { Text(level.label) }
+                            label = { Text(levelLabel) }
                         )
                     }
                 }
@@ -336,13 +369,14 @@ internal fun StartSessionScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = "Marcar tarea como culminada",
+                                text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_complete_task_title),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
+                            val taskName = uiState.selectedTaskTitle.ifBlank { "Tarea" }
                             Text(
-                                text = "Completar '${uiState.selectedTaskTitle.ifBlank { "Tarea" }}' al guardar",
+                                text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_complete_task_subtitle, taskName),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                             )
@@ -356,7 +390,12 @@ internal fun StartSessionScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isSubmitting
             ) {
-                Text(if (uiState.markTaskAsCompleted) "Guardar y Culminar Tarea" else "Guardar Sesión")
+                val saveButtonText = if (uiState.markTaskAsCompleted) {
+                    androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_save_and_complete)
+                } else {
+                    androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_save)
+                }
+                Text(saveButtonText)
             }
 
             TextButton(
@@ -365,7 +404,10 @@ internal fun StartSessionScreen(
             ) {
                 Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Descartar Sesión", color = MaterialTheme.colorScheme.error)
+                Text(
+                    text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_discard),
+                    color = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
@@ -373,8 +415,8 @@ internal fun StartSessionScreen(
     if (showCancelConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showCancelConfirmDialog = false },
-            title = { Text("¿Cancelar sesión?") },
-            text = { Text("Se descartará el tiempo transcurrido en esta sesión y no se guardará ningún registro.") },
+            title = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_cancel_dialog_title)) },
+            text = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_cancel_dialog_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -382,12 +424,15 @@ internal fun StartSessionScreen(
                         onEvent(StartSessionUiEvent.CancelSession)
                     }
                 ) {
-                    Text("Sí, cancelar", color = MaterialTheme.colorScheme.error)
+                    Text(
+                        text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_cancel_dialog_confirm),
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showCancelConfirmDialog = false }) {
-                    Text("Volver")
+                    Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_cancel_dialog_back))
                 }
             }
         )
@@ -397,15 +442,15 @@ internal fun StartSessionScreen(
     if (uiState.showForgotTimerDialog) {
         AlertDialog(
             onDismissRequest = { onEvent(StartSessionUiEvent.DismissForgotTimerDialog) },
-            title = { Text("Ajustar Tiempo Invertido") },
+            title = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_adjust_dialog_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Introduce la cantidad de minutos reales que trabajaste en esta sesión:")
+                    Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_adjust_dialog_message))
                     OutlinedTextField(
                         value = manualMinutesText,
                         onValueChange = { input -> if (input.all { it.isDigit() }) manualMinutesText = input },
-                        label = { Text("Minutos estimados") },
-                        placeholder = { Text("Ej. 45") },
+                        label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_adjust_minutes_label)) },
+                        placeholder = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_adjust_minutes_placeholder)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
@@ -422,7 +467,7 @@ internal fun StartSessionScreen(
                             }
                         }
                     ) {
-                        Text("Ajustar y Seguir")
+                        Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_adjust_and_continue))
                     }
                     Button(
                         onClick = {
@@ -431,13 +476,13 @@ internal fun StartSessionScreen(
                             }
                         }
                     ) {
-                        Text("Culminar")
+                        Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_adjust_and_culminate))
                     }
                 }
             },
             dismissButton = {
                 TextButton(onClick = { onEvent(StartSessionUiEvent.DismissForgotTimerDialog) }) {
-                    Text("Cancelar")
+                    Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_cancel))
                 }
             }
         )

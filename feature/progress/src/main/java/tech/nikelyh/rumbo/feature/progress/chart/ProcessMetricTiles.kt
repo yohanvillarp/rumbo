@@ -46,14 +46,14 @@ fun ProcessMetricTiles(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             ProcessStatCard(
-                title = "Tiempo Total",
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_total_time),
                 value = String.format(Locale.getDefault(), "%.1fh", totalHours),
                 icon = Icons.Default.Schedule,
                 iconTint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
             )
             ProcessStatCard(
-                title = "Sesiones",
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_sessions),
                 value = data.totalSessionsCount.toString(),
                 icon = Icons.Default.PlayCircle,
                 iconTint = Color(0xFF1976D2),
@@ -66,14 +66,14 @@ fun ProcessMetricTiles(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             ProcessStatCard(
-                title = "Días Activos",
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_active_days),
                 value = "${data.totalActiveDays} d",
                 icon = Icons.Default.DateRange,
                 iconTint = Color(0xFF2E7D32),
                 modifier = Modifier.weight(1f)
             )
             ProcessStatCard(
-                title = "Costo Invertido",
+                title = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.metric_invested_cost),
                 value = "$${data.totalAccumulatedCost.toInt()}",
                 icon = Icons.Default.AttachMoney,
                 iconTint = Color(0xFFF57C00),

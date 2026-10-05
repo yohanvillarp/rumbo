@@ -116,4 +116,57 @@ class CreateTaskViewModelTest {
         assertEquals(tech.nikelyh.rumbo.core.model.Process.GENERAL_PROCESS_ID, state.selectedProcessId)
         assertTrue(state.availableProcesses.any { it.id == tech.nikelyh.rumbo.core.model.Process.GENERAL_PROCESS_ID })
     }
+
+    @Test
+    fun `task due date exceeding process deadline triggers warning and blocks submit`() = runBlocking {
+        val procDue = 5000L
+        val processWithDue = tech.nikelyh.rumbo.core.model.Process(
+            id = "p-deadline",
+            name = "Proceso con fecha límite",
+            createdAtEpochMillis = 1000L,
+            colorOrVisualId = "teal",
+            dueDateEpochMillis = procDue
+        )
+        processRepository.saveProcess(processWithDue)
+
+        viewModel.onEvent(CreateTaskUiEvent.ProcessSelected("p-deadline"))
+        viewModel.onEvent(CreateTaskUiEvent.TitleChanged("Tarea excedida"))
+        viewModel.onEvent(CreateTaskUiEvent.DueDateChanged(procDue + 1000L))
+
+        var state = viewModel.uiState.value
+        org.junit.Assert.assertNotNull(state.dueDateError)
+        assertTrue(state.dueDateError!!.contains("no puede superar"))
+
+        viewModel.onEvent(CreateTaskUiEvent.SubmitTask)
+        state = viewModel.uiState.value
+        org.junit.Assert.assertFalse(state.isSuccess)
+
+        // Correct to procDue
+        viewModel.onEvent(CreateTaskUiEvent.DueDateChanged(procDue))
+        state = viewModel.uiState.value
+        assertNull(state.dueDateError)
+        viewModel.onEvent(CreateTaskUiEvent.SubmitTask)
+        assertTrue(viewModel.uiState.value.isSuccess)
+    }
+
+    @Test
+    fun `process without due date allows task due date without process restriction`() = runBlocking {
+        val processNoDue = tech.nikelyh.rumbo.core.model.Process(
+            id = "p-no-due",
+            name = "Proceso sin fecha límite",
+            createdAtEpochMillis = 1000L,
+            colorOrVisualId = "teal",
+            dueDateEpochMillis = null
+        )
+        processRepository.saveProcess(processNoDue)
+
+        viewModel.onEvent(CreateTaskUiEvent.ProcessSelected("p-no-due"))
+        viewModel.onEvent(CreateTaskUiEvent.TitleChanged("Tarea libre"))
+        viewModel.onEvent(CreateTaskUiEvent.DueDateChanged(99999999L))
+        viewModel.onEvent(CreateTaskUiEvent.SubmitTask)
+
+        val state = viewModel.uiState.value
+        assertNull(state.dueDateError)
+        assertTrue(state.isSuccess)
+    }
 }

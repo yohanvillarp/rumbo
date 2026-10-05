@@ -91,7 +91,7 @@ internal fun LogProgressScreen(
                 value = selectedProcessLabel,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Proceso Asignado") },
+                label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.log_progress_process_label)) },
                 leadingIcon = { Icon(Icons.Default.Folder, contentDescription = null) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = processDropdownExpanded) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
@@ -105,7 +105,7 @@ internal fun LogProgressScreen(
                 onDismissRequest = { processDropdownExpanded = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text("General (Proceso por defecto)") },
+                    text = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.log_progress_general_default)) },
                     onClick = {
                         onEvent(LogProgressUiEvent.ProcessSelected("general"))
                         processDropdownExpanded = false
@@ -125,7 +125,7 @@ internal fun LogProgressScreen(
 
         // Progress Level Selection (LOW, MEDIUM, HIGH)
         Text(
-            text = "Nivel Cualitativo de Progreso",
+            text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.log_progress_level_label),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -134,10 +134,15 @@ internal fun LogProgressScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             ProgressLevel.entries.forEach { level ->
+                val levelLabel = when (level) {
+                    ProgressLevel.LOW -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_low)
+                    ProgressLevel.MEDIUM -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_medium)
+                    ProgressLevel.HIGH -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_high)
+                }
                 FilterChip(
                     selected = uiState.progressLevel == level,
                     onClick = { onEvent(LogProgressUiEvent.LevelSelected(level)) },
-                    label = { Text(level.label) }
+                    label = { Text(levelLabel) }
                 )
             }
         }
@@ -147,8 +152,8 @@ internal fun LogProgressScreen(
             value = uiState.note,
             onValueChange = { onEvent(LogProgressUiEvent.NoteChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Nota de evaluación (opcional)") },
-            placeholder = { Text("Reflexión breve o hito alcanzado") },
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.log_progress_note_label)) },
+            placeholder = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.log_progress_note_placeholder)) },
             leadingIcon = { Icon(Icons.Default.Description, contentDescription = null) },
             maxLines = 3
         )
@@ -160,7 +165,7 @@ internal fun LogProgressScreen(
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isSubmitting
         ) {
-            Text("Guardar Evaluación")
+            Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.log_progress_submit))
         }
     }
 }

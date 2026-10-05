@@ -46,6 +46,8 @@ import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
+import androidx.compose.ui.res.stringResource
+import tech.nikelyh.rumbo.core.designsystem.R
 import java.time.format.DateTimeFormatter
 
 private val TASK_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
@@ -66,10 +68,10 @@ fun RumboTaskItem(
         processColorOrVisualId == null
     val processColor: Color? = if (!isGeneral) ProcessColors.getColor(processColorOrVisualId) else null
 
-    val prioritySpanish = when (task.priority) {
-        Priority.LOW -> "Baja"
-        Priority.MEDIUM -> "Media"
-        Priority.HIGH -> "Alta"
+    val priorityLabel = when (task.priority) {
+        Priority.LOW -> stringResource(R.string.priority_low)
+        Priority.MEDIUM -> stringResource(R.string.priority_medium)
+        Priority.HIGH -> stringResource(R.string.priority_high)
     }
 
     Card(
@@ -170,7 +172,7 @@ fun RumboTaskItem(
                                     shape = RoundedCornerShape(4.dp)
                                 ) {
                                     Text(
-                                        text = "Prioridad: $prioritySpanish",
+                                        text = stringResource(R.string.priority_prefix, priorityLabel),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = if (processColor != null) processColor.copy(alpha = 0.9f) else MaterialTheme.colorScheme.secondary,
                                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
@@ -189,8 +191,8 @@ fun RumboTaskItem(
                                         shape = RoundedCornerShape(4.dp)
                                     ) {
                                         Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                             verticalAlignment = Alignment.CenterVertically,
+                                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.Event,
@@ -200,7 +202,7 @@ fun RumboTaskItem(
                                             )
                                             Spacer(modifier = Modifier.width(3.dp))
                                             Text(
-                                                text = "Límite: $dateText",
+                                                text = stringResource(R.string.task_detail_due_date_prefix, dateText),
                                                 style = MaterialTheme.typography.labelSmall,
                                                 color = MaterialTheme.colorScheme.onTertiaryContainer
                                             )
@@ -235,12 +237,17 @@ fun RumboTaskItem(
 
                         if (!task.isCompleted && onStartSession != null) {
                             val isTaskStarted = task.timeWorkedMillis > 0L || task.status == TaskStatus.IN_PROGRESS
+                            val sessionActionDesc = if (isTaskStarted) {
+                                stringResource(R.string.task_detail_continue_session)
+                            } else {
+                                stringResource(R.string.task_detail_start_session)
+                            }
                             IconButton(
                                 onClick = { onStartSession(task) }
                             ) {
                                 Icon(
                                     imageVector = if (isTaskStarted) Icons.Default.PlayCircle else Icons.Default.PlayArrow,
-                                    contentDescription = if (isTaskStarted) "Continuar Sesión" else "Iniciar Sesión",
+                                    contentDescription = sessionActionDesc,
                                     tint = processColor ?: MaterialTheme.colorScheme.primary
                                 )
                             }

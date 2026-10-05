@@ -37,6 +37,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import tech.nikelyh.rumbo.core.designsystem.R
 import tech.nikelyh.rumbo.core.designsystem.component.MascotState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboEmptyState
@@ -87,10 +89,10 @@ internal fun ProcessesScreen(
         }
         ProcessesUiState.Empty -> {
             RumboEmptyState(
-                message = "Aún no tienes procesos",
-                subtitle = "Crea un proceso para dividir un proyecto grande en tareas más sencillas.",
+                message = stringResource(R.string.processes_empty_title),
+                subtitle = stringResource(R.string.processes_empty_subtitle),
                 mascotState = MascotState.DEFAULT,
-                actionLabel = "Crear Proceso",
+                actionLabel = stringResource(R.string.processes_create_action),
                 onActionClick = onCreateProcessClick,
                 modifier = modifier
             )
@@ -136,8 +138,8 @@ private fun ProcessesContent(
                 value = uiState.searchQuery,
                 onValueChange = { onEvent(ProcessesUiEvent.SearchQueryChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Buscar procesos...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                placeholder = { Text(stringResource(R.string.processes_search_placeholder)) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = stringResource(R.string.processes_search_desc)) },
                 singleLine = true,
                 shape = CircleShape,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -177,12 +179,12 @@ private fun ProcessesContent(
 
             if (displayList.isEmpty()) {
                 val emptyMessage = when (uiState.selectedFilter) {
-                    ProcessStatus.COMPLETED, ProcessStatus.ARCHIVED -> "Sin procesos completados"
-                    else -> "Sin procesos activos"
+                    ProcessStatus.COMPLETED, ProcessStatus.ARCHIVED -> stringResource(R.string.processes_empty_completed)
+                    else -> stringResource(R.string.processes_empty_active)
                 }
                 RumboEmptyState(
                     message = emptyMessage,
-                    subtitle = "Usa el botón inferior para crear un nuevo proceso.",
+                    subtitle = stringResource(R.string.processes_empty_filter_subtitle),
                     mascotState = MascotState.RESTING,
                     modifier = Modifier.weight(1f)
                 )
@@ -211,7 +213,7 @@ private fun ProcessesContent(
         ) {
             Icon(Icons.Default.Add, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Nuevo Proceso")
+            Text(stringResource(R.string.processes_new_button))
         }
     }
 
@@ -250,12 +252,12 @@ private fun ProcessStatusFilterRow(
         FilterChip(
             selected = selectedFilter == ProcessStatus.ACTIVE,
             onClick = { onFilterSelected(ProcessStatus.ACTIVE) },
-            label = { Text("Activos ($activeCount)") }
+            label = { Text(stringResource(R.string.process_filter_active, activeCount)) }
         )
         FilterChip(
             selected = selectedFilter == ProcessStatus.COMPLETED,
             onClick = { onFilterSelected(ProcessStatus.COMPLETED) },
-            label = { Text("Completados ($completedCount)") }
+            label = { Text(stringResource(R.string.process_filter_completed, completedCount)) }
         )
     }
 }
@@ -287,32 +289,32 @@ private fun ProcessSecondaryFilterRow(
         FilterChip(
             selected = selectedTypeFilter == ProcessTypeFilter.ALL,
             onClick = { onTypeFilterSelected(ProcessTypeFilter.ALL) },
-            label = { Text("Todos") }
+            label = { Text(stringResource(R.string.process_type_all)) }
         )
         FilterChip(
             selected = selectedTypeFilter == ProcessTypeFilter.MAIN,
             onClick = { onTypeFilterSelected(ProcessTypeFilter.MAIN) },
-            label = { Text("Principales") }
+            label = { Text(stringResource(R.string.process_type_main)) }
         )
         FilterChip(
             selected = selectedTypeFilter == ProcessTypeFilter.SUBPROCESS,
             onClick = { onTypeFilterSelected(ProcessTypeFilter.SUBPROCESS) },
-            label = { Text("Subprocesos") }
+            label = { Text(stringResource(R.string.process_type_sub)) }
         )
         FilterChip(
             selected = sortOrder == ProcessSortOrder.RECENT,
             onClick = { onSortOrderSelected(ProcessSortOrder.RECENT) },
-            label = { Text("Más recientes") }
+            label = { Text(stringResource(R.string.sort_recent)) }
         )
         FilterChip(
             selected = sortOrder == ProcessSortOrder.NAME,
             onClick = { onSortOrderSelected(ProcessSortOrder.NAME) },
-            label = { Text("Alfabético (A-Z)") }
+            label = { Text(stringResource(R.string.sort_alphabetical)) }
         )
         FilterChip(
             selected = sortOrder == ProcessSortOrder.ACCUMULATED_COST,
             onClick = { onSortOrderSelected(ProcessSortOrder.ACCUMULATED_COST) },
-            label = { Text("Mayor inversión") }
+            label = { Text(stringResource(R.string.sort_cost)) }
         )
     }
 }

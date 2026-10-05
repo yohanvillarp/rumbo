@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Card
@@ -30,6 +31,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import java.time.format.DateTimeFormatter
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -84,11 +87,11 @@ fun RumboProcessCard(
     onToggleStar: (() -> Unit)? = null
 ) {
     val processColor = ProcessColors.getColor(process.colorOrVisualId)
-    val statusSpanish = when (process.status) {
-        ProcessStatus.ACTIVE -> "Activo"
-        ProcessStatus.PAUSED -> "Pausado"
-        ProcessStatus.COMPLETED -> "Completado"
-        ProcessStatus.ARCHIVED -> "Archivado"
+    val statusLabel = when (process.status) {
+        ProcessStatus.ACTIVE -> stringResource(R.string.status_active)
+        ProcessStatus.PAUSED -> stringResource(R.string.status_paused)
+        ProcessStatus.COMPLETED -> stringResource(R.string.status_completed)
+        ProcessStatus.ARCHIVED -> stringResource(R.string.status_archived)
     }
 
     Card(
@@ -151,7 +154,7 @@ fun RumboProcessCard(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "Subproceso",
+                                    text = stringResource(R.string.process_tag_subprocess),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
@@ -163,7 +166,7 @@ fun RumboProcessCard(
                         shape = RoundedCornerShape(6.dp)
                     ) {
                         Text(
-                            text = statusSpanish,
+                            text = statusLabel,
                             style = MaterialTheme.typography.labelSmall,
                             color = processColor,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
@@ -203,28 +206,67 @@ fun RumboProcessCard(
                     )
                 }
 
-                if (process.accumulatedDirectCost > 0.0) {
+                if (process.dueDateEpochMillis != null || process.accumulatedDirectCost > 0.0) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
-                        shape = RoundedCornerShape(6.dp)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AttachMoney,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text(
-                                text = "Inversión: $${process.accumulatedDirectCost}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                        val dueEpoch = process.dueDateEpochMillis
+                        if (dueEpoch != null) {
+                            val dateText = remember(dueEpoch) {
+                                val instant = java.time.Instant.ofEpochMilli(dueEpoch)
+                                val zone = java.time.ZoneId.systemDefault()
+                                val zonedDateTime = instant.atZone(zone)
+                                zonedDateTime.format(PROCESS_DATE_FORMATTER)
+                            }
+                            Surface(
+                                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f),
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Event,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(12.dp),
+                                        tint = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = stringResource(R.string.process_card_due_date_prefix, dateText),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                }
+                            }
+                        }
+
+                        if (process.accumulatedDirectCost > 0.0) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AttachMoney,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(2.dp))
+                                    Text(
+                                        text = stringResource(R.string.process_card_investment, process.accumulatedDirectCost.toString()),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -232,6 +274,8 @@ fun RumboProcessCard(
         }
     }
 }
+
+private val PROCESS_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
 
 @Preview(name = "ProcessCard Light", showBackground = true)
 @Composable

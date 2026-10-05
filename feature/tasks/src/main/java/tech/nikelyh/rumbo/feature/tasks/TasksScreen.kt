@@ -91,10 +91,10 @@ internal fun TasksScreen(
         }
         TasksUiState.Empty -> {
             RumboEmptyState(
-                message = "Sin tareas por ahora",
-                subtitle = "Agrega una tarea para saber exactamente qué hacer hoy o en los próximos días.",
+                message = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.tasks_empty_title),
+                subtitle = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.tasks_empty_subtitle),
                 icon = Icons.AutoMirrored.Filled.Assignment,
-                actionLabel = "Crear Tarea",
+                actionLabel = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.tasks_create_action),
                 onActionClick = onCreateTaskClick,
                 modifier = modifier
             )
@@ -133,8 +133,8 @@ private fun TasksContent(
             value = uiState.searchQuery,
             onValueChange = { onEvent(TasksUiEvent.SearchQueryChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Buscar tareas...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+            placeholder = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.tasks_search_placeholder)) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.processes_search_desc)) },
             singleLine = true,
             shape = CircleShape,
             colors = OutlinedTextFieldDefaults.colors(
@@ -173,7 +173,7 @@ private fun TasksContent(
         // Tasks List
         if (uiState.tasks.isEmpty()) {
             RumboEmptyState(
-                message = "No hay tareas en este filtro",
+                message = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.tasks_empty_filter),
                 icon = Icons.AutoMirrored.Filled.Assignment,
                 modifier = Modifier.weight(1f)
             )
@@ -231,7 +231,7 @@ private fun TasksContent(
         ) {
             Icon(Icons.Default.Add, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Nueva Tarea")
+            Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.tasks_new_button))
         }
     }
 
@@ -267,27 +267,27 @@ private fun TaskStatusFilterRow(
         FilterChip(
             selected = selectedFilter == TaskFilter.PENDING,
             onClick = { onFilterSelected(TaskFilter.PENDING) },
-            label = { Text("Pendientes") }
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.filter_pending)) }
         )
         FilterChip(
             selected = selectedFilter == TaskFilter.TODAY,
             onClick = { onFilterSelected(TaskFilter.TODAY) },
-            label = { Text("Para hoy") }
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.filter_today)) }
         )
         FilterChip(
             selected = selectedFilter == TaskFilter.OVERDUE,
             onClick = { onFilterSelected(TaskFilter.OVERDUE) },
-            label = { Text("Vencidas") }
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.filter_overdue)) }
         )
         FilterChip(
             selected = selectedFilter == TaskFilter.COMPLETED,
             onClick = { onFilterSelected(TaskFilter.COMPLETED) },
-            label = { Text("Completadas") }
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.filter_completed)) }
         )
         FilterChip(
             selected = selectedFilter == TaskFilter.ALL,
             onClick = { onFilterSelected(TaskFilter.ALL) },
-            label = { Text("Todas") }
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.filter_all)) }
         )
     }
 }
@@ -326,23 +326,23 @@ private fun TaskSecondaryFilterRow(
         FilterChip(
             selected = taskSortOrder == TaskSortOrder.DUE_DATE,
             onClick = { onSortOrderSelected(TaskSortOrder.DUE_DATE) },
-            label = { Text("Próximas a vencer") }
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.filter_due_date)) }
         )
         FilterChip(
             selected = taskSortOrder == TaskSortOrder.RECENT,
             onClick = { onSortOrderSelected(TaskSortOrder.RECENT) },
-            label = { Text("Más recientes") }
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.filter_recent)) }
         )
         FilterChip(
             selected = taskSortOrder == TaskSortOrder.PRIORITY,
             onClick = { onSortOrderSelected(TaskSortOrder.PRIORITY) },
-            label = { Text("Mayor prioridad") }
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.filter_priority)) }
         )
 
         FilterChip(
             selected = selectedPriority == Priority.HIGH,
             onClick = onPriorityToggle,
-            label = { Text("Solo Alta") }
+            label = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.filter_high_priority_only)) }
         )
 
         availableProcesses.filter { it.id != "general" }.forEach { proc ->

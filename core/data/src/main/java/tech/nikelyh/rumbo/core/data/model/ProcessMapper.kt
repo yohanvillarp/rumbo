@@ -14,7 +14,8 @@ fun ProcessEntity.asExternalModel(): Process = Process(
     colorOrVisualId = colorOrVisualId,
     accumulatedDirectCost = accumulatedDirectCost,
     isStarred = isStarred,
-    parentProcessId = parentProcessId
+    parentProcessId = parentProcessId,
+    dueDateEpochMillis = dueDateEpochMillis
 )
 
 fun Process.asEntity(): ProcessEntity = ProcessEntity(
@@ -28,5 +29,6 @@ fun Process.asEntity(): ProcessEntity = ProcessEntity(
     accumulatedDirectCost = accumulatedDirectCost,
     isStarred = isStarred,
     isSystemProcess = isSystem,
-    parentProcessId = parentProcessId
+    parentProcessId = parentProcessId,
+    dueDateEpochMillis = dueDateEpochMillis
 )

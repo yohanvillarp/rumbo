@@ -21,5 +21,6 @@ data class StartSessionUiState(
     val manualMinutesInput: String = "",
     val markTaskAsCompleted: Boolean = false,
     val isSubmitting: Boolean = false,
-    val isSuccess: Boolean = false
+    val isSuccess: Boolean = false,
+    val isSessionPaused: Boolean = false
 )

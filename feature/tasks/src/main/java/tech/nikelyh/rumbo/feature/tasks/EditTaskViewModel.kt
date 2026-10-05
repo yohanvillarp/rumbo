@@ -79,7 +79,15 @@ class EditTaskViewModel @Inject constructor(
                 _uiState.update { it.copy(description = event.description) }
             }
             is EditTaskUiEvent.ProcessSelected -> {
-                _uiState.update { it.copy(selectedProcessId = event.processId, processError = null) }
+                _uiState.update { current ->
+                    val selectedProc = current.availableProcesses.firstOrNull { it.id == event.processId }
+                    val dueDateError = validateDueDate(current.dueDateEpochMillis, selectedProc)
+                    current.copy(
+                        selectedProcessId = event.processId,
+                        processError = null,
+                        dueDateError = dueDateError
+                    )
+                }
             }
             is EditTaskUiEvent.PriorityChanged -> {
                 _uiState.update { it.copy(priority = event.priority) }
@@ -96,18 +104,25 @@ class EditTaskViewModel @Inject constructor(
                 }
             }
             is EditTaskUiEvent.DueDateChanged -> {
-                _uiState.update { it.copy(dueDateEpochMillis = event.millis, dueDateError = null) }
+                _uiState.update { current ->
+                    val selectedProc = current.availableProcesses.firstOrNull { it.id == current.selectedProcessId }
+                    val dueDateError = if (event.millis != null) {
+                        validateDueDate(event.millis, selectedProc)
+                    } else null
+                    current.copy(
+                        dueDateEpochMillis = event.millis,
+                        dueDateError = dueDateError
+                    )
+                }
             }
             EditTaskUiEvent.SubmitTask -> {
                 val current = _uiState.value
                 val titleErr = validateTitle(current.title)
                 val costErr = validateCost(current.costInput)
-                val dueDateErr = if (current.dueDateEpochMillis == null) {
-                    "La fecha límite es obligatoria"
-                } else null
+                val selectedProc = current.availableProcesses.firstOrNull { it.id == current.selectedProcessId }
+                val dueDateErr = validateDueDate(current.dueDateEpochMillis, selectedProc)
 
                 val target = originalTask ?: return
-                val selectedProc = current.availableProcesses.firstOrNull { it.id == current.selectedProcessId }
                 val processErr = if (selectedProc != null && selectedProc.isFinished) {
                     "No se pueden asignar tareas a un proceso culminado"
                 } else null
@@ -165,5 +180,19 @@ class EditTaskViewModel @Inject constructor(
             parsed < 0 -> "El costo no puede ser negativo"
             else -> null
         }
+    }
+
+    private fun validateDueDate(taskDueDate: Long?, process: Process?): String? {
+        if (taskDueDate == null) {
+            return "La fecha límite es obligatoria"
+        }
+        val procDue = process?.dueDateEpochMillis
+        if (procDue != null && taskDueDate > procDue) {
+            val instant = java.time.Instant.ofEpochMilli(procDue)
+            val zone = java.time.ZoneId.systemDefault()
+            val procDateStr = instant.atZone(zone).format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a"))
+            return "La fecha y hora límite no puede superar la del proceso ($procDateStr)"
+        }
+        return null
     }
 }

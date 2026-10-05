@@ -29,6 +29,9 @@ fun NavGraphBuilder.tutorialScreen(
     onClose: () -> Unit
 ) {
     composable(route = TutorialDestination.route) {
-        TutorialScreen(onFinishTutorial = onClose)
+        TutorialScreen(
+            onFinishTutorial = onClose,
+            showLanguageSelector = false
+        )
     }
 }
