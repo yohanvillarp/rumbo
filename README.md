@@ -1,4 +1,4 @@
-# 🐺 Rumbo — Serene Android Activity & Process Tracker
+# Rumbo — Serene Android Activity & Process Tracker
 
 [![Android CI](https://github.com/yohanvillarp/rumbo/actions/workflows/android_ci.yml/badge.svg)](https://github.com/yohanvillarp/rumbo/actions/workflows/android_ci.yml)
 [![CodeQL](https://github.com/yohanvillarp/rumbo/actions/workflows/codeql.yml/badge.svg)](https://github.com/yohanvillarp/rumbo/actions/workflows/codeql.yml)
@@ -46,17 +46,17 @@ Rumbo is built following **Now in Android** best practices with a strict multi-m
 
 ### Modules Map:
 - **`:app`**: Application entry point, `MainActivity`, `MainViewModel`, and responsive layout containers (`NavigationBar` vs `NavigationRail`).
-- **`:core:model`**: Pure Kotlin domain models (`Process`, `Task`, `Milestone`, `WorkSession`, `ProgressEntry`, `WeeklyGoal`, `UserProfile`). Zero Android or Room framework dependencies.
-- **`:core:database`**: Local persistence using Room 2.8 (`RumboDatabase`, DAOs, Entities).
+- **`:core:model`**: Pure Kotlin domain models (`Process`, `Task`, `Milestone`, `WorkSession`, `ProgressEntry`, `WeeklyGoal`, `UserProfile`, `AppLanguage`). Zero Android or Room framework dependencies.
+- **`:core:database`**: Local persistence using Room 2.8 (`RumboDatabase`, DAOs, Entities, Room TypeConverters).
 - **`:core:data`**: Repositories (`ProcessRepository`, `TaskRepository`, etc.), model mappers, and `RumboPreferencesDataSource` (DataStore Preferences).
-- **`:core:designsystem`**: Reusable Design System tokens (`Color`, `Typography`, `Shape`, `Spacing`, `Elevation`, `AnimationTokens`), `RumboMascot` (minimalist explorer wolf vector), and 12 UI components.
+- **`:core:designsystem`**: Reusable Design System tokens (`Color`, `Typography`, `Shape`, `Spacing`, `Elevation`, `AnimationTokens`), brand `RumboLogo` & Mascot, and comprehensive UI components (celebration cards, empty states, task items, process cards).
 - **`:core:navigation`**: Strongly-typed navigation contracts and route definitions.
-- **`:feature:onboarding`**: Streamlined single-screen onboarding experience.
+- **`:feature:onboarding`**: Streamlined onboarding experience with brand welcome panel and interactive tutorial steps.
 - **`:feature:home`**: Dynamic time-based greeting, featured active process card, top active processes, and quick actions.
-- **`:feature:processes`**: Process list, creation form, and process detail screen with explicit lifecycle management.
-- **`:feature:tasks`**: Task management with process ownership rules, status filtering, and cost presentation rules.
-- **`:feature:progress`**: Work session timer, standalone qualitative progress logging, contribution calendar, and separated task vs process analytics.
-- **`:feature:settings`**: App configuration and user profile settings.
+- **`:feature:processes`**: Process hierarchy (parent and sub-processes), empty-process completion validation, star favorites, and detail lifecycle management.
+- **`:feature:tasks`**: Task management with process ownership rules (including default "General" process), status filtering, and due date validation.
+- **`:feature:progress`**: Work session timer with adjustment controls, direct task completion toggle, qualitative progress logging, and contribution analytics.
+- **`:feature:settings`**: App configuration, dark theme modes, and multi-language support (Spanish, English, Portuguese) with interactive switcher and manual confirmation.
 
 ---
 
@@ -70,6 +70,8 @@ Rumbo is built following **Now in Android** best practices with a strict multi-m
 - **Preferences**: DataStore Preferences 1.1.1
 - **Dependency Injection**: Hilt 2.60.1 + KSP 2.1.10
 - **Navigation**: Jetpack Navigation Compose 2.8.3
+- **Testing Architecture**: JUnit 4, Turbine 1.2.0, Google Truth 1.4.4, Coroutines Test
+- **Localization**: Multi-language support (Spanish, English, Portuguese) with in-app runtime switching
 
 ---
 
