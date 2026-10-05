@@ -23,4 +23,5 @@ sealed interface ProcessDetailUiEvent {
     data class DiscardWeeklyGoal(val goalId: String) : ProcessDetailUiEvent
     data class ChangeTaskSortOrder(val order: tech.nikelyh.rumbo.core.model.TaskSortOrder) : ProcessDetailUiEvent
     data object ToggleStar : ProcessDetailUiEvent
+    data object DeleteProcess : ProcessDetailUiEvent
 }

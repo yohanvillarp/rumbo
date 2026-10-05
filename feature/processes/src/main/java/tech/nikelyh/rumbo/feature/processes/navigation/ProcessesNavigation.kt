@@ -38,7 +38,8 @@ fun NavGraphBuilder.processesScreen(
     onNavigateToEditProcess: (String) -> Unit,
     onNavigateToTask: (String) -> Unit,
     onProcessCreated: () -> Unit,
-    onProcessEdited: () -> Unit
+    onProcessEdited: () -> Unit,
+    onNavigateBack: () -> Unit = {}
 ) {
     composable(route = ProcessesDestination.route) {
         ProcessesRoute(
@@ -55,7 +56,8 @@ fun NavGraphBuilder.processesScreen(
             onNavigateToStartSession = onNavigateToStartSession,
             onNavigateToCreateProcess = onNavigateToCreateProcess,
             onNavigateToProcessDetail = onProcessClick,
-            onNavigateToTask = onNavigateToTask
+            onNavigateToTask = onNavigateToTask,
+            onNavigateBack = onNavigateBack
         )
     }
 

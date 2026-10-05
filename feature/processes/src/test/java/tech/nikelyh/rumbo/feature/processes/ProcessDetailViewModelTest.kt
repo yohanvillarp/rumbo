@@ -348,5 +348,21 @@ class ProcessDetailViewModelTest {
         vm4Job.cancel()
         collectJob.cancel()
     }
+
+    @Test
+    fun `deleting process removes it from repository and triggers isDeleted`() = runBlocking {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is ProcessDetailUiState.Content }
+
+        viewModel.onEvent(ProcessDetailUiEvent.DeleteProcess)
+
+        val deletedProcess = processRepository.getProcessById("p100").first()
+        assertNull(deletedProcess)
+
+        val state = viewModel.uiState.first { it is ProcessDetailUiState.Deleted }
+        assertTrue(state is ProcessDetailUiState.Deleted)
+
+        collectJob.cancel()
+    }
 }
 

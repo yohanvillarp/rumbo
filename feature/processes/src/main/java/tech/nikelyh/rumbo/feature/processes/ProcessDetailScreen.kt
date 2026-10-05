@@ -49,6 +49,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -89,9 +90,17 @@ fun ProcessDetailRoute(
     onNavigateToProcessDetail: (String) -> Unit = {},
     onNavigateToLogProgress: ((String) -> Unit)? = null,
     onNavigateToTask: (String) -> Unit = {},
+    onNavigateBack: () -> Unit = {},
     viewModel: ProcessDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val isDeleted = uiState is ProcessDetailUiState.Deleted || (uiState as? ProcessDetailUiState.Content)?.isDeleted == true
+    LaunchedEffect(isDeleted) {
+        if (isDeleted) {
+            onNavigateBack()
+        }
+    }
 
     ProcessDetailScreen(
         uiState = uiState,
@@ -121,6 +130,9 @@ internal fun ProcessDetailScreen(
     when (uiState) {
         ProcessDetailUiState.Loading -> {
             RumboLoadingState(isLoading = true, modifier = modifier)
+        }
+        ProcessDetailUiState.Deleted -> {
+            Box(modifier = modifier.fillMaxSize())
         }
         is ProcessDetailUiState.Error -> {
             RumboEmptyState(message = uiState.message, modifier = modifier)
@@ -444,6 +456,50 @@ private fun ProcessDetailContent(
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                             modifier = Modifier.padding(horizontal = 4.dp)
                         )
+                    }
+
+                    if (!process.isSystem && process.id != tech.nikelyh.rumbo.core.model.Process.GENERAL_PROCESS_ID) {
+                        var showDeleteDialog by remember { mutableStateOf(false) }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+                        androidx.compose.material3.OutlinedButton(
+                            onClick = { showDeleteDialog = true },
+                            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            ),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.7f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_delete_process))
+                        }
+
+                        if (showDeleteDialog) {
+                            AlertDialog(
+                                onDismissRequest = { showDeleteDialog = false },
+                                title = { Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.dialog_delete_process_title)) },
+                                text = { Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.dialog_delete_process_message)) },
+                                confirmButton = {
+                                    TextButton(
+                                        onClick = {
+                                            showDeleteDialog = false
+                                            onEvent(ProcessDetailUiEvent.DeleteProcess)
+                                        }
+                                    ) {
+                                        Text(
+                                            text = stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_delete),
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showDeleteDialog = false }) {
+                                        Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_cancel))
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
