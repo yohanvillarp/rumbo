@@ -120,8 +120,8 @@ fun RumboApp(
 
     LaunchedEffect(isSplashFinished, activeSession?.isRunning) {
         if (isSplashFinished && hasCompletedOnboarding == true && activeSession != null && activeSession.isRunning) {
-            val currentRoute = navController.currentBackStackEntry?.destination?.route
-            if (currentRoute?.startsWith("start_session") != true) {
+            val currentRoute = navController.currentDestination?.route
+            if (currentRoute != null && !currentRoute.startsWith("start_session")) {
                 navController.navigateToStartSession(
                     processId = activeSession.processId,
                     taskId = activeSession.taskId
@@ -134,15 +134,6 @@ fun RumboApp(
         if (hasCompletedOnboarding != null) {
             kotlinx.coroutines.delay(800)
             isSplashFinished = true
-        }
-        if (hasCompletedOnboarding == false) {
-            val currentRoute = navController.currentBackStackEntry?.destination?.route
-            if (currentRoute != null && currentRoute != OnboardingDestination.route) {
-                navController.navigate(OnboardingDestination.route) {
-                    popUpTo(navController.graph.id) { inclusive = true }
-                    launchSingleTop = true
-                }
-            }
         }
     }
 
