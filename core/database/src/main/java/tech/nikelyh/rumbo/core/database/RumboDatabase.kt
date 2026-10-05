@@ -26,7 +26,7 @@ import tech.nikelyh.rumbo.core.database.util.Converters
         ProgressEntryEntity::class,
         WeeklyGoalEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

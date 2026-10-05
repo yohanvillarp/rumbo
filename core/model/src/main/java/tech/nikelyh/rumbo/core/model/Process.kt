@@ -10,7 +10,8 @@ data class Process(
     val colorOrVisualId: String,
     val accumulatedDirectCost: Double = 0.0,
     val isStarred: Boolean = false,
-    val parentProcessId: String? = null
+    val parentProcessId: String? = null,
+    val dueDateEpochMillis: Long? = null
 ) {
     val isSubProcess: Boolean
         get() = parentProcessId != null
