@@ -19,6 +19,7 @@ import tech.nikelyh.rumbo.feature.progress.fakes.FakeProgressRepository
 import tech.nikelyh.rumbo.feature.progress.fakes.FakeTaskRepository
 import tech.nikelyh.rumbo.feature.progress.fakes.FakeWorkSessionRepository
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class StartSessionViewModelTest {
 
     private lateinit var workSessionRepository: FakeWorkSessionRepository
@@ -175,5 +176,20 @@ class StartSessionViewModelTest {
 
         val savedTask = taskRepository.getTaskById("t1").first()
         assertTrue(savedTask != null && savedTask.isCompleted)
+    }
+
+    @Test
+    fun `toggling timer while running pauses timer and sets isSessionPaused to true`() = runBlocking {
+        viewModel.uiState.first { !it.isLoading }
+        assertTrue(viewModel.uiState.value.isTimerRunning)
+
+        viewModel.onEvent(StartSessionUiEvent.ToggleTimer)
+
+        val state = viewModel.uiState.value
+        assertTrue(!state.isTimerRunning)
+        assertTrue(state.isSessionPaused)
+
+        viewModel.onEvent(StartSessionUiEvent.ResetPausedState)
+        assertTrue(!viewModel.uiState.value.isSessionPaused)
     }
 }

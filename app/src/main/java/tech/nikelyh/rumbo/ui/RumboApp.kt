@@ -47,6 +47,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboTopBar
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboAnimationTokens
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.ActiveSessionState
+import tech.nikelyh.rumbo.core.model.Process
 import tech.nikelyh.rumbo.core.navigation.CreateProcessDestination
 import tech.nikelyh.rumbo.core.navigation.CreateTaskDestination
 import tech.nikelyh.rumbo.core.navigation.EditProcessDestination
@@ -109,12 +110,10 @@ fun RumboApp(
     val isSystemDark = isSystemInDarkTheme()
     val darkTheme = isDarkMode ?: isSystemDark
 
-    val isSessionRunning = hasCompletedOnboarding == true && activeSession != null && activeSession.isRunning
-
-    val startDestination = when {
-        hasCompletedOnboarding == false -> OnboardingDestination.route
-        isSessionRunning -> StartSessionDestination.route
-        else -> HomeDestination.route
+    val startDestination = if (hasCompletedOnboarding == false) {
+        OnboardingDestination.route
+    } else {
+        HomeDestination.route
     }
 
     var isSplashFinished by remember { mutableStateOf(false) }
@@ -332,6 +331,38 @@ fun RumboApp(
                                                 popUpTo(navController.graph.id) { inclusive = true }
                                             }
                                         )
+                                    }
+                                },
+                                onSessionPaused = { taskId, processId ->
+                                    val previousRoute = navController.previousBackStackEntry?.destination?.route
+                                    if (previousRoute == TaskDetailDestination.route) {
+                                        navController.popBackStack()
+                                    } else if (taskId != null) {
+                                        navController.navigateToTaskDetail(
+                                            taskId = taskId,
+                                            navOptions = navOptions {
+                                                popUpTo(StartSessionDestination.route) { inclusive = true }
+                                                launchSingleTop = true
+                                            }
+                                        )
+                                    } else if (previousRoute == ProcessDetailDestination.route) {
+                                        navController.popBackStack()
+                                    } else if (processId != null && processId != Process.GENERAL_PROCESS_ID) {
+                                        navController.navigateToProcessDetail(
+                                            processId = processId,
+                                            navOptions = navOptions {
+                                                popUpTo(StartSessionDestination.route) { inclusive = true }
+                                                launchSingleTop = true
+                                            }
+                                        )
+                                    } else {
+                                        if (!navController.popBackStack()) {
+                                            navController.navigateToTasks(
+                                                navOptions = navOptions {
+                                                    popUpTo(navController.graph.id) { inclusive = true }
+                                                }
+                                            )
+                                        }
                                     }
                                 },
                                 onProgressLogged = {

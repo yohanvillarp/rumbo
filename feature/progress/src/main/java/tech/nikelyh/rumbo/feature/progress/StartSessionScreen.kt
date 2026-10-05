@@ -61,6 +61,7 @@ import java.util.Locale
 @Composable
 fun StartSessionRoute(
     onSessionFinished: () -> Unit,
+    onSessionPaused: (taskId: String?, processId: String?) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
     viewModel: StartSessionViewModel = hiltViewModel()
 ) {
@@ -69,6 +70,13 @@ fun StartSessionRoute(
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             onSessionFinished()
+        }
+    }
+
+    LaunchedEffect(uiState.isSessionPaused) {
+        if (uiState.isSessionPaused) {
+            onSessionPaused(uiState.selectedTaskId, uiState.selectedProcessId)
+            viewModel.onEvent(StartSessionUiEvent.ResetPausedState)
         }
     }
 

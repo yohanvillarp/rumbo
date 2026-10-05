@@ -28,6 +28,7 @@ fun NavController.navigateToStartSession(processId: String? = null, taskId: Stri
 
 fun NavGraphBuilder.progressScreen(
     onSessionFinished: () -> Unit,
+    onSessionPaused: (taskId: String?, processId: String?) -> Unit = { _, _ -> },
     onProgressLogged: () -> Unit
 ) {
     composable(route = ProgressDestination.route) {
@@ -56,7 +57,8 @@ fun NavGraphBuilder.progressScreen(
         )
     ) {
         StartSessionRoute(
-            onSessionFinished = onSessionFinished
+            onSessionFinished = onSessionFinished,
+            onSessionPaused = onSessionPaused
         )
     }
 }

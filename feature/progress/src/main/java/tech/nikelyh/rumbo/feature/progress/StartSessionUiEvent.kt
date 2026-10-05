@@ -17,4 +17,5 @@ sealed interface StartSessionUiEvent {
     data class ProgressLevelSelected(val level: ProgressLevel) : StartSessionUiEvent
     data object SubmitSession : StartSessionUiEvent
     data object CancelSession : StartSessionUiEvent
+    data object ResetPausedState : StartSessionUiEvent
 }

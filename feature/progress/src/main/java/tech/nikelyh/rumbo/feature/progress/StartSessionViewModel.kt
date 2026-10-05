@@ -69,7 +69,7 @@ class StartSessionViewModel @Inject constructor(
                 }
             } else 0L
 
-            val isRunning = if (isRestoring) activeState.isRunning else true
+            val isRunning = true
 
             sessionStartTimeEpochMillis = if (isRestoring) activeState.startTimeEpochMillis else now
             lastResumeEpochMillis = now
@@ -134,10 +134,13 @@ class StartSessionViewModel @Inject constructor(
             }
             StartSessionUiEvent.ToggleTimer -> {
                 if (_uiState.value.isTimerRunning) {
-                    pauseTimer()
+                    pauseTimer(triggerNavigation = true)
                 } else {
                     startTimer()
                 }
+            }
+            StartSessionUiEvent.ResetPausedState -> {
+                _uiState.update { it.copy(isSessionPaused = false) }
             }
             StartSessionUiEvent.FinishTimer -> {
                 pauseTimer()
@@ -236,11 +239,17 @@ class StartSessionViewModel @Inject constructor(
         resumeTimerLoop()
     }
 
-    private fun pauseTimer() {
+    private fun pauseTimer(triggerNavigation: Boolean = false) {
         if (_uiState.value.isTimerRunning) {
             accumulatedTimeMillis += (System.currentTimeMillis() - lastResumeEpochMillis).coerceAtLeast(0L)
         }
-        _uiState.update { it.copy(isTimerRunning = false, elapsedTimeMillis = accumulatedTimeMillis) }
+        _uiState.update {
+            it.copy(
+                isTimerRunning = false,
+                elapsedTimeMillis = accumulatedTimeMillis,
+                isSessionPaused = triggerNavigation
+            )
+        }
         timerJob?.cancel()
         timerJob = null
         saveActiveState(isRunning = false)
