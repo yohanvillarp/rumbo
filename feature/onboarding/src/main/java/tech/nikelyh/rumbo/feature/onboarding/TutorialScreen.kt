@@ -55,6 +55,7 @@ import tech.nikelyh.rumbo.core.model.AppLanguage
 fun TutorialRoute(
     onFinishTutorial: () -> Unit,
     modifier: Modifier = Modifier,
+    showLanguageSelector: Boolean = false,
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -62,6 +63,7 @@ fun TutorialRoute(
 
     TutorialScreen(
         onFinishTutorial = onFinishTutorial,
+        showLanguageSelector = showLanguageSelector,
         selectedLanguageCode = uiState.selectedLanguageCode,
         onLanguageSelected = { lang ->
             val currentEffective = LocaleHelper.resolveEffectiveLanguage(context, uiState.selectedLanguageCode)
@@ -79,6 +81,7 @@ fun TutorialRoute(
  *
  * @param onFinishTutorial Callback invoked when the user reaches the end and confirms completion.
  * @param modifier Optional [Modifier] for layout adjustments.
+ * @param showLanguageSelector Whether to display the language selection card on applicable steps.
  * @param selectedLanguageCode Currently selected language code, or null for system default.
  * @param onLanguageSelected Callback invoked when the user selects an [AppLanguage] on the final step.
  * @param steps Sequence of [TutorialStep] pages to display in the horizontal carousel.
@@ -87,6 +90,7 @@ fun TutorialRoute(
 fun TutorialScreen(
     onFinishTutorial: () -> Unit,
     modifier: Modifier = Modifier,
+    showLanguageSelector: Boolean = false,
     selectedLanguageCode: String? = null,
     onLanguageSelected: (AppLanguage) -> Unit = {},
     steps: List<TutorialStep> = TutorialContent.steps
@@ -137,6 +141,7 @@ fun TutorialScreen(
                 step = step,
                 pageIndex = pageIndex,
                 totalPages = steps.size,
+                showLanguageSelector = showLanguageSelector,
                 selectedLanguageCode = selectedLanguageCode,
                 onLanguageSelected = onLanguageSelected
             )
@@ -199,6 +204,7 @@ private fun TutorialStepPage(
     step: TutorialStep,
     pageIndex: Int,
     totalPages: Int,
+    showLanguageSelector: Boolean,
     selectedLanguageCode: String?,
     onLanguageSelected: (AppLanguage) -> Unit,
     modifier: Modifier = Modifier
@@ -312,8 +318,8 @@ private fun TutorialStepPage(
             }
         }
 
-        // Language Selector Card (Displayed on the final step of the tutorial)
-        if (step.showsLanguageSelector) {
+        // Language Selector Card (Displayed only if allowed and on the designated step)
+        if (showLanguageSelector && step.showsLanguageSelector) {
             Spacer(modifier = Modifier.height(16.dp))
             TutorialLanguageSelector(
                 selectedLanguageCode = selectedLanguageCode,
