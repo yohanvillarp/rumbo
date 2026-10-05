@@ -127,14 +127,34 @@ internal fun HomeScreen(
                 )
             }
             HomeUiState.Empty -> {
-                RumboEmptyState(
-                    message = "Bienvenido a Rumbo",
-                    subtitle = "¿Qué te gustaría comenzar hoy?",
-                    mascotState = MascotState.DEFAULT,
-                    actionLabel = "Crear primer proceso",
-                    onActionClick = { onEvent(HomeUiEvent.OnCreateProcessClick) },
-                    modifier = Modifier.fillMaxSize()
-                )
+                Column(
+                    modifier = modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    RumboEmptyState(
+                        message = stringResource(R.string.home_welcome_title),
+                        subtitle = stringResource(R.string.home_welcome_subtitle),
+                        mascotState = MascotState.DEFAULT,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    RumboButton(
+                        onClick = { onEvent(HomeUiEvent.OnCreateProcessClick) },
+                        modifier = Modifier.fillMaxWidth(0.85f)
+                    ) {
+                        Text(text = stringResource(R.string.home_create_first_process))
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    RumboOutlinedButton(
+                        onClick = { onEvent(HomeUiEvent.OnCreateTaskClick) },
+                        modifier = Modifier.fillMaxWidth(0.85f)
+                    ) {
+                        Text(text = stringResource(R.string.home_create_first_task))
+                    }
+                }
             }
             is HomeUiState.Content -> {
                 HomeContent(
@@ -182,15 +202,20 @@ private fun HomeContent(
                     Column(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
                     ) {
+                        val greetingPrefix = when (uiState.greetingHour) {
+                            in 5..11 -> stringResource(R.string.home_greeting_day)
+                            in 12..18 -> stringResource(R.string.home_greeting_afternoon)
+                            else -> stringResource(R.string.home_greeting_night)
+                        }
                         Text(
-                            text = uiState.greeting,
+                            text = "$greetingPrefix, ${uiState.userName}",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "¿En qué deseas avanzar hoy?",
+                            text = stringResource(R.string.home_question_today),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -202,12 +227,30 @@ private fun HomeContent(
             if (uiState.starredProcesses.isNotEmpty()) {
                 item {
                     RumboSectionHeader(
-                        title = "Procesos Destacados",
-                        subtitle = "Tus procesos favoritos en seguimiento"
+                        title = stringResource(R.string.home_starred_processes_title),
+                        subtitle = stringResource(R.string.home_starred_processes_subtitle)
                     )
                 }
 
-                items(uiState.starredProcesses, key = { it.id }) { processItem ->
+                items(uiState.starredProcesses, key = { "starred_${it.id}" }) { processItem ->
+                    RumboProcessCard(
+                        process = processItem,
+                        onClick = { onEvent(HomeUiEvent.OnProcessClick(processItem.id)) },
+                        onToggleStar = { onEvent(HomeUiEvent.ToggleStar(processItem.id)) }
+                    )
+                }
+            }
+
+            // Section 2: Recent Processes (Max 3, latest first) with "View all processes" button
+            if (uiState.recentProcesses.isNotEmpty()) {
+                item {
+                    RumboSectionHeader(
+                        title = stringResource(R.string.home_recent_processes_title),
+                        subtitle = stringResource(R.string.home_recent_processes_subtitle)
+                    )
+                }
+
+                items(uiState.recentProcesses, key = { "recent_${it.id}" }) { processItem ->
                     RumboProcessCard(
                         process = processItem,
                         onClick = { onEvent(HomeUiEvent.OnProcessClick(processItem.id)) },
@@ -225,21 +268,49 @@ private fun HomeContent(
                 }
             }
 
-            // Section 2: Today Tasks
+            // Section 3: Today Tasks
             item {
                 RumboSectionHeader(
-                    title = "Hoy",
-                    subtitle = "Tareas pendientes para hoy"
+                    title = stringResource(R.string.home_today_title),
+                    subtitle = stringResource(R.string.home_today_subtitle)
                 )
             }
 
             if (uiState.todayTasks.isEmpty()) {
                 item {
-                    RumboEmptyState(
-                        message = "Sin tareas pendientes para hoy",
-                        icon = Icons.AutoMirrored.Filled.Assignment,
-                        modifier = Modifier.height(140.dp)
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        RumboEmptyState(
+                            message = stringResource(R.string.home_today_empty),
+                            icon = Icons.AutoMirrored.Filled.Assignment,
+                            modifier = Modifier.height(130.dp)
+                        )
+                        val nonGeneralCount = uiState.allProcesses.count { it.id != Process.GENERAL_PROCESS_ID }
+                        if (nonGeneralCount <= 1) {
+                            RumboButton(
+                                onClick = { onEvent(HomeUiEvent.OnCreateProcessClick) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(text = stringResource(if (nonGeneralCount == 0) R.string.home_create_first_process else R.string.home_create_process))
+                            }
+                            RumboOutlinedButton(
+                                onClick = { onEvent(HomeUiEvent.OnCreateTaskClick) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(text = stringResource(R.string.home_create_first_task))
+                            }
+                        } else {
+                            RumboButton(
+                                onClick = { onEvent(HomeUiEvent.OnCreateTaskClick) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(text = stringResource(R.string.home_create_task))
+                            }
+                        }
+                    }
                 }
             } else {
                 items(uiState.todayTasks, key = { it.id }) { taskItem ->

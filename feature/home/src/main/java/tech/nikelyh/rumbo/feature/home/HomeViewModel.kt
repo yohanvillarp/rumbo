@@ -52,6 +52,10 @@ class HomeViewModel @Inject constructor(
             .sortedByDescending { it.createdAtEpochMillis }
             .take(3)
 
+        val recentProcesses = nonGeneralProcesses
+            .sortedByDescending { it.createdAtEpochMillis }
+            .take(3)
+
         val pendingTasks = tasks.filter { !it.isCompleted }
 
         if (nonGeneralProcesses.isEmpty() && tasks.isEmpty()) {
@@ -60,8 +64,10 @@ class HomeViewModel @Inject constructor(
             HomeUiState.Content(
                 greeting = fullGreeting,
                 userName = name,
+                greetingHour = hour,
                 continueProcess = null,
                 starredProcesses = starredProcesses,
+                recentProcesses = recentProcesses,
                 activeProcesses = starredProcesses,
                 todayTasks = pendingTasks.take(5),
                 allProcesses = processes,
