@@ -175,8 +175,11 @@ internal fun OnboardingScreen(
                         totalPages = tutorialSteps.size,
                         selectedLanguageCode = uiState.selectedLanguageCode,
                         onLanguageSelected = { lang ->
-                            onEvent(OnboardingUiEvent.ChangeLanguage(lang))
-                            LocaleHelper.applyLanguage(context, lang.code)
+                            val currentEffective = LocaleHelper.resolveEffectiveLanguage(context, uiState.selectedLanguageCode)
+                            if (lang != currentEffective) {
+                                onEvent(OnboardingUiEvent.ChangeLanguage(lang))
+                                LocaleHelper.applyLanguage(context, lang.code)
+                            }
                         }
                     )
                 }

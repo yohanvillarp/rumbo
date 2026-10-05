@@ -259,18 +259,9 @@ private fun SettingsLanguageCard(
         )
     }
 
+    val context = LocalContext.current
     val currentSavedLanguage = remember(selectedLanguageCode) {
-        if (selectedLanguageCode != null) {
-            val resolved = AppLanguage.fromCode(selectedLanguageCode)
-            if (resolved in languages) resolved else AppLanguage.SPANISH
-        } else {
-            val sysLang = java.util.Locale.getDefault().language
-            when {
-                sysLang.startsWith("pt") -> AppLanguage.PORTUGUESE
-                sysLang.startsWith("en") -> AppLanguage.ENGLISH
-                else -> AppLanguage.SPANISH
-            }
-        }
+        LocaleHelper.resolveEffectiveLanguage(context, selectedLanguageCode)
     }
 
     var pendingLanguage by remember(currentSavedLanguage) {
