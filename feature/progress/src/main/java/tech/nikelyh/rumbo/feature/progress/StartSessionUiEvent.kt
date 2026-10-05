@@ -10,6 +10,8 @@ sealed interface StartSessionUiEvent {
     data object ForgotTimerClicked : StartSessionUiEvent
     data object DismissForgotTimerDialog : StartSessionUiEvent
     data class ConfirmManualMinutes(val minutesInput: String) : StartSessionUiEvent
+    data class AdjustMinutesAndResume(val minutesInput: String) : StartSessionUiEvent
+    data class ToggleCompleteTask(val complete: Boolean) : StartSessionUiEvent
     data class NoteChanged(val note: String) : StartSessionUiEvent
     data class ToggleSaveProgress(val save: Boolean) : StartSessionUiEvent
     data class ProgressLevelSelected(val level: ProgressLevel) : StartSessionUiEvent

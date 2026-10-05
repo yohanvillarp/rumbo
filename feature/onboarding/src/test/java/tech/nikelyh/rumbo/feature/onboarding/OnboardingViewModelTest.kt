@@ -96,4 +96,15 @@ class OnboardingViewModelTest {
         assertEquals(null, viewModel.uiState.value.selectedLanguageCode)
         assertEquals(null, settingsRepository.userSettings.first().languageCode)
     }
+
+    @Test
+    fun `change language to portuguese updates selected language and repository to pt`() = runBlocking {
+        viewModel.onEvent(OnboardingUiEvent.ChangeLanguage(tech.nikelyh.rumbo.core.model.AppLanguage.PORTUGUESE))
+
+        val state = viewModel.uiState.value
+        assertEquals("pt", state.selectedLanguageCode)
+
+        val savedSettings = settingsRepository.userSettings.first()
+        assertEquals("pt", savedSettings.languageCode)
+    }
 }

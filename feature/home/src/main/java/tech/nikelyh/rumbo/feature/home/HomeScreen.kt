@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.AddTask
@@ -27,7 +29,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,6 +55,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboProcessCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionCelebration
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
@@ -110,18 +115,15 @@ internal fun HomeScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        modifier = modifier
-    ) { innerPadding ->
+    Box(modifier = modifier.fillMaxSize()) {
         when (uiState) {
             HomeUiState.Loading -> {
-                RumboLoadingState(isLoading = true, modifier = Modifier.padding(innerPadding))
+                RumboLoadingState(isLoading = true, modifier = Modifier.fillMaxSize())
             }
             is HomeUiState.Error -> {
                 RumboEmptyState(
                     message = uiState.message,
-                    modifier = Modifier.padding(innerPadding)
+                    modifier = Modifier.fillMaxSize()
                 )
             }
             HomeUiState.Empty -> {
@@ -131,7 +133,7 @@ internal fun HomeScreen(
                     mascotState = MascotState.DEFAULT,
                     actionLabel = "Crear primer proceso",
                     onActionClick = { onEvent(HomeUiEvent.OnCreateProcessClick) },
-                    modifier = Modifier.padding(innerPadding)
+                    modifier = Modifier.fillMaxSize()
                 )
             }
             is HomeUiState.Content -> {
@@ -140,10 +142,15 @@ internal fun HomeScreen(
                     onEvent = onEvent,
                     onNavigateToProcesses = onNavigateToProcesses,
                     onNavigateToStartSession = onNavigateToStartSession,
-                    modifier = Modifier.padding(innerPadding)
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -156,6 +163,7 @@ private fun HomeContent(
     modifier: Modifier = Modifier
 ) {
     var taskToCompleteWithDuration by remember { mutableStateOf<Task?>(null) }
+    var celebratingTaskTitle by remember { mutableStateOf<String?>(null) }
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
@@ -165,54 +173,55 @@ private fun HomeContent(
         ) {
             // Greeting Header
             item {
-                Column {
-                    Text(
-                        text = uiState.greeting,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "¿En qué deseas avanzar hoy?",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f)
-                    )
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+                    ) {
+                        Text(
+                            text = uiState.greeting,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "¿En qué deseas avanzar hoy?",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 
-            // Section 1: Active Processes (Max 3)
-            item {
-                RumboSectionHeader(
-                    title = "Procesos Activos",
-                    subtitle = "Procesos en seguimiento"
-                )
-            }
-
-            if (uiState.activeProcesses.isEmpty()) {
+            // Section 1: Starred Processes (Max 3) - Only shown if there are starred processes
+            if (uiState.starredProcesses.isNotEmpty()) {
                 item {
-                    RumboEmptyState(
-                        message = "No hay procesos activos",
-                        subtitle = "Crea un proceso para iniciar tus actividades",
-                        mascotState = MascotState.RESTING,
-                        modifier = Modifier.height(160.dp)
+                    RumboSectionHeader(
+                        title = "Procesos Destacados",
+                        subtitle = "Tus procesos favoritos en seguimiento"
                     )
                 }
-            } else {
-                items(uiState.activeProcesses, key = { it.id }) { processItem ->
+
+                items(uiState.starredProcesses, key = { it.id }) { processItem ->
                     RumboProcessCard(
                         process = processItem,
                         onClick = { onEvent(HomeUiEvent.OnProcessClick(processItem.id)) },
                         onToggleStar = { onEvent(HomeUiEvent.ToggleStar(processItem.id)) }
                     )
                 }
-            }
 
-            item {
-                RumboOutlinedButton(
-                    onClick = onNavigateToProcesses,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = stringResource(R.string.home_view_all_processes))
+                item {
+                    RumboOutlinedButton(
+                        onClick = onNavigateToProcesses,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = stringResource(R.string.home_view_all_processes))
+                    }
                 }
             }
 
@@ -264,10 +273,18 @@ private fun HomeContent(
                 initialMinutes = if (sessionMinutes > 0L) sessionMinutes else 0L,
                 minMinutes = minMinutes,
                 onConfirm = { minutes ->
+                    celebratingTaskTitle = task.title
                     onEvent(HomeUiEvent.CompleteTaskWithDuration(task, minutes))
                     taskToCompleteWithDuration = null
                 },
                 onDismiss = { taskToCompleteWithDuration = null }
+            )
+        }
+
+        if (celebratingTaskTitle != null) {
+            TaskCompletionCelebration(
+                taskTitle = celebratingTaskTitle!!,
+                onDismiss = { celebratingTaskTitle = null }
             )
         }
     }

@@ -66,7 +66,7 @@ data class Process(
     companion object {
         const val GENERAL_PROCESS_ID = "general"
 
-        fun createGeneralProcess(createdAt: Long): Process = Process(
+        fun createGeneralProcess(createdAt: Long = 0L): Process = Process(
             id = GENERAL_PROCESS_ID,
             name = "General",
             description = "Espacio para actividades cotidianas y tareas varias",

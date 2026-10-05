@@ -98,9 +98,9 @@ internal fun CreateTaskScreen(
         initialSelectedDateMillis = uiState.dueDateEpochMillis ?: System.currentTimeMillis()
     )
 
-    val selectableProcesses = uiState.availableProcesses.filter { it.id != "general" && !it.isFinished }
+    val selectableProcesses = uiState.availableProcesses.filter { !it.isFinished }
     val selectedProcess = selectableProcesses.firstOrNull { it.id == uiState.selectedProcessId }
-    val selectedProcessLabel = selectedProcess?.name ?: if (selectableProcesses.isEmpty()) "Sin procesos disponibles" else "Selecciona un proceso"
+    val selectedProcessLabel = selectedProcess?.name ?: if (uiState.selectedProcessId == "general") "General" else if (selectableProcesses.isEmpty()) "Sin procesos disponibles" else "Selecciona un proceso"
 
     val dueDateFormatted = remember(uiState.dueDateEpochMillis) {
         val dueMillis = uiState.dueDateEpochMillis

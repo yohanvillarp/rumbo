@@ -32,6 +32,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,8 +64,11 @@ fun TutorialRoute(
         onFinishTutorial = onFinishTutorial,
         selectedLanguageCode = uiState.selectedLanguageCode,
         onLanguageSelected = { lang ->
-            viewModel.onEvent(OnboardingUiEvent.ChangeLanguage(lang))
-            LocaleHelper.applyLanguage(context, lang.code)
+            val currentEffective = LocaleHelper.resolveEffectiveLanguage(context, uiState.selectedLanguageCode)
+            if (lang != currentEffective) {
+                viewModel.onEvent(OnboardingUiEvent.ChangeLanguage(lang))
+                LocaleHelper.applyLanguage(context, lang.code)
+            }
         },
         modifier = modifier
     )
@@ -330,7 +334,10 @@ fun TutorialLanguageSelector(
     onLanguageSelected: (AppLanguage) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val currentLanguage = AppLanguage.fromCode(selectedLanguageCode)
+    val context = LocalContext.current
+    val currentLanguage = remember(selectedLanguageCode) {
+        LocaleHelper.resolveEffectiveLanguage(context, selectedLanguageCode)
+    }
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -355,19 +362,31 @@ fun TutorialLanguageSelector(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilterChip(
-                    selected = currentLanguage == AppLanguage.SYSTEM,
-                    onClick = { onLanguageSelected(AppLanguage.SYSTEM) },
-                    label = { Text(stringResource(R.string.tutorial_language_system)) }
-                )
-                FilterChip(
                     selected = currentLanguage == AppLanguage.SPANISH,
-                    onClick = { onLanguageSelected(AppLanguage.SPANISH) },
+                    onClick = {
+                        if (currentLanguage != AppLanguage.SPANISH) {
+                            onLanguageSelected(AppLanguage.SPANISH)
+                        }
+                    },
                     label = { Text(stringResource(R.string.tutorial_language_spanish)) }
                 )
                 FilterChip(
                     selected = currentLanguage == AppLanguage.ENGLISH,
-                    onClick = { onLanguageSelected(AppLanguage.ENGLISH) },
+                    onClick = {
+                        if (currentLanguage != AppLanguage.ENGLISH) {
+                            onLanguageSelected(AppLanguage.ENGLISH)
+                        }
+                    },
                     label = { Text(stringResource(R.string.tutorial_language_english)) }
+                )
+                FilterChip(
+                    selected = currentLanguage == AppLanguage.PORTUGUESE,
+                    onClick = {
+                        if (currentLanguage != AppLanguage.PORTUGUESE) {
+                            onLanguageSelected(AppLanguage.PORTUGUESE)
+                        }
+                    },
+                    label = { Text(stringResource(R.string.tutorial_language_portuguese)) }
                 )
             }
         }

@@ -1,6 +1,8 @@
 package tech.nikelyh.rumbo.feature.progress
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -22,11 +25,13 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -311,12 +316,47 @@ internal fun StartSessionScreen(
                 }
             }
 
+            if (uiState.selectedTaskId != null) {
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onEvent(StartSessionUiEvent.ToggleCompleteTask(!uiState.markTaskAsCompleted)) }
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Checkbox(
+                            checked = uiState.markTaskAsCompleted,
+                            onCheckedChange = { onEvent(StartSessionUiEvent.ToggleCompleteTask(it)) }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = "Marcar tarea como culminada",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "Completar '${uiState.selectedTaskTitle.ifBlank { "Tarea" }}' al guardar",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
+            }
+
             RumboButton(
                 onClick = { onEvent(StartSessionUiEvent.SubmitSession) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isSubmitting
             ) {
-                Text("Guardar Sesión")
+                Text(if (uiState.markTaskAsCompleted) "Guardar y Culminar Tarea" else "Guardar Sesión")
             }
 
             TextButton(
@@ -372,14 +412,27 @@ internal fun StartSessionScreen(
                 }
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        if (manualMinutesText.isNotBlank()) {
-                            onEvent(StartSessionUiEvent.ConfirmManualMinutes(manualMinutesText))
-                        }
-                    }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Confirmar")
+                    TextButton(
+                        onClick = {
+                            if (manualMinutesText.isNotBlank()) {
+                                onEvent(StartSessionUiEvent.AdjustMinutesAndResume(manualMinutesText))
+                            }
+                        }
+                    ) {
+                        Text("Ajustar y Seguir")
+                    }
+                    Button(
+                        onClick = {
+                            if (manualMinutesText.isNotBlank()) {
+                                onEvent(StartSessionUiEvent.ConfirmManualMinutes(manualMinutesText))
+                            }
+                        }
+                    ) {
+                        Text("Culminar")
+                    }
                 }
             },
             dismissButton = {

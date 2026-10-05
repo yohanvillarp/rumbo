@@ -139,9 +139,38 @@ class ProcessDetailViewModelTest {
     }
 
     @Test
-    fun `finishing process on explicit user action updates status to COMPLETED`() = runBlocking {
+    fun `finishing process is blocked when process has no tasks and no subprocesses`() = runBlocking {
         val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
         viewModel.uiState.first { it is ProcessDetailUiState.Content }
+
+        viewModel.onEvent(ProcessDetailUiEvent.FinishProcess)
+
+        val process = processRepository.getProcessById("p100").first()
+        assertEquals(ProcessStatus.ACTIVE, process?.status)
+
+        val state = viewModel.uiState.value as ProcessDetailUiState.Content
+        assertNotNull(state.userMessage)
+        assertTrue(state.userMessage!!.contains("sin tareas ni subprocesos"))
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `finishing process on explicit user action updates status to COMPLETED when it has completed tasks`() = runBlocking {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is ProcessDetailUiState.Content }
+
+        taskRepository.saveTask(
+            Task(
+                id = "t-comp",
+                processId = "p100",
+                title = "Tarea culminada",
+                status = TaskStatus.COMPLETED,
+                priority = Priority.MEDIUM,
+                createdAtEpochMillis = 1000L,
+                finishedAtEpochMillis = 2000L
+            )
+        )
 
         viewModel.onEvent(ProcessDetailUiEvent.FinishProcess)
 

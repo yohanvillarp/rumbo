@@ -48,11 +48,9 @@ class HomeViewModel @Inject constructor(
         val fullGreeting = "$greetingPrefix, $name"
 
         val nonGeneralProcesses = processes.filter { it.id != Process.GENERAL_PROCESS_ID }
-        val activeProcesses = nonGeneralProcesses.filter { it.isActive }
-            .sortedWith(
-                compareByDescending<Process> { it.isStarred }
-                    .thenByDescending { it.createdAtEpochMillis }
-            )
+        val starredProcesses = nonGeneralProcesses.filter { it.isActive && it.isStarred }
+            .sortedByDescending { it.createdAtEpochMillis }
+            .take(3)
 
         val pendingTasks = tasks.filter { !it.isCompleted }
 
@@ -63,7 +61,8 @@ class HomeViewModel @Inject constructor(
                 greeting = fullGreeting,
                 userName = name,
                 continueProcess = null,
-                activeProcesses = activeProcesses.take(3),
+                starredProcesses = starredProcesses,
+                activeProcesses = starredProcesses,
                 todayTasks = pendingTasks.take(5),
                 allProcesses = processes,
                 userMessage = msg

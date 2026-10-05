@@ -32,15 +32,20 @@ class CreateTaskViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             processRepository.getProcesses().collect { processes ->
-                val activeProcesses = processes.filter { !it.isFinished && it.id != Process.GENERAL_PROCESS_ID }
+                val baseActive = processes.filter { !it.isFinished }
+                val hasGeneral = baseActive.any { it.id == Process.GENERAL_PROCESS_ID }
+                val withGeneral = if (hasGeneral) baseActive else listOf(Process.createGeneralProcess()) + baseActive
+                val sortedProcesses = withGeneral.sortedWith(
+                    compareByDescending<Process> { it.isSystem }.thenBy { it.name }
+                )
                 _uiState.update { current ->
-                    val resolvedProcessId = if (current.selectedProcessId == Process.GENERAL_PROCESS_ID && activeProcesses.isNotEmpty()) {
-                        activeProcesses.first().id
+                    val resolvedProcessId = if (current.selectedProcessId.isBlank()) {
+                        initialProcessId.ifBlank { Process.GENERAL_PROCESS_ID }
                     } else {
                         current.selectedProcessId
                     }
                     current.copy(
-                        availableProcesses = activeProcesses,
+                        availableProcesses = sortedProcesses,
                         selectedProcessId = resolvedProcessId
                     )
                 }

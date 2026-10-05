@@ -98,8 +98,11 @@ class ProcessDetailViewModel @Inject constructor(
             val subProcesses = allProcesses.filter { it.parentProcessId == processId }
             val parentProcess = allProcesses.firstOrNull { it.id == process.parentProcessId }
             val activeSubProcesses = subProcesses.filter { !it.isFinished }
+            val hasNoTasksOrSubProcesses = pendingTasks.isEmpty() && completedTasks.isEmpty() && subProcesses.isEmpty()
 
             val completionBlockedReason = when {
+                hasNoTasksOrSubProcesses ->
+                    "Un proceso sin tareas ni subprocesos no puede completarse."
                 pendingTasks.isNotEmpty() && activeSubProcesses.isNotEmpty() ->
                     "Para finalizar este proceso debes culminar sus ${pendingTasks.size} tareas pendientes y ${activeSubProcesses.size} subprocesos activos."
                 pendingTasks.isNotEmpty() ->
