@@ -137,6 +137,12 @@
     <string name="process_form_parent_none_dropdown">None (It\'s a main process)</string>
     <string name="process_form_color_label">Representative color</string>
     <string name="process_form_color_selected">Selected color</string>
+    <string name="process_form_due_date_label">Due date and time (optional)</string>
+    <string name="process_form_due_date_placeholder">Tap to choose date and time</string>
+    <string name="process_form_clear_due_date">Clear due date</string>
+    <string name="process_warning_due_date_before_tasks">Process deadline cannot be earlier than its tasks (%1$s)</string>
+    <string name="task_warning_due_date_exceeds_process">Task due date cannot exceed the process deadline (%1$s)</string>
+    <string name="process_card_due_date_prefix">Due: %1$s</string>
     <string name="process_form_save">Save Process</string>
     <string name="process_form_save_changes">Save Changes</string>
     <string name="process_form_edit_subtitle">Update the details or the next step of your process.</string>

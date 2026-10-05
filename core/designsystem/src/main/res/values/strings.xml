@@ -137,6 +137,12 @@
     <string name="process_form_parent_none_dropdown">Ninguno (Es un proceso principal)</string>
     <string name="process_form_color_label">Color representativo</string>
     <string name="process_form_color_selected">Color seleccionado</string>
+    <string name="process_form_due_date_label">Fecha y hora límite (opcional)</string>
+    <string name="process_form_due_date_placeholder">Toca para elegir fecha y hora</string>
+    <string name="process_form_clear_due_date">Quitar fecha límite</string>
+    <string name="process_warning_due_date_before_tasks">La fecha límite del proceso no puede ser anterior a la de sus tareas (%1$s)</string>
+    <string name="task_warning_due_date_exceeds_process">La fecha límite de la tarea no puede superar la del proceso (%1$s)</string>
+    <string name="process_card_due_date_prefix">Límite: %1$s</string>
     <string name="process_form_save">Guardar Proceso</string>
     <string name="process_form_save_changes">Guardar Cambios</string>
     <string name="process_form_edit_subtitle">Actualiza los detalles o el siguiente paso de tu proceso.</string>
