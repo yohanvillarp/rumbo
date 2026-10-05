@@ -3,6 +3,7 @@ package tech.nikelyh.rumbo.feature.tasks
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,13 +15,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,6 +42,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboEmptyState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionCelebration
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
@@ -115,11 +120,14 @@ private fun TasksContent(
     modifier: Modifier = Modifier
 ) {
     var taskToCompleteWithDuration by remember { mutableStateOf<Task?>(null) }
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
+    var celebratingTaskTitle by remember { mutableStateOf<String?>(null) }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
         // Search Bar
         OutlinedTextField(
             value = uiState.searchQuery,
@@ -127,7 +135,13 @@ private fun TasksContent(
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("Buscar tareas...") },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
-            singleLine = true
+            singleLine = true,
+            shape = CircleShape,
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+            )
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -201,6 +215,7 @@ private fun TasksContent(
                 initialMinutes = if (sessionMinutes > 0L) sessionMinutes else 0L,
                 minMinutes = minMinutes,
                 onConfirm = { minutes ->
+                    celebratingTaskTitle = task.title
                     onEvent(TasksUiEvent.CompleteTaskWithDuration(task, minutes))
                     taskToCompleteWithDuration = null
                 },
@@ -219,6 +234,14 @@ private fun TasksContent(
             Text("Nueva Tarea")
         }
     }
+
+    if (celebratingTaskTitle != null) {
+        TaskCompletionCelebration(
+            taskTitle = celebratingTaskTitle!!,
+            onDismiss = { celebratingTaskTitle = null }
+        )
+    }
+}
 }
 
 /**

@@ -10,6 +10,7 @@
     <string name="tutorial_language_system">Sistema</string>
     <string name="tutorial_language_spanish">Español</string>
     <string name="tutorial_language_english">English</string>
+    <string name="tutorial_language_portuguese">Português</string>
 
     <!-- Step 1: Processes -->
     <string name="tutorial_process_title">¿Qué es un Proceso?</string>

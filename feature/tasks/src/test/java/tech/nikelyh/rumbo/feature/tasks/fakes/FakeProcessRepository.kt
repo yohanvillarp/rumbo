@@ -7,7 +7,9 @@ import tech.nikelyh.rumbo.core.data.repository.ProcessRepository
 import tech.nikelyh.rumbo.core.model.Process
 
 class FakeProcessRepository : ProcessRepository {
-    private val processesFlow = MutableStateFlow<Map<String, Process>>(emptyMap())
+    private val processesFlow = MutableStateFlow<Map<String, Process>>(
+        mapOf(Process.GENERAL_PROCESS_ID to Process.createGeneralProcess(1000L))
+    )
 
     override fun getProcesses(): Flow<List<Process>> {
         return processesFlow.map { it.values.toList() }

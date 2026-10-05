@@ -136,4 +136,44 @@ class StartSessionViewModelTest {
         val savedSessions = workSessionRepository.getWorkSessionsByProcessId("p1").first()
         assertTrue(savedSessions.isEmpty())
     }
+
+    @Test
+    fun `adjust minutes and resume updates elapsed time and keeps timer running`() = runBlocking {
+        viewModel.onEvent(StartSessionUiEvent.ForgotTimerClicked)
+        viewModel.onEvent(StartSessionUiEvent.AdjustMinutesAndResume("35"))
+
+        val state = viewModel.uiState.value
+        assertTrue(!state.showForgotTimerDialog)
+        assertTrue(!state.isSessionFinished)
+        assertTrue(state.isTimerRunning)
+        assertTrue(state.elapsedTimeMillis >= 35 * 60 * 1000L)
+        assertTrue(state.elapsedTimeMillis < 35 * 60 * 1000L + 5000L)
+    }
+
+    @Test
+    fun `submitting session with markTaskAsCompleted updates task to completed`() = runBlocking {
+        val testTask = tech.nikelyh.rumbo.core.model.Task(
+            id = "t1",
+            processId = "p1",
+            title = "Test Task",
+            createdAtEpochMillis = 1000L
+        )
+        taskRepository.saveTask(testTask)
+
+        val handle = SavedStateHandle(mapOf("processId" to "p1", "taskId" to "t1"))
+        val vm = StartSessionViewModel(
+            handle,
+            workSessionRepository,
+            progressRepository,
+            taskRepository,
+            processRepository
+        )
+
+        vm.onEvent(StartSessionUiEvent.FinishTimer)
+        vm.onEvent(StartSessionUiEvent.ToggleCompleteTask(true))
+        vm.onEvent(StartSessionUiEvent.SubmitSession)
+
+        val savedTask = taskRepository.getTaskById("t1").first()
+        assertTrue(savedTask != null && savedTask.isCompleted)
+    }
 }

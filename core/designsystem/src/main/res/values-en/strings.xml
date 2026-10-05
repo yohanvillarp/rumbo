@@ -20,8 +20,13 @@
     <string name="language_system_default">System default</string>
     <string name="language_spanish">Español</string>
     <string name="language_english">English</string>
+    <string name="language_portuguese">Português</string>
     <string name="process_action_star">Feature process</string>
     <string name="process_action_unstar">Remove from featured</string>
     <string name="processes_star_limit_warning">You can only feature up to 3 processes</string>
     <string name="home_view_all_processes">View all processes</string>
+    <string name="celebration_process_completed_title">Process Completed!</string>
+    <string name="celebration_process_completed_subtitle">You have conquered this major milestone in your journey.</string>
+    <string name="celebration_task_completed_title">Task completed! 🎉</string>
+    <string name="celebration_continue_action">Continue Journey</string>
 </resources>

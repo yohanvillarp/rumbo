@@ -9,7 +9,8 @@ sealed interface HomeUiState {
         val greeting: String,
         val userName: String,
         val continueProcess: Process?,
-        val activeProcesses: List<Process>,
+        val starredProcesses: List<Process> = emptyList(),
+        val activeProcesses: List<Process> = starredProcesses,
         val todayTasks: List<Task>,
         val allProcesses: List<Process> = emptyList(),
         val userMessage: String? = null

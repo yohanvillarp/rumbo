@@ -89,47 +89,27 @@ fun RumboTaskItem(
                 .fillMaxWidth()
                 .drawBehind {
                     if (processColor != null) {
-                        // 0. Left Process Color Accent Strip
+                        // Left Process Color Accent Strip
                         drawRect(
                             color = processColor,
                             topLeft = Offset(0f, 0f),
                             size = Size(5.dp.toPx(), size.height)
                         )
 
-                        // 1. Soft radial gradient wash in top-right corner
+                        // Soft radial gradient wash in top-right corner
                         val centerPoint = Offset(size.width * 0.95f, size.height * 0.25f)
                         drawCircle(
                             brush = Brush.radialGradient(
                                 colors = listOf(
-                                    processColor.copy(alpha = 0.22f),
-                                    processColor.copy(alpha = 0.06f),
+                                    processColor.copy(alpha = 0.14f),
+                                    processColor.copy(alpha = 0.04f),
                                     Color.Transparent
                                 ),
                                 center = centerPoint,
-                                radius = size.width * 0.55f
+                                radius = size.width * 0.40f
                             ),
                             center = centerPoint,
-                            radius = size.width * 0.55f
-                        )
-
-                        // 2. Artistic semitransparent geometric shapes (concentric rings and circular badge)
-                        val geomCenter = Offset(size.width - 24.dp.toPx(), 26.dp.toPx())
-                        drawCircle(
-                            color = processColor.copy(alpha = 0.20f),
-                            radius = 50.dp.toPx(),
-                            center = geomCenter,
-                            style = Stroke(width = 2.dp.toPx())
-                        )
-                        drawCircle(
-                            color = processColor.copy(alpha = 0.12f),
-                            radius = 74.dp.toPx(),
-                            center = geomCenter,
-                            style = Stroke(width = 1.5.dp.toPx())
-                        )
-                        drawCircle(
-                            color = processColor.copy(alpha = 0.14f),
-                            radius = 26.dp.toPx(),
-                            center = geomCenter
+                            radius = size.width * 0.40f
                         )
                     }
                 },

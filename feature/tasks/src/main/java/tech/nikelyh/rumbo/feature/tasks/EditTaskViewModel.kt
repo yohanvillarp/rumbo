@@ -54,8 +54,13 @@ class EditTaskViewModel @Inject constructor(
 
         viewModelScope.launch {
             processRepository.getProcesses().collect { processes ->
-                val selectable = processes.filter { !it.isFinished && it.id != Process.GENERAL_PROCESS_ID }
-                _uiState.update { it.copy(availableProcesses = selectable) }
+                val selectable = processes.filter { !it.isFinished }
+                val hasGeneral = selectable.any { it.id == Process.GENERAL_PROCESS_ID }
+                val withGeneral = if (hasGeneral) selectable else listOf(Process.createGeneralProcess()) + selectable
+                val sorted = withGeneral.sortedWith(
+                    compareByDescending<Process> { it.isSystem }.thenBy { it.name }
+                )
+                _uiState.update { it.copy(availableProcesses = sorted) }
             }
         }
     }

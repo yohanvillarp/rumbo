@@ -1,0 +1,23 @@
+<resources>
+    <string name="settings_title">Configurações</string>
+    <string name="settings_dark_mode">Modo Escuro</string>
+    <string name="settings_theme_system">Automático (conforme o dispositivo)</string>
+    <string name="settings_theme_dark">Modo escuro ativado</string>
+    <string name="settings_theme_light">Modo claro ativado</string>
+    <string name="settings_notifications">Notificações</string>
+    <string name="settings_language">Idioma do aplicativo</string>
+    <string name="settings_language_subtitle">Selecione o idioma preferido para o Rumbo</string>
+    <string name="settings_language_system">Padrão do sistema</string>
+    <string name="settings_language_spanish">Español</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_portuguese">Português</string>
+    <string name="settings_apply_language">Aplicar idioma</string>
+    <string name="settings_reset_zone">Zona de Redefinição</string>
+    <string name="settings_reset_description">Remove permanentemente todos os processos, tarefas, sessões de trabalho e histórico armazenados neste dispositivo.</string>
+    <string name="settings_reset_button">Redefinir Aplicativo</string>
+    <string name="settings_resetting">Redefinindo dados…</string>
+    <string name="settings_reset_dialog_title">Redefinir Aplicativo?</string>
+    <string name="settings_reset_dialog_message">Todos os seus dados (processos, tarefas, histórico e configurações) serão excluídos permanentemente. O aplicativo será reiniciado com o processo geral padrão.</string>
+    <string name="settings_reset_dialog_confirm">Redefinir</string>
+    <string name="settings_reset_dialog_cancel">Cancelar</string>
+</resources>

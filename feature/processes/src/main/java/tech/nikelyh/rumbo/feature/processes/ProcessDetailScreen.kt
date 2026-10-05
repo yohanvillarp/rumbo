@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,7 +21,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddTask
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Flag
@@ -55,6 +59,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import tech.nikelyh.rumbo.core.designsystem.component.CelebrationCinematicDialog
 import tech.nikelyh.rumbo.core.designsystem.component.RumboButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboCard
 import tech.nikelyh.rumbo.core.designsystem.component.RumboProcessCard
@@ -63,6 +68,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionCelebration
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
@@ -149,13 +155,16 @@ private fun ProcessDetailContent(
 ) {
     val process = uiState.process
     var taskToCompleteWithDuration by remember { mutableStateOf<Task?>(null) }
+    var showProcessCelebration by remember { mutableStateOf(false) }
+    var celebratingTaskTitle by remember { mutableStateOf<String?>(null) }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         // Header
         item {
             RumboCard(modifier = Modifier.fillMaxWidth()) {
@@ -215,11 +224,84 @@ private fun ProcessDetailContent(
 
                 val timeHours = uiState.totalTimeInvestedMillis / (1000 * 60 * 60)
                 val timeMinutes = (uiState.totalTimeInvestedMillis / (1000 * 60)) % 60
-                Text(
-                    text = "Tiempo dedicado: ${timeHours}h ${timeMinutes}m  •  Inversión: $${process.accumulatedDirectCost}  •  ${uiState.workSessions.size} sesiones",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Schedule,
+                                contentDescription = null,
+                                modifier = Modifier.size(13.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "${timeHours}h ${timeMinutes}m",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AttachMoney,
+                                contentDescription = null,
+                                modifier = Modifier.size(13.dp),
+                                tint = Color(0xFF2E7D32)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "$${process.accumulatedDirectCost}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayCircle,
+                                contentDescription = null,
+                                modifier = Modifier.size(13.dp),
+                                tint = Color(0xFF1976D2)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "${uiState.workSessions.size} ses.",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
 
                 if (uiState.parentProcess != null) {
                     Spacer(modifier = Modifier.height(8.dp))
@@ -339,7 +421,12 @@ private fun ProcessDetailContent(
 
                         if (process.isActive || process.status == ProcessStatus.PAUSED) {
                             OutlinedButton(
-                                onClick = { onEvent(ProcessDetailUiEvent.FinishProcess) },
+                                onClick = {
+                                    if (uiState.completionBlockedReason == null && !process.isSystem) {
+                                        showProcessCelebration = true
+                                    }
+                                    onEvent(ProcessDetailUiEvent.FinishProcess)
+                                },
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Icon(Icons.Default.CheckCircle, contentDescription = null)
@@ -347,6 +434,16 @@ private fun ProcessDetailContent(
                                 Text("Finalizar")
                             }
                         }
+                    }
+
+                    if (uiState.completionBlockedReason != null && (process.isActive || process.status == ProcessStatus.PAUSED)) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = uiState.completionBlockedReason,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
                     }
                 }
             }
@@ -495,12 +592,36 @@ private fun ProcessDetailContent(
             initialMinutes = if (sessionMinutes > 0L) sessionMinutes else 0L,
             minMinutes = minMinutes,
             onConfirm = { minutes ->
+                celebratingTaskTitle = task.title
                 onEvent(ProcessDetailUiEvent.CompleteTaskWithDuration(task, minutes))
                 taskToCompleteWithDuration = null
             },
             onDismiss = { taskToCompleteWithDuration = null }
         )
     }
+
+    if (showProcessCelebration) {
+        val timeHours = uiState.totalTimeInvestedMillis / (1000 * 60 * 60)
+        val timeMinutes = (uiState.totalTimeInvestedMillis / (1000 * 60)) % 60
+        val timeStr = if (timeHours > 0) "${timeHours}h ${timeMinutes}m" else "${timeMinutes}m"
+        val costStr = "S/ ${"%.2f".format(java.util.Locale.US, process.accumulatedDirectCost)}"
+
+        CelebrationCinematicDialog(
+            processName = process.name,
+            totalTimeFormatted = timeStr,
+            totalCostFormatted = costStr,
+            completedTasksCount = uiState.completedTasks.size,
+            onDismiss = { showProcessCelebration = false }
+        )
+    }
+
+    if (celebratingTaskTitle != null) {
+        TaskCompletionCelebration(
+            taskTitle = celebratingTaskTitle!!,
+            onDismiss = { celebratingTaskTitle = null }
+        )
+    }
+}
 }
 
 /**
