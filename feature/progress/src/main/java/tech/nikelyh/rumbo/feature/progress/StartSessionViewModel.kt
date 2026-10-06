@@ -134,7 +134,7 @@ class StartSessionViewModel @Inject constructor(
             }
             StartSessionUiEvent.ToggleTimer -> {
                 if (_uiState.value.isTimerRunning) {
-                    pauseTimer(triggerNavigation = true)
+                    pauseTimer()
                 } else {
                     startTimer()
                 }
@@ -239,7 +239,7 @@ class StartSessionViewModel @Inject constructor(
         resumeTimerLoop()
     }
 
-    private fun pauseTimer(triggerNavigation: Boolean = false) {
+    private fun pauseTimer() {
         if (_uiState.value.isTimerRunning) {
             accumulatedTimeMillis += (System.currentTimeMillis() - lastResumeEpochMillis).coerceAtLeast(0L)
         }
@@ -247,7 +247,7 @@ class StartSessionViewModel @Inject constructor(
             it.copy(
                 isTimerRunning = false,
                 elapsedTimeMillis = accumulatedTimeMillis,
-                isSessionPaused = triggerNavigation
+                isSessionPaused = false
             )
         }
         timerJob?.cancel()

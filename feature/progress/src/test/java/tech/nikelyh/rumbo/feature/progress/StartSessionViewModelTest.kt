@@ -179,7 +179,7 @@ class StartSessionViewModelTest {
     }
 
     @Test
-    fun `toggling timer while running pauses timer and sets isSessionPaused to true`() = runBlocking {
+    fun `toggling timer while running pauses timer without exiting screen`() = runBlocking {
         viewModel.uiState.first { !it.isLoading }
         assertTrue(viewModel.uiState.value.isTimerRunning)
 
@@ -187,9 +187,6 @@ class StartSessionViewModelTest {
 
         val state = viewModel.uiState.value
         assertTrue(!state.isTimerRunning)
-        assertTrue(state.isSessionPaused)
-
-        viewModel.onEvent(StartSessionUiEvent.ResetPausedState)
-        assertTrue(!viewModel.uiState.value.isSessionPaused)
+        assertTrue(!state.isSessionPaused)
     }
 }
