@@ -22,7 +22,7 @@ import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 @Composable
 fun RumboEmptyState(
     message: String,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.fillMaxSize(),
     subtitle: String? = null,
     icon: ImageVector? = null,
     mascotState: MascotState = MascotState.RESTING,
@@ -31,7 +31,6 @@ fun RumboEmptyState(
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center

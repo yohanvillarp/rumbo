@@ -59,7 +59,10 @@ class HomeViewModel @Inject constructor(
         val pendingTasks = tasks.filter { !it.isCompleted }
 
         if (nonGeneralProcesses.isEmpty() && tasks.isEmpty()) {
-            HomeUiState.Empty
+            HomeUiState.Empty(
+                userName = name,
+                greetingHour = hour
+            )
         } else {
             HomeUiState.Content(
                 greeting = fullGreeting,

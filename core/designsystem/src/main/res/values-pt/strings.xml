@@ -50,6 +50,14 @@
     <!-- Home Screen -->
     <string name="home_welcome_title">Bem-vindo ao Rumbo</string>
     <string name="home_welcome_subtitle">O que você gostaria de começar hoje?</string>
+    <string name="home_empty_welcome_subtitle">Seu espaço de trabalho está pronto. Como prefere começar hoje?</string>
+    <string name="home_empty_process_card_title">Organizar uma meta ou projeto</string>
+    <string name="home_empty_process_card_badge">Recomendado para metas por etapas</string>
+    <string name="home_empty_process_card_desc">Divida um objetivo grande em etapas, defina prazos e acompanhe seu tempo acumulado e investimento.</string>
+    <string name="home_empty_task_card_title">Adicionar uma tarefa direta</string>
+    <string name="home_empty_task_card_badge">Ação rápida para hoje</string>
+    <string name="home_empty_task_card_desc">Para afazeres pontuais. Se ainda não criou um processo, será salva automaticamente no seu espaço Geral.</string>
+    <string name="home_empty_tip">Dica: Em qualquer tarefa você pode iniciar um cronômetro de foco para medir sua dedicação em tempo real.</string>
     <string name="home_create_first_process">Criar primeiro processo</string>
     <string name="home_create_first_task">Criar primeira tarefa</string>
     <string name="home_create_process">Criar processo</string>

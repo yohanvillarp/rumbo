@@ -50,6 +50,14 @@
     <!-- Home Screen -->
     <string name="home_welcome_title">Welcome to Rumbo</string>
     <string name="home_welcome_subtitle">What would you like to start today?</string>
+    <string name="home_empty_welcome_subtitle">Your workspace is ready. How would you like to start today?</string>
+    <string name="home_empty_process_card_title">Organize a goal or project</string>
+    <string name="home_empty_process_card_badge">Recommended for multi-stage goals</string>
+    <string name="home_empty_process_card_desc">Break a big goal into stages, set deadlines, and measure your accumulated time and investment.</string>
+    <string name="home_empty_task_card_title">Add a direct task</string>
+    <string name="home_empty_task_card_badge">Quick action for today</string>
+    <string name="home_empty_task_card_desc">For immediate to-dos. If you haven\'t created a process yet, it will be automatically saved in your General space.</string>
+    <string name="home_empty_tip">Tip: On any task you can start a focus timer to measure your dedication in real time.</string>
     <string name="home_create_first_process">Create first process</string>
     <string name="home_create_first_task">Create first task</string>
     <string name="home_create_process">Create process</string>

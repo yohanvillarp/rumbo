@@ -17,6 +17,9 @@ sealed interface HomeUiState {
         val allProcesses: List<Process> = emptyList(),
         val userMessage: String? = null
     ) : HomeUiState
-    data object Empty : HomeUiState
+    data class Empty(
+        val userName: String = "Explorador",
+        val greetingHour: Int = 12
+    ) : HomeUiState
     data class Error(val message: String) : HomeUiState
 }
