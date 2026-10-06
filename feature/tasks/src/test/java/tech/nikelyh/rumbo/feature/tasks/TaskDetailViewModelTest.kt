@@ -192,4 +192,64 @@ class TaskDetailViewModelTest {
 
         collectJob.cancel()
     }
+
+    @Test
+    fun `loads work sessions list in uiState`() = runBlocking {
+        val session = tech.nikelyh.rumbo.core.model.WorkSession(
+            id = "ws1",
+            processId = "p1",
+            taskId = "t100",
+            startTimeEpochMillis = 1000L,
+            endTimeEpochMillis = 61000L,
+            durationMillis = 60000L,
+            note = "Sesión de prueba"
+        )
+        workSessionRepository.saveWorkSession(session)
+
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+
+        val state = viewModel.uiState.first {
+            it is TaskDetailUiState.Content && it.sessions.isNotEmpty()
+        } as TaskDetailUiState.Content
+
+        assertEquals(1, state.sessions.size)
+        assertEquals("ws1", state.sessions.first().id)
+        assertTrue(state.hasStartedSession)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `deleting work session removes it from repository and subtracts duration from task`() = runBlocking {
+        val initialTask = taskRepository.getTaskById("t100").first()!!
+        taskRepository.saveTask(initialTask.copy(timeWorkedMillis = 60 * 60 * 1000L))
+
+        val session = tech.nikelyh.rumbo.core.model.WorkSession(
+            id = "ws_delete",
+            processId = "p1",
+            taskId = "t100",
+            startTimeEpochMillis = 1000L,
+            endTimeEpochMillis = 2401000L,
+            durationMillis = 40 * 60 * 1000L,
+            note = "Sesión a borrar"
+        )
+        workSessionRepository.saveWorkSession(session)
+
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first {
+            it is TaskDetailUiState.Content && it.sessions.isNotEmpty()
+        }
+
+        viewModel.onEvent(TaskDetailUiEvent.DeleteSession("ws_delete"))
+
+        val sessions = workSessionRepository.getWorkSessionsByTaskId("t100").first()
+        assertTrue(sessions.isEmpty())
+
+        val updatedTask = taskRepository.getTaskById("t100").first()
+        assertNotNull(updatedTask)
+        // 60m - 40m = 20m
+        assertEquals(20 * 60 * 1000L, updatedTask?.timeWorkedMillis)
+
+        collectJob.cancel()
+    }
 }

@@ -13,10 +13,10 @@ interface WorkSessionDao {
     @Query("SELECT * FROM work_sessions")
     fun getAllWorkSessions(): Flow<List<WorkSessionEntity>>
 
-    @Query("SELECT * FROM work_sessions WHERE processId = :processId")
+    @Query("SELECT * FROM work_sessions WHERE processId = :processId ORDER BY startTimeEpochMillis DESC")
     fun getWorkSessionsByProcessId(processId: String): Flow<List<WorkSessionEntity>>
 
-    @Query("SELECT * FROM work_sessions WHERE taskId = :taskId")
+    @Query("SELECT * FROM work_sessions WHERE taskId = :taskId ORDER BY startTimeEpochMillis DESC")
     fun getWorkSessionsByTaskId(taskId: String): Flow<List<WorkSessionEntity>>
 
     @Query("SELECT * FROM work_sessions WHERE id = :id")

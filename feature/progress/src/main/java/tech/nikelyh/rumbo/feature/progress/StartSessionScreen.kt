@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -228,28 +229,30 @@ internal fun StartSessionScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        TextButton(
-                            onClick = { onEvent(StartSessionUiEvent.ForgotTimerClicked) }
+                        RumboOutlinedButton(
+                            onClick = { onEvent(StartSessionUiEvent.ForgotTimerClicked) },
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+                            Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_action_forgot),
-                                color = MaterialTheme.colorScheme.secondary
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
 
-                        TextButton(
-                            onClick = { showCancelConfirmDialog = true }
+                        RumboOutlinedButton(
+                            onClick = { showCancelConfirmDialog = true },
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                            Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_action_cancel),
-                                color = MaterialTheme.colorScheme.error
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
                     }
@@ -312,43 +315,6 @@ internal fun StartSessionScreen(
                 maxLines = 3
             )
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Checkbox(
-                    checked = uiState.saveProgressEntry,
-                    onCheckedChange = { onEvent(StartSessionUiEvent.ToggleSaveProgress(it)) }
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_qualitative_checkbox),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            if (uiState.saveProgressEntry) {
-                Text(
-                    text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_qualitative_level_label),
-                    style = MaterialTheme.typography.labelSmall
-                )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ProgressLevel.entries.forEach { level ->
-                        val levelLabel = when (level) {
-                            ProgressLevel.LOW -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_low)
-                            ProgressLevel.MEDIUM -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_medium)
-                            ProgressLevel.HIGH -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.progress_level_high)
-                        }
-                        FilterChip(
-                            selected = uiState.progressLevel == level,
-                            onClick = { onEvent(StartSessionUiEvent.ProgressLevelSelected(level)) },
-                            label = { Text(levelLabel) }
-                        )
-                    }
-                }
-            }
-
             if (uiState.selectedTaskId != null) {
                 Surface(
                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
@@ -398,12 +364,12 @@ internal fun StartSessionScreen(
                 Text(saveButtonText)
             }
 
-            TextButton(
+            RumboOutlinedButton(
                 onClick = { showCancelConfirmDialog = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_discard),
                     color = MaterialTheme.colorScheme.error
@@ -413,10 +379,26 @@ internal fun StartSessionScreen(
     }
 
     if (showCancelConfirmDialog) {
+        val isCulmination = uiState.isSessionFinished
+        val dialogTitle = if (isCulmination) {
+            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_discard_dialog_title)
+        } else {
+            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_cancel_dialog_title)
+        }
+        val dialogMessage = if (isCulmination) {
+            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_discard_dialog_message)
+        } else {
+            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_cancel_dialog_message)
+        }
+        val dialogConfirm = if (isCulmination) {
+            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_discard_dialog_confirm)
+        } else {
+            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_cancel_dialog_confirm)
+        }
         AlertDialog(
             onDismissRequest = { showCancelConfirmDialog = false },
-            title = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_cancel_dialog_title)) },
-            text = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_cancel_dialog_message)) },
+            title = { Text(dialogTitle) },
+            text = { Text(dialogMessage) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -425,7 +407,7 @@ internal fun StartSessionScreen(
                     }
                 ) {
                     Text(
-                        text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_cancel_dialog_confirm),
+                        text = dialogConfirm,
                         color = MaterialTheme.colorScheme.error
                     )
                 }

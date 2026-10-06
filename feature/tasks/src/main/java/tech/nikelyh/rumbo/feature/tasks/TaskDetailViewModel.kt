@@ -30,15 +30,16 @@ class TaskDetailViewModel @Inject constructor(
     val uiState: StateFlow<TaskDetailUiState> = combine(
         taskRepository.getTaskById(taskId),
         processRepository.getProcesses(),
-        workSessionRepository.activeSessionState
-    ) { task, processes, activeSession ->
+        workSessionRepository.activeSessionState,
+        workSessionRepository.getWorkSessionsByTaskId(taskId)
+    ) { task, processes, activeSession, sessions ->
         if (task == null) {
             TaskDetailUiState.Error("Tarea no encontrada")
         } else {
             val process = processes.firstOrNull { it.id == task.processId }
             val processName = process?.name ?: "General"
             val isSessionActive = activeSession.hasActiveSession && activeSession.taskId == task.id
-            val hasStarted = isSessionActive || task.timeWorkedMillis > 0L || task.status == TaskStatus.IN_PROGRESS
+            val hasStarted = isSessionActive || task.timeWorkedMillis > 0L || task.status == TaskStatus.IN_PROGRESS || sessions.isNotEmpty()
             val accumulatedMillis = if (isSessionActive) {
                 if (activeSession.isRunning) {
                     activeSession.accumulatedTimeMillis + (System.currentTimeMillis() - activeSession.lastResumeEpochMillis).coerceAtLeast(0L)
@@ -50,6 +51,7 @@ class TaskDetailViewModel @Inject constructor(
             TaskDetailUiState.Content(
                 task = task,
                 processName = processName,
+                sessions = sessions,
                 hasStartedSession = hasStarted,
                 activeSessionAccumulatedMillis = accumulatedMillis,
                 isActiveSessionRunning = isSessionActive && activeSession.isRunning,
@@ -94,6 +96,16 @@ class TaskDetailViewModel @Inject constructor(
                     val updatedTask = currentTask.copy(timeWorkedMillis = maxOf(currentTask.timeWorkedMillis, targetTotalMillis))
                         .updateStatus(TaskStatus.COMPLETED, finishedAt = now)
                     taskRepository.saveTask(updatedTask)
+                }
+            }
+            is TaskDetailUiEvent.DeleteSession -> {
+                viewModelScope.launch {
+                    val sessionToDelete = currentState.sessions.firstOrNull { it.id == event.sessionId }
+                    workSessionRepository.deleteWorkSession(event.sessionId)
+                    if (sessionToDelete != null) {
+                        val newTimeWorked = maxOf(0L, currentTask.timeWorkedMillis - sessionToDelete.durationMillis)
+                        taskRepository.saveTask(currentTask.copy(timeWorkedMillis = newTimeWorked))
+                    }
                 }
             }
             TaskDetailUiEvent.DeleteTask -> {

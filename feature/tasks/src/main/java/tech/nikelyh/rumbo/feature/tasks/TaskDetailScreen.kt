@@ -11,14 +11,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -29,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,19 +48,28 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionCelebration
+import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
 import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
-
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.PlayCircle
-import androidx.compose.ui.text.font.FontWeight
-import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
+import tech.nikelyh.rumbo.core.model.WorkSession
 import java.time.format.DateTimeFormatter
 
 private val TASK_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, hh:mm a")
+
+private fun formatDuration(durationMillis: Long): String {
+    val totalSeconds = durationMillis / 1000
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
+    return when {
+        hours > 0 && minutes > 0 -> "${hours}h ${minutes}m"
+        hours > 0 -> "${hours}h"
+        minutes > 0 -> "${minutes}m"
+        else -> "${seconds}s"
+    }
+}
 
 @Composable
 fun TaskDetailRoute(
@@ -94,6 +111,7 @@ internal fun TaskDetailScreen(
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showCompletionDialog by remember { mutableStateOf(false) }
+    var sessionToDelete by remember { mutableStateOf<WorkSession?>(null) }
 
     when (uiState) {
         TaskDetailUiState.Loading -> {
@@ -110,6 +128,7 @@ internal fun TaskDetailScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
@@ -282,6 +301,7 @@ internal fun TaskDetailScreen(
                     val buttonText = when {
                         uiState.isActiveSessionRunning -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_view_running_session)
                         uiState.hasActiveSession -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_resume_session)
+                        uiState.sessions.isNotEmpty() -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_new_session)
                         uiState.hasStartedSession -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_continue_session)
                         else -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_start_session)
                     }
@@ -335,6 +355,96 @@ internal fun TaskDetailScreen(
                     }
                 }
 
+                // Work Sessions History Section
+                Spacer(modifier = Modifier.height(8.dp))
+                RumboSectionHeader(
+                    title = androidx.compose.ui.res.stringResource(
+                        tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_sessions_title,
+                        uiState.sessions.size
+                    )
+                )
+
+                if (uiState.sessions.isEmpty()) {
+                    RumboCard(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_sessions_empty),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
+                } else {
+                    uiState.sessions.forEach { session ->
+                        val sessionDateText = remember(session.startTimeEpochMillis) {
+                            val instant = java.time.Instant.ofEpochMilli(session.startTimeEpochMillis)
+                            val zone = java.time.ZoneId.systemDefault()
+                            instant.atZone(zone).format(TASK_DATE_FORMATTER)
+                        }
+                        val durationText = remember(session.durationMillis) {
+                            formatDuration(session.durationMillis)
+                        }
+
+                        RumboCard(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(end = 8.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Schedule,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                        Text(
+                                            text = durationText,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    Text(
+                                        text = sessionDateText,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                    )
+
+                                    session.note?.takeIf { it.isNotBlank() }?.let { note ->
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = note,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+
+                                IconButton(
+                                    onClick = { sessionToDelete = session }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_delete_session_confirm),
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if (showCompletionDialog) {
                     val sessionMinutes = if (task.timeWorkedMillis > 0L) {
                         (task.timeWorkedMillis + 59_999L) / 60_000L
@@ -370,6 +480,42 @@ internal fun TaskDetailScreen(
                         },
                         dismissButton = {
                             TextButton(onClick = { showDeleteDialog = false }) {
+                                Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_cancel))
+                            }
+                        }
+                    )
+                }
+
+                if (sessionToDelete != null) {
+                    val targetSession = sessionToDelete!!
+                    val sessionDurationStr = formatDuration(targetSession.durationMillis)
+                    AlertDialog(
+                        onDismissRequest = { sessionToDelete = null },
+                        title = { Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_delete_session_title)) },
+                        text = {
+                            Text(
+                                androidx.compose.ui.res.stringResource(
+                                    tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_delete_session_msg,
+                                    sessionDurationStr
+                                )
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    val id = targetSession.id
+                                    sessionToDelete = null
+                                    onEvent(TaskDetailUiEvent.DeleteSession(id))
+                                }
+                            ) {
+                                Text(
+                                    androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_delete_session_confirm),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { sessionToDelete = null }) {
                                 Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_cancel))
                             }
                         }
