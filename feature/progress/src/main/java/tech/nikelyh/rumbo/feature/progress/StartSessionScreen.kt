@@ -172,10 +172,10 @@ internal fun StartSessionScreen(
                             .height(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        val sessionStatusText = if (uiState.isTimerRunning) {
-                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_status_running)
-                        } else {
-                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_status_paused)
+                        val sessionStatusText = when {
+                            uiState.isTimerRunning -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_status_running)
+                            uiState.elapsedTimeMillis > 0L -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_status_paused)
+                            else -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_status_ready)
                         }
                         Text(
                             text = sessionStatusText,
@@ -218,10 +218,10 @@ internal fun StartSessionScreen(
                             contentDescription = null
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        val toggleText = if (uiState.isTimerRunning) {
-                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_action_pause)
-                        } else {
-                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_action_continue)
+                        val toggleText = when {
+                            uiState.isTimerRunning -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_action_pause)
+                            uiState.elapsedTimeMillis > 0L -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_action_continue)
+                            else -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.session_action_start)
                         }
                         Text(toggleText)
                     }

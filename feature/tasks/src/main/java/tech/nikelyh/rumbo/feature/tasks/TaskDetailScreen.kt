@@ -45,8 +45,10 @@ import tech.nikelyh.rumbo.core.model.Priority
 import tech.nikelyh.rumbo.core.model.Task
 import tech.nikelyh.rumbo.core.model.TaskStatus
 
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.ui.text.font.FontWeight
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import java.time.format.DateTimeFormatter
 
@@ -218,28 +220,72 @@ internal fun TaskDetailScreen(
                             )
                         }
                     }
+
+                    if (uiState.hasActiveSession) {
+                        val activeMinutes = uiState.activeSessionAccumulatedMillis / 60000
+                        val activeSeconds = (uiState.activeSessionAccumulatedMillis / 1000) % 60
+                        val activeHours = activeMinutes / 60
+                        val remainingActiveMinutes = activeMinutes % 60
+                        val activeTimeText = when {
+                            activeHours > 0 -> "${activeHours}h ${remainingActiveMinutes}m"
+                            activeMinutes > 0 -> "${activeMinutes}m"
+                            else -> "${activeSeconds}s"
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (uiState.isActiveSessionRunning) Icons.Default.PlayArrow else Icons.Default.Pause,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = if (uiState.isActiveSessionRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            val badgeText = if (uiState.isActiveSessionRunning) {
+                                androidx.compose.ui.res.stringResource(
+                                    tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_session_running_badge,
+                                    activeTimeText
+                                )
+                            } else {
+                                androidx.compose.ui.res.stringResource(
+                                    tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_session_paused_badge,
+                                    activeTimeText
+                                )
+                            }
+                            Text(
+                                text = badgeText,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (uiState.isActiveSessionRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Actions: Primary action is Iniciar / Continuar Sesión
-                val isTaskStarted = uiState.hasStartedSession || task.timeWorkedMillis > 0L || task.status == TaskStatus.IN_PROGRESS
+                // Actions: Primary action is Iniciar / Continuar / Reanudar Sesión
                 RumboButton(
                     onClick = { onStartSession(task.id, task.processId) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    val icon = when {
+                        uiState.isActiveSessionRunning -> Icons.Default.PlayCircle
+                        uiState.hasActiveSession -> Icons.Default.PlayArrow
+                        uiState.hasStartedSession -> Icons.Default.PlayCircle
+                        else -> Icons.Default.PlayArrow
+                    }
                     Icon(
-                        imageVector = if (isTaskStarted) Icons.Default.PlayCircle else Icons.Default.PlayArrow,
+                        imageVector = icon,
                         contentDescription = null
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        if (isTaskStarted) {
-                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_continue_session)
-                        } else {
-                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_start_session)
-                        }
-                    )
+                    val buttonText = when {
+                        uiState.isActiveSessionRunning -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_view_running_session)
+                        uiState.hasActiveSession -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_resume_session)
+                        uiState.hasStartedSession -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_continue_session)
+                        else -> androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.task_detail_start_session)
+                    }
+                    Text(buttonText)
                 }
 
                 RumboOutlinedButton(

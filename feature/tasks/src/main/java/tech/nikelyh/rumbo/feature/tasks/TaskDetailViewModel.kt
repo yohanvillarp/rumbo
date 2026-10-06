@@ -39,10 +39,21 @@ class TaskDetailViewModel @Inject constructor(
             val processName = process?.name ?: "General"
             val isSessionActive = activeSession.hasActiveSession && activeSession.taskId == task.id
             val hasStarted = isSessionActive || task.timeWorkedMillis > 0L || task.status == TaskStatus.IN_PROGRESS
+            val accumulatedMillis = if (isSessionActive) {
+                if (activeSession.isRunning) {
+                    activeSession.accumulatedTimeMillis + (System.currentTimeMillis() - activeSession.lastResumeEpochMillis).coerceAtLeast(0L)
+                } else {
+                    activeSession.accumulatedTimeMillis
+                }
+            } else 0L
+
             TaskDetailUiState.Content(
                 task = task,
                 processName = processName,
-                hasStartedSession = hasStarted
+                hasStartedSession = hasStarted,
+                activeSessionAccumulatedMillis = accumulatedMillis,
+                isActiveSessionRunning = isSessionActive && activeSession.isRunning,
+                hasActiveSession = isSessionActive
             )
         }
     }.stateIn(

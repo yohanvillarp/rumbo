@@ -162,6 +162,33 @@ class TaskDetailViewModelTest {
             it is TaskDetailUiState.Content && it.hasStartedSession
         } as TaskDetailUiState.Content
         assertTrue(state.hasStartedSession)
+        assertTrue(state.hasActiveSession)
+        assertTrue(state.isActiveSessionRunning)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `paused active session reports accumulated time and isActiveSessionRunning false`() = runBlocking {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect {} }
+        viewModel.uiState.first { it is TaskDetailUiState.Content }
+
+        workSessionRepository.saveActiveSessionState(
+            tech.nikelyh.rumbo.core.model.ActiveSessionState(
+                taskId = "t100",
+                processId = "p1",
+                startTimeEpochMillis = 1000L,
+                accumulatedTimeMillis = 25 * 60 * 1000L,
+                isRunning = false
+            )
+        )
+
+        val state = viewModel.uiState.first {
+            it is TaskDetailUiState.Content && it.hasActiveSession && !it.isActiveSessionRunning
+        } as TaskDetailUiState.Content
+        assertTrue(state.hasActiveSession)
+        assertTrue(!state.isActiveSessionRunning)
+        assertEquals(25 * 60 * 1000L, state.activeSessionAccumulatedMillis)
 
         collectJob.cancel()
     }

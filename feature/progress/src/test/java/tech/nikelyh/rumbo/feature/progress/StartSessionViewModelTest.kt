@@ -179,8 +179,46 @@ class StartSessionViewModelTest {
     }
 
     @Test
+    fun `initial new session starts in ready state and toggling timer starts it`() = runBlocking {
+        val state = viewModel.uiState.first { !it.isLoading }
+        assertTrue(!state.isTimerRunning)
+        assertEquals(0L, state.elapsedTimeMillis)
+
+        viewModel.onEvent(StartSessionUiEvent.ToggleTimer)
+        assertTrue(viewModel.uiState.value.isTimerRunning)
+    }
+
+    @Test
+    fun `restores paused timer state from repository when reopening session without auto starting`() = runBlocking {
+        val now = System.currentTimeMillis()
+        val activeState = tech.nikelyh.rumbo.core.model.ActiveSessionState(
+            processId = "p1",
+            taskId = "t1",
+            startTimeEpochMillis = now - 600000L,
+            lastResumeEpochMillis = now - 300000L,
+            accumulatedTimeMillis = 300000L,
+            isRunning = false
+        )
+        workSessionRepository.saveActiveSessionState(activeState)
+
+        val savedHandle = SavedStateHandle(mapOf("processId" to "p1", "taskId" to "t1"))
+        val restoredViewModel = StartSessionViewModel(
+            savedHandle,
+            workSessionRepository,
+            progressRepository,
+            taskRepository,
+            processRepository
+        )
+
+        val state = restoredViewModel.uiState.first { !it.isLoading }
+        assertTrue(!state.isTimerRunning)
+        assertEquals(300000L, state.elapsedTimeMillis)
+    }
+
+    @Test
     fun `toggling timer while running pauses timer without exiting screen`() = runBlocking {
         viewModel.uiState.first { !it.isLoading }
+        viewModel.onEvent(StartSessionUiEvent.ToggleTimer)
         assertTrue(viewModel.uiState.value.isTimerRunning)
 
         viewModel.onEvent(StartSessionUiEvent.ToggleTimer)

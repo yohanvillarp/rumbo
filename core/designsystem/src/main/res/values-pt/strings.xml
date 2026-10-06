@@ -202,6 +202,10 @@
     <string name="task_detail_due_date_prefix">Prazo: %1$s</string>
     <string name="task_detail_start_session">Iniciar Sessão</string>
     <string name="task_detail_continue_session">Continuar Sessão</string>
+    <string name="task_detail_resume_session">Retomar Sessão</string>
+    <string name="task_detail_view_running_session">Ver Sessão Ativa</string>
+    <string name="task_detail_session_paused_badge">Sessão pausada (%1$s acumulados)</string>
+    <string name="task_detail_session_running_badge">Sessão em andamento (%1$s acumulados)</string>
     <string name="task_detail_mark_completed">Marcar como Concluída</string>
     <string name="task_detail_mark_pending">Marcar como Pendente</string>
     <string name="task_detail_delete_dialog_title">Confirmar exclusão</string>
@@ -252,8 +256,10 @@
 
     <!-- Work Session Screen -->
     <string name="session_title_default">Sessão de Trabalho</string>
+    <string name="session_status_ready">Pronto para iniciar</string>
     <string name="session_status_running">Sessão em andamento</string>
     <string name="session_status_paused">Sessão em pausa</string>
+    <string name="session_action_start">Iniciar</string>
     <string name="session_action_finish">Finalizar Sessão</string>
     <string name="session_action_pause">Pausar</string>
     <string name="session_action_continue">Continuar</string>

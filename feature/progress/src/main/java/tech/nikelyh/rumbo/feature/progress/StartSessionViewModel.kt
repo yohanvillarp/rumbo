@@ -69,9 +69,9 @@ class StartSessionViewModel @Inject constructor(
                 }
             } else 0L
 
-            val isRunning = true
+            val isRunning = if (isRestoring) activeState.isRunning else false
 
-            sessionStartTimeEpochMillis = if (isRestoring) activeState.startTimeEpochMillis else now
+            sessionStartTimeEpochMillis = if (isRestoring) activeState.startTimeEpochMillis else 0L
             lastResumeEpochMillis = now
             accumulatedTimeMillis = if (isRestoring) {
                 if (activeState.isRunning) resolvedElapsed else activeState.accumulatedTimeMillis
@@ -90,7 +90,9 @@ class StartSessionViewModel @Inject constructor(
                 )
             }
 
-            saveActiveState(isRunning = isRunning)
+            if (isRestoring) {
+                saveActiveState(isRunning = isRunning)
+            }
 
             if (isRunning) {
                 resumeTimerLoop()
@@ -233,7 +235,11 @@ class StartSessionViewModel @Inject constructor(
 
     private fun startTimer() {
         if (_uiState.value.isTimerRunning) return
-        lastResumeEpochMillis = System.currentTimeMillis()
+        val now = System.currentTimeMillis()
+        if (sessionStartTimeEpochMillis == 0L) {
+            sessionStartTimeEpochMillis = now
+        }
+        lastResumeEpochMillis = now
         _uiState.update { it.copy(isTimerRunning = true) }
         saveActiveState(isRunning = true)
         resumeTimerLoop()
@@ -275,12 +281,13 @@ class StartSessionViewModel @Inject constructor(
         val current = _uiState.value
         val endTimeMillis = System.currentTimeMillis()
         val durationMillis = current.elapsedTimeMillis
+        val effectiveStartMillis = if (sessionStartTimeEpochMillis > 0L) sessionStartTimeEpochMillis else (endTimeMillis - durationMillis)
 
         val session = WorkSession(
             id = UUID.randomUUID().toString(),
             processId = current.selectedProcessId.ifBlank { Process.GENERAL_PROCESS_ID },
             taskId = current.selectedTaskId,
-            startTimeEpochMillis = sessionStartTimeEpochMillis,
+            startTimeEpochMillis = effectiveStartMillis,
             endTimeEpochMillis = endTimeMillis,
             durationMillis = durationMillis,
             note = current.sessionNote.trim().ifBlank { null }

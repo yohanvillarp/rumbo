@@ -7,7 +7,10 @@ sealed interface TaskDetailUiState {
     data class Content(
         val task: Task,
         val processName: String,
-        val hasStartedSession: Boolean = false
+        val hasStartedSession: Boolean = false,
+        val activeSessionAccumulatedMillis: Long = 0L,
+        val isActiveSessionRunning: Boolean = false,
+        val hasActiveSession: Boolean = false
     ) : TaskDetailUiState
     data class Error(val message: String) : TaskDetailUiState
 }
