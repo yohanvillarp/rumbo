@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -70,6 +71,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
 import tech.nikelyh.rumbo.core.designsystem.component.RumboTaskItem
+import tech.nikelyh.rumbo.core.designsystem.component.RumboTonalButton
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionCelebration
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
@@ -171,10 +173,14 @@ private fun ProcessDetailContent(
     var showProcessCelebration by remember { mutableStateOf(false) }
     var celebratingTaskTitle by remember { mutableStateOf<String?>(null) }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopCenter
+    ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .widthIn(max = 840.dp)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -317,7 +323,7 @@ private fun ProcessDetailContent(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "$${process.accumulatedDirectCost}",
+                                text = "${process.accumulatedDirectCost}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -408,23 +414,37 @@ private fun ProcessDetailContent(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (!process.isFinished) {
-                    RumboButton(
-                        onClick = onNavigateToCreateTask,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Default.AddTask, contentDescription = null)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_new_task))
-                    }
-
                     if (!process.isSystem) {
-                        RumboOutlinedButton(
-                            onClick = { onNavigateToCreateProcess(process.id) },
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            RumboButton(
+                                onClick = onNavigateToCreateTask,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(Icons.Default.AddTask, contentDescription = null)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_new_task))
+                            }
+
+                            RumboTonalButton(
+                                onClick = { onNavigateToCreateProcess(process.id) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(Icons.Default.AccountTree, contentDescription = null)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_new_subprocess))
+                            }
+                        }
+                    } else {
+                        RumboButton(
+                            onClick = onNavigateToCreateTask,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Default.AccountTree, contentDescription = null)
+                            Icon(Icons.Default.AddTask, contentDescription = null)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_new_subprocess))
+                            Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.process_detail_new_task))
                         }
                     }
                 } else {
@@ -456,7 +476,7 @@ private fun ProcessDetailContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        RumboOutlinedButton(
+                        RumboTonalButton(
                             onClick = onNavigateToEditProcess,
                             modifier = Modifier.weight(1f)
                         ) {
@@ -466,7 +486,7 @@ private fun ProcessDetailContent(
                         }
 
                         if (process.isActive || process.status == ProcessStatus.PAUSED) {
-                            OutlinedButton(
+                            RumboTonalButton(
                                 onClick = {
                                     if (uiState.completionBlockedReason == null && !process.isSystem) {
                                         showProcessCelebration = true
@@ -496,17 +516,20 @@ private fun ProcessDetailContent(
                         var showDeleteDialog by remember { mutableStateOf(false) }
 
                         Spacer(modifier = Modifier.height(4.dp))
-                        androidx.compose.material3.OutlinedButton(
+                        RumboTonalButton(
                             onClick = { showDeleteDialog = true },
-                            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                            colors = androidx.compose.material3.ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
                                 contentColor = MaterialTheme.colorScheme.error
                             ),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.7f)),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_delete_process))
+                            Text(
+                                stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_delete_process),
+                                color = MaterialTheme.colorScheme.error
+                            )
                         }
 
                         if (showDeleteDialog) {

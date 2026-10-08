@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -47,6 +48,7 @@ import tech.nikelyh.rumbo.core.designsystem.component.RumboEmptyState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboLoadingState
 import tech.nikelyh.rumbo.core.designsystem.component.RumboOutlinedButton
 import tech.nikelyh.rumbo.core.designsystem.component.RumboSectionHeader
+import tech.nikelyh.rumbo.core.designsystem.component.RumboTonalButton
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionCelebration
 import tech.nikelyh.rumbo.core.designsystem.component.TaskCompletionDurationDialog
 import tech.nikelyh.rumbo.core.designsystem.theme.RumboTheme
@@ -124,10 +126,14 @@ internal fun TaskDetailScreen(
             var showCelebration by remember { mutableStateOf(false) }
             val task = uiState.task
 
-            Box(modifier = modifier.fillMaxSize()) {
+            Box(
+                modifier = modifier.fillMaxSize(),
+                contentAlignment = Alignment.TopCenter
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .widthIn(max = 840.dp)
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -308,7 +314,7 @@ internal fun TaskDetailScreen(
                     Text(buttonText)
                 }
 
-                RumboOutlinedButton(
+                RumboTonalButton(
                     onClick = {
                         if (!task.isCompleted) {
                             showCompletionDialog = true
@@ -336,7 +342,7 @@ internal fun TaskDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    RumboOutlinedButton(
+                    RumboTonalButton(
                         onClick = onNavigateToEditTask,
                         modifier = Modifier.weight(1f)
                     ) {
@@ -345,13 +351,20 @@ internal fun TaskDetailScreen(
                         Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_edit))
                     }
 
-                    RumboOutlinedButton(
+                    RumboTonalButton(
                         onClick = { showDeleteDialog = true },
+                        colors = androidx.compose.material3.ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_delete), color = MaterialTheme.colorScheme.error)
+                        Text(
+                            androidx.compose.ui.res.stringResource(tech.nikelyh.rumbo.core.designsystem.R.string.action_delete),
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
 

@@ -3,7 +3,9 @@ package tech.nikelyh.rumbo.core.designsystem.component
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -17,6 +19,10 @@ fun RumboButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    colors: ButtonColors = ButtonDefaults.buttonColors(
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary
+    ),
     content: @Composable RowScope.() -> Unit
 ) {
     Button(
@@ -24,10 +30,28 @@ fun RumboButton(
         modifier = modifier.animateContentSize(),
         enabled = enabled,
         shape = MaterialTheme.shapes.medium,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        ),
+        colors = colors,
+        content = content
+    )
+}
+
+@Composable
+fun RumboTonalButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colors: ButtonColors = ButtonDefaults.filledTonalButtonColors(
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+    ),
+    content: @Composable RowScope.() -> Unit
+) {
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = modifier.animateContentSize(),
+        enabled = enabled,
+        shape = MaterialTheme.shapes.medium,
+        colors = colors,
         content = content
     )
 }
